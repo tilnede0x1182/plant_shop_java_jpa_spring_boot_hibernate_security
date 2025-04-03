@@ -1,0 +1,237 @@
+# target/classes/application.properties
+spring.datasource.url=jdbc:sqlite:file:./db/plant-shop.db
+spring.datasource.driver-class-name=org.sqlite.JDBC
+spring.jpa.hibernate.ddl-auto=update
+spring.web.resources.static-locations=classpath:/static/
+spring.jpa.properties.hibernate.dialect=com.planteshop.config.SQLiteDialect
+
+# src/main/resources/application.properties
+spring.datasource.url=jdbc:sqlite:file:./db/plant-shop.db
+spring.datasource.driver-class-name=org.sqlite.JDBC
+spring.jpa.hibernate.ddl-auto=update
+spring.web.resources.static-locations=classpath:/static/
+spring.jpa.properties.hibernate.dialect=com.planteshop.config.SQLiteDialect
+
+# src/main/java/com/planteshop/repository/PlantRepository.java
+package com.planteshop.repository;
+
+import com.planteshop.model.entity.Plant;
+import org.springframework.data.jpa.repository.JpaRepository;
+
+public interface PlantRepository extends JpaRepository<Plant, Long> {
+}
+
+# src/main/java/com/planteshop/model/entity/Plant.java
+package com.planteshop.model.entity;
+
+import jakarta.persistence.*;
+
+@Entity
+public class Plant {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+    private String name;
+    private String description;
+    private Double price;
+    private String category;
+    private Integer stock;
+
+    // Getters/Setters
+    public Long getId() { return id; }
+    public void setId(Long id) { this.id = id; }
+    public String getName() { return name; }
+    public void setName(String name) { this.name = name; }
+    public String getDescription() { return description; }
+    public void setDescription(String description) { this.description = description; }
+    public Double getPrice() { return price; }
+    public void setPrice(Double price) { this.price = price; }
+    public String getCategory() { return category; }
+    public void setCategory(String category) { this.category = category; }
+    public Integer getStock() { return stock; }
+    public void setStock(Integer stock) { this.stock = stock; }
+}
+
+# src/main/java/com/planteshop/controller/api/PlantController.java
+package com.planteshop.controller.api;
+
+import com.planteshop.model.entity.Plant;
+import com.planteshop.repository.PlantRepository;
+import org.springframework.web.bind.annotation.*;
+import java.util.List;
+
+@RestController
+@RequestMapping("/api/plants")
+@CrossOrigin(origins = "*")
+public class PlantController {
+
+    private final PlantRepository plantRepository;
+
+    public PlantController(PlantRepository plantRepository) {
+        this.plantRepository = plantRepository;
+    }
+
+    @GetMapping
+    public List<Plant> getAllPlants() {
+        // Lecture réelle dans la base SQLite via le Repository
+        return plantRepository.findAll();
+    }
+
+    @PostMapping
+    public Plant addPlant(@RequestBody Plant plant) {
+        // Pour ajouter une plante
+        return plantRepository.save(plant);
+    }
+
+    // Autres méthodes REST (PUT, DELETE, etc.) si nécessaire
+}
+
+# src/main/java/com/planteshop/config/SQLiteIdentityColumnSupport.java
+package com.planteshop.config;
+
+import org.hibernate.dialect.identity.IdentityColumnSupportImpl;
+
+public class SQLiteIdentityColumnSupport extends IdentityColumnSupportImpl {
+    @Override
+    public boolean supportsIdentityColumns() {
+        return true;
+    }
+
+    @Override
+    public String getIdentitySelectString(String table, String column, int type) {
+        return "select last_insert_rowid()";
+    }
+
+    @Override
+    public String getIdentityColumnString(int type) {
+        return "integer";
+    }
+}
+
+# src/main/java/com/planteshop/config/SecurityConfig.java
+package com.planteshop.config;
+
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.web.SecurityFilterChain;
+
+@Configuration
+@EnableWebSecurity
+public class SecurityConfig {
+
+    @Bean
+    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+        http
+            .csrf().disable()
+            .authorizeHttpRequests()
+                .requestMatchers("/api/auth/**").permitAll()
+                .requestMatchers("/api/admin/**").hasRole("ADMIN")
+                .anyRequest().authenticated()
+            .and()
+            .httpBasic();
+
+        return http.build();
+    }
+
+    @Bean
+    public PasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder();
+    }
+}
+
+# src/main/java/com/planteshop/config/SQLiteDialect.java
+package com.planteshop.config;
+
+import java.sql.Types;
+import org.hibernate.dialect.Dialect;
+import org.hibernate.type.descriptor.jdbc.IntegerJdbcType;
+import org.hibernate.type.descriptor.jdbc.BigIntJdbcType;
+import org.hibernate.type.descriptor.jdbc.BlobJdbcType;
+import org.hibernate.type.descriptor.jdbc.ClobJdbcType;
+import org.hibernate.service.ServiceRegistry;
+import org.hibernate.type.descriptor.sql.spi.DdlTypeRegistry;
+import org.hibernate.boot.model.TypeContributions;
+
+public class SQLiteDialect extends Dialect {
+
+    public SQLiteDialect() {
+        super();
+    }
+
+    @Override
+    protected void registerColumnTypes(TypeContributions typeContributions, ServiceRegistry serviceRegistry) {
+        DdlTypeRegistry ddlTypeRegistry = typeContributions.getTypeConfiguration().getDdlTypeRegistry();
+        ddlTypeRegistry.addDescriptor(Types.INTEGER, "integer");
+        ddlTypeRegistry.addDescriptor(Types.BIGINT, "bigint");
+        ddlTypeRegistry.addDescriptor(Types.BLOB, "blob");
+        ddlTypeRegistry.addDescriptor(Types.CLOB, "clob");
+    }
+}
+
+# src/main/java/com/planteshop/PlantShopApplication.java
+package com.planteshop;
+
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+
+@SpringBootApplication
+public class PlantShopApplication {
+    public static void main(String[] args) {
+        SpringApplication.run(PlantShopApplication.class, args);
+    }
+}
+
+# pom.xml
+<project>
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-parent</artifactId>
+        <version>3.1.5</version>
+    </parent>
+
+    <groupId>com.planteshop</groupId>
+    <artifactId>plant-shop-jpa-spring-boot-hibernate-security</artifactId>
+    <version>1.0.0</version>
+
+    <dependencies>
+        <!-- Web -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
+        </dependency>
+
+        <!-- JPA + Hibernate -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-jpa</artifactId>
+        </dependency>
+
+        <!-- Spring Security -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-security</artifactId>
+        </dependency>
+
+        <!-- SQLite -->
+        <dependency>
+            <groupId>org.xerial</groupId>
+            <artifactId>sqlite-jdbc</artifactId>
+            <version>3.42.0.0</version>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+            </plugin>
+        </plugins>
+    </build>
+</project>
+
