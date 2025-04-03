@@ -1,0 +1,9 @@
+*.class
+*.log
+*.sqlite
+/target/
+/db/
+.idea/
+.vscode/
+*.iml
+.DS_Store
