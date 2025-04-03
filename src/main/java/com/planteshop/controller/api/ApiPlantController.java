@@ -7,26 +7,36 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/plants")
-@CrossOrigin(origins = "*")
-public class PlantController {
-
+public class ApiPlantController {
     private final PlantRepository plantRepository;
 
-    public PlantController(PlantRepository plantRepository) {
+    public ApiPlantController(PlantRepository plantRepository) {
         this.plantRepository = plantRepository;
     }
 
     @GetMapping
     public List<Plant> getAllPlants() {
-        // Lecture réelle dans la base SQLite via le Repository
         return plantRepository.findAll();
+    }
+
+    @GetMapping("/{id}")
+    public Plant getPlantById(@PathVariable Long id) {
+        return plantRepository.findById(id).orElse(null);
     }
 
     @PostMapping
     public Plant addPlant(@RequestBody Plant plant) {
-        // Pour ajouter une plante
         return plantRepository.save(plant);
     }
 
-    // Autres méthodes REST (PUT, DELETE, etc.) si nécessaire
+    @PutMapping("/{id}")
+    public Plant updatePlant(@PathVariable Long id, @RequestBody Plant plant) {
+        plant.setId(id);
+        return plantRepository.save(plant);
+    }
+
+    @DeleteMapping("/{id}")
+    public void deletePlant(@PathVariable Long id) {
+        plantRepository.deleteById(id);
+    }
 }

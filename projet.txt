@@ -1,18 +1,31 @@
 # target/classes/application.properties
+# Server
+server.port=8080
+
+# Database
 spring.datasource.url=jdbc:postgresql://localhost:5432/plant_shop
 spring.datasource.username=tilnede0x1182
 spring.datasource.password=tilnede0x1182
 spring.datasource.driver-class-name=org.postgresql.Driver
 
+# JPA
 spring.jpa.hibernate.ddl-auto=update
-spring.jpa.properties.hibernate.dialect=org.hibernate.dialect.PostgreSQLDialect
-spring.web.resources.static-locations=classpath:/static/
-
-# Logging SQL ajouté par le script de correction
 spring.jpa.show-sql=true
 spring.jpa.properties.hibernate.format_sql=true
 logging.level.org.hibernate.SQL=DEBUG
 logging.level.org.hibernate.type.descriptor.sql.BasicBinder=TRACE
+
+# Thymeleaf
+spring.thymeleaf.cache=false
+spring.thymeleaf.prefix=classpath:/templates/
+spring.thymeleaf.suffix=.html
+spring.thymeleaf.mode=HTML
+spring.thymeleaf.encoding=UTF-8
+
+# Security
+spring.security.user.name=admin
+spring.security.user.password=admin
+spring.security.user.roles=ADMIN
 
 # target/maven-archiver/pom.properties
 artifactId=plant-shop-jpa-spring-boot-hibernate-security
@@ -20,20 +33,56 @@ groupId=com.planteshop
 version=1.0.0
 
 # src/main/resources/application.properties
+# Server
+server.port=8080
+
+# Database
 spring.datasource.url=jdbc:postgresql://localhost:5432/plant_shop
 spring.datasource.username=tilnede0x1182
 spring.datasource.password=tilnede0x1182
 spring.datasource.driver-class-name=org.postgresql.Driver
 
+# JPA
 spring.jpa.hibernate.ddl-auto=update
-spring.jpa.properties.hibernate.dialect=org.hibernate.dialect.PostgreSQLDialect
-spring.web.resources.static-locations=classpath:/static/
-
-# Logging SQL ajouté par le script de correction
 spring.jpa.show-sql=true
 spring.jpa.properties.hibernate.format_sql=true
 logging.level.org.hibernate.SQL=DEBUG
 logging.level.org.hibernate.type.descriptor.sql.BasicBinder=TRACE
+
+# Thymeleaf
+spring.thymeleaf.cache=false
+spring.thymeleaf.prefix=classpath:/templates/
+spring.thymeleaf.suffix=.html
+spring.thymeleaf.mode=HTML
+spring.thymeleaf.encoding=UTF-8
+
+# Security
+spring.security.user.name=admin
+spring.security.user.password=admin
+spring.security.user.roles=ADMIN
+
+# src/main/java/com/planteshop/repository/OrderRepository.java
+package com.planteshop.repository;
+
+import com.planteshop.model.entity.Order;
+import com.planteshop.model.entity.User;
+import org.springframework.data.jpa.repository.JpaRepository;
+import java.util.List;
+
+public interface OrderRepository extends JpaRepository<Order, Long> {
+    List<Order> findByUser(User user);
+}
+
+# src/main/java/com/planteshop/repository/UserRepository.java
+package com.planteshop.repository;
+
+import com.planteshop.model.entity.User;
+import org.springframework.data.jpa.repository.JpaRepository;
+import java.util.Optional;
+
+public interface UserRepository extends JpaRepository<User, Long> {
+    Optional<User> findByEmail(String email);
+}
 
 # src/main/java/com/planteshop/repository/PlantRepository.java
 package com.planteshop.repository;
@@ -42,6 +91,110 @@ import com.planteshop.model.entity.Plant;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface PlantRepository extends JpaRepository<Plant, Long> {
+}
+
+# src/main/java/com/planteshop/model/entity/OrderItem.java
+package com.planteshop.model.entity;
+
+import jakarta.persistence.*;
+
+@Entity
+public class OrderItem {
+    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    private Integer quantity;
+
+    @ManyToOne
+    @JoinColumn(name = "plant_id")
+    private Plant plant;
+
+    @ManyToOne
+    @JoinColumn(name = "order_id")
+    private Order order;
+
+    // Getters, setters
+    public Long getId() { return id; }
+    public void setId(Long id) { this.id = id; }
+    public Integer getQuantity() { return quantity; }
+    public void setQuantity(Integer quantity) { this.quantity = quantity; }
+    public Plant getPlant() { return plant; }
+    public void setPlant(Plant plant) { this.plant = plant; }
+    public Order getOrder() { return order; }
+    public void setOrder(Order order) { this.order = order; }
+}
+
+# src/main/java/com/planteshop/model/entity/User.java
+package com.planteshop.model.entity;
+
+import jakarta.persistence.*;
+import java.util.List;
+
+@Entity
+@Table(name = "users")
+public class User {
+    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    private String name;
+    private String email;
+    private String password;
+    private boolean admin;
+
+    @OneToMany(mappedBy = "user")
+    private List<Order> orders;
+
+    // Getters, setters
+    public Long getId() { return id; }
+    public void setId(Long id) { this.id = id; }
+    public String getName() { return name; }
+    public void setName(String name) { this.name = name; }
+    public String getEmail() { return email; }
+    public void setEmail(String email) { this.email = email; }
+    public String getPassword() { return password; }
+    public void setPassword(String password) { this.password = password; }
+    public boolean isAdmin() { return admin; }
+    public void setAdmin(boolean admin) { this.admin = admin; }
+    public List<Order> getOrders() { return orders; }
+    public void setOrders(List<Order> orders) { this.orders = orders; }
+}
+
+# src/main/java/com/planteshop/model/entity/Order.java
+package com.planteshop.model.entity;
+
+import jakarta.persistence.*;
+import java.time.LocalDateTime;
+import java.util.List;
+
+@Entity
+public class Order {
+    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    private Double totalPrice;
+    private String status;
+    private LocalDateTime createdAt;
+
+    @ManyToOne
+    @JoinColumn(name = "user_id")
+    private User user;
+
+    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL)
+    private List<OrderItem> items;
+
+    // Getters, setters
+    public Long getId() { return id; }
+    public void setId(Long id) { this.id = id; }
+    public Double getTotalPrice() { return totalPrice; }
+    public void setTotalPrice(Double totalPrice) { this.totalPrice = totalPrice; }
+    public String getStatus() { return status; }
+    public void setStatus(String status) { this.status = status; }
+    public LocalDateTime getCreatedAt() { return createdAt; }
+    public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
+    public User getUser() { return user; }
+    public void setUser(User user) { this.user = user; }
+    public List<OrderItem> getItems() { return items; }
+    public void setItems(List<OrderItem> items) { this.items = items; }
 }
 
 # src/main/java/com/planteshop/model/entity/Plant.java
@@ -109,14 +262,45 @@ public class PlantController {
     // Autres méthodes REST (PUT, DELETE, etc.) si nécessaire
 }
 
+# src/main/java/com/planteshop/controller/web/PlantController.java
+package com.planteshop.controller.web;
+
+import com.planteshop.repository.PlantRepository;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+
+@Controller
+public class PlantController {
+    private final PlantRepository plantRepository;
+
+    public PlantController(PlantRepository plantRepository) {
+        this.plantRepository = plantRepository;
+    }
+
+    @GetMapping("/plants")
+    public String index(Model model) {
+        model.addAttribute("plants", plantRepository.findAll());
+        return "plants/index";
+    }
+
+    @GetMapping("/plants/{id}")
+    public String show(@PathVariable Long id, Model model) {
+        plantRepository.findById(id).ifPresent(plant -> model.addAttribute("plant", plant));
+        return "plants/show";
+    }
+}
+
 # src/main/java/com/planteshop/config/SecurityConfig.java
 package com.planteshop.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 
 @Configuration
@@ -128,14 +312,27 @@ public class SecurityConfig {
         http
             .csrf(csrf -> csrf.disable())
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/api/plants/**").permitAll()
-                .requestMatchers("/api/auth/**").permitAll()
-                .requestMatchers("/api/admin/**").hasRole("ADMIN")
+                .requestMatchers("/", "/plants", "/plants/**", "/css/**", "/js/**", "/webjars/**").permitAll()
+                .requestMatchers("/admin/**").hasRole("ADMIN")
+                .requestMatchers("/cart/**", "/orders/**").authenticated()
                 .anyRequest().authenticated()
             )
-            .httpBasic(Customizer.withDefaults());
+            .formLogin(form -> form
+                .loginPage("/login")
+                .defaultSuccessUrl("/plants")
+                .permitAll()
+            )
+            .logout(logout -> logout
+                .logoutSuccessUrl("/plants")
+                .permitAll()
+            );
 
         return http.build();
+    }
+
+    @Bean
+    public PasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder();
     }
 }
 
@@ -166,7 +363,7 @@ public class PlantShopApplication {
     <version>1.0.0</version>
 
     <dependencies>
-        <!-- PostgreSQL Driver -->
+        <!-- PostgreSQL -->
         <dependency>
             <groupId>org.postgresql</groupId>
             <artifactId>postgresql</artifactId>
@@ -174,10 +371,14 @@ public class PlantShopApplication {
             <scope>runtime</scope>
         </dependency>
 
-        <!-- Web -->
+        <!-- Web + Thymeleaf -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-thymeleaf</artifactId>
         </dependency>
 
         <!-- JPA + Hibernate -->
@@ -186,10 +387,22 @@ public class PlantShopApplication {
             <artifactId>spring-boot-starter-data-jpa</artifactId>
         </dependency>
 
-        <!-- Spring Security -->
+        <!-- Security -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-security</artifactId>
+        </dependency>
+
+        <!-- Bootstrap -->
+        <dependency>
+            <groupId>org.webjars</groupId>
+            <artifactId>bootstrap</artifactId>
+            <version>5.3.2</version>
+        </dependency>
+        <dependency>
+            <groupId>org.webjars</groupId>
+            <artifactId>webjars-locator</artifactId>
+            <version>0.46</version>
         </dependency>
     </dependencies>
 
