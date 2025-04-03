@@ -1,59 +1,63 @@
 #!/bin/bash
 
-# Script de correction pour le projet PlantShop
-# Usage: ./fix_project.sh
+# Script complet de correction pour le projet PlantShop
+echo "🔧 Début de la correction complète..."
 
-echo "🔧 Début des corrections..."
+# 1. Mise à jour de la configuration de sécurité
+SECURITY_CONFIG="src/main/java/com/planteshop/config/SecurityConfig.java"
+echo "🛡️  Mise à jour de la sécurité dans $SECURITY_CONFIG"
 
-# 1. Supprimer la dépendance SQLite du pom.xml
-echo "🗑️ Suppression de la dépendance SQLite..."
-sed -i '/<dependency>/,/<\/dependency>/ {/sqlite-jdbc/d}' pom.xml
-sed -i '/<!-- SQLite -->/d' pom.xml  # Supprime aussi les commentaires associés si existants
+cat > "$SECURITY_CONFIG" << 'EOL'
+package com.planteshop.config;
 
-# 2. Mettre à jour la SecurityConfig
-SECURITY_CONFIG_FILE="src/main/java/com/planteshop/config/SecurityConfig.java"
-echo "🔐 Modification du fichier de sécurité: $SECURITY_CONFIG_FILE"
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.web.SecurityFilterChain;
 
-# Crée une copie de sauvegarde
-cp "$SECURITY_CONFIG_FILE" "$SECURITY_CONFIG_FILE.bak"
+@Configuration
+public class SecurityConfig {
 
-# Modifie le fichier avec awk
-awk '
-/\.requestMatchers\("\/api\/auth\/\*\*"\)\.permitAll\(\)/ {
-    print $0
-    print "            .requestMatchers(\"/api/plants/**\").permitAll() // Ajouté par le script de correction"
-    next
+    @Bean
+    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+        http
+            .csrf(csrf -> csrf.disable())
+            .authorizeHttpRequests(auth -> auth
+                .requestMatchers("/**").permitAll()  // Accès complet sans authentification
+            );
+        return http.build();
+    }
 }
-{ print }
-' "$SECURITY_CONFIG_FILE.bak" > "$SECURITY_CONFIG_FILE"
+EOL
 
-# 3. Ajouter les logs SQL dans application.properties
+# 2. Nettoyage des propriétés redondantes
 APP_PROPERTIES="src/main/resources/application.properties"
-echo "📝 Ajout des logs SQL dans $APP_PROPERTIES"
+echo "🧹 Nettoyage de $APP_PROPERTIES"
 
-cat <<EOT >> "$APP_PROPERTIES"
+# Garde uniquement les configurations essentielles
+cat > "$APP_PROPERTIES" << 'EOL'
+spring.datasource.url=jdbc:postgresql://localhost:5432/plant_shop
+spring.datasource.username=tilnede0x1182
+spring.datasource.password=tilnede0x1182
+spring.jpa.hibernate.ddl-auto=update
 
-# Logging SQL ajouté par le script de correction
-spring.jpa.show-sql=true
-spring.jpa.properties.hibernate.format_sql=true
-logging.level.org.hibernate.SQL=DEBUG
-logging.level.org.hibernate.type.descriptor.sql.BasicBinder=TRACE
-EOT
+# Configuration CORS globale
+spring.web.resources.static-locations=classpath:/static/
+EOL
 
-# 4. Vérifier/Créer la base de données (nécessite psql)
-echo "🛢️ Vérification de la base de données PostgreSQL..."
-sudo -u postgres psql <<PGSCRIPT
-CREATE DATABASE plant_shop;
-CREATE USER tilnede0x1182 WITH PASSWORD 'tilnede0x1182';
-GRANT ALL PRIVILEGES ON DATABASE plant_shop TO tilnede0x1182;
-\q
-PGSCRIPT
+# 3. Suppression des fichiers cibles
+echo "🧹 Nettoyage des fichiers compilés"
+rm -rf target/
 
-# 5. Donner les droits d'exécution au script
-chmod +x "$0"
+# 4. Reconstruction du projet
+echo "🏗️  Reconstruction de l'application..."
+mvn clean package
 
-echo "✅ Corrections terminées !"
-echo "➡️ Étapes manuelles restantes:"
-echo "1. Redémarrer l'application Spring Boot"
-echo "2. Vérifier les logs au démarrage"
-echo "3. Tester avec curl: curl http://localhost:8080/api/plants"
+echo "🚀 Lancement de l'application..."
+mvn spring-boot:run
+
+echo "✅ Corrections appliquées avec succès !"
+echo "➡️ L'application devrait maintenant :"
+echo "- Ne plus demander d'authentification"
+echo "- Être accessible sans restriction"
+echo "- Fonctionner avec PostgreSQL"
