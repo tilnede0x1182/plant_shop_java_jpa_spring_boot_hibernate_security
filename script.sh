@@ -1,31 +1,59 @@
-#!/usr/bin/env bash
+#!/bin/bash
 
-echo "Mise à jour de application.properties pour PostgreSQL ..."
-cat > src/main/resources/application.properties << "EOF"
-spring.datasource.url=jdbc:postgresql://localhost:5432/plant_shop
-spring.datasource.username=postgres
-spring.datasource.password=postgres
-spring.datasource.driver-class-name=org.postgresql.Driver
+# Script de correction pour le projet PlantShop
+# Usage: ./fix_project.sh
 
-spring.jpa.hibernate.ddl-auto=update
-spring.jpa.properties.hibernate.dialect=org.hibernate.dialect.PostgreSQLDialect
-spring.web.resources.static-locations=classpath:/static/
-EOF
+echo "🔧 Début des corrections..."
 
-echo "Suppression des fichiers liés à SQLite ..."
-rm -f src/main/java/com/planteshop/config/SQLiteDialect.java
-rm -f src/main/java/com/planteshop/config/SQLiteIdentityColumnSupport.java
+# 1. Supprimer la dépendance SQLite du pom.xml
+echo "🗑️ Suppression de la dépendance SQLite..."
+sed -i '/<dependency>/,/<\/dependency>/ {/sqlite-jdbc/d}' pom.xml
+sed -i '/<!-- SQLite -->/d' pom.xml  # Supprime aussi les commentaires associés si existants
 
-echo "Nettoyage du dossier target (si présent) ..."
-rm -rf target
+# 2. Mettre à jour la SecurityConfig
+SECURITY_CONFIG_FILE="src/main/java/com/planteshop/config/SecurityConfig.java"
+echo "🔐 Modification du fichier de sécurité: $SECURITY_CONFIG_FILE"
 
-echo "Ajout de la dépendance PostgreSQL dans pom.xml (si manquante) ..."
-grep -q "postgresql" pom.xml || sed -i '/<dependencies>/a\
-        <dependency>\n\
-            <groupId>org.postgresql</groupId>\n\
-            <artifactId>postgresql</artifactId>\n\
-            <version>42.7.3</version>\n\
-        </dependency>' pom.xml
+# Crée une copie de sauvegarde
+cp "$SECURITY_CONFIG_FILE" "$SECURITY_CONFIG_FILE.bak"
 
-echo "Migration terminée. Vous pouvez créer la base 'plant_shop' dans PostgreSQL si ce n'est pas déjà fait."
-echo "Exécutez ensuite : mvn clean install"
+# Modifie le fichier avec awk
+awk '
+/\.requestMatchers\("\/api\/auth\/\*\*"\)\.permitAll\(\)/ {
+    print $0
+    print "            .requestMatchers(\"/api/plants/**\").permitAll() // Ajouté par le script de correction"
+    next
+}
+{ print }
+' "$SECURITY_CONFIG_FILE.bak" > "$SECURITY_CONFIG_FILE"
+
+# 3. Ajouter les logs SQL dans application.properties
+APP_PROPERTIES="src/main/resources/application.properties"
+echo "📝 Ajout des logs SQL dans $APP_PROPERTIES"
+
+cat <<EOT >> "$APP_PROPERTIES"
+
+# Logging SQL ajouté par le script de correction
+spring.jpa.show-sql=true
+spring.jpa.properties.hibernate.format_sql=true
+logging.level.org.hibernate.SQL=DEBUG
+logging.level.org.hibernate.type.descriptor.sql.BasicBinder=TRACE
+EOT
+
+# 4. Vérifier/Créer la base de données (nécessite psql)
+echo "🛢️ Vérification de la base de données PostgreSQL..."
+sudo -u postgres psql <<PGSCRIPT
+CREATE DATABASE plant_shop;
+CREATE USER tilnede0x1182 WITH PASSWORD 'tilnede0x1182';
+GRANT ALL PRIVILEGES ON DATABASE plant_shop TO tilnede0x1182;
+\q
+PGSCRIPT
+
+# 5. Donner les droits d'exécution au script
+chmod +x "$0"
+
+echo "✅ Corrections terminées !"
+echo "➡️ Étapes manuelles restantes:"
+echo "1. Redémarrer l'application Spring Boot"
+echo "2. Vérifier les logs au démarrage"
+echo "3. Tester avec curl: curl http://localhost:8080/api/plants"
