@@ -18,7 +18,6 @@ public class SecurityConfig {
             .csrf().disable()
             .authorizeHttpRequests()
                 .requestMatchers("/api/auth/**").permitAll()
-            .requestMatchers("/api/plants/**").permitAll() // Ajouté par le script de correction
                 .requestMatchers("/api/admin/**").hasRole("ADMIN")
                 .anyRequest().authenticated()
             .and()
