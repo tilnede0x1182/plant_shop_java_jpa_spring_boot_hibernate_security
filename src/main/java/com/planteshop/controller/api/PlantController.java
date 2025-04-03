@@ -1,30 +1,32 @@
 package com.planteshop.controller.api;
 
+import com.planteshop.model.entity.Plant;
+import com.planteshop.repository.PlantRepository;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
-import java.util.Arrays;
 
 @RestController
 @RequestMapping("/api/plants")
 @CrossOrigin(origins = "*")
 public class PlantController {
 
+    private final PlantRepository plantRepository;
+
+    public PlantController(PlantRepository plantRepository) {
+        this.plantRepository = plantRepository;
+    }
+
     @GetMapping
-    public List<PlantResponse> getAllPlants() {
-        // Simulation de données - À remplacer par un vrai accès SQLite
-        return Arrays.asList(
-            new PlantResponse("Ficus", 19.99),
-            new PlantResponse("Cactus", 12.50)
-        );
+    public List<Plant> getAllPlants() {
+        // Lecture réelle dans la base SQLite via le Repository
+        return plantRepository.findAll();
     }
 
-    static class PlantResponse {
-        public String name;
-        public double price;
-
-        public PlantResponse(String name, double price) {
-            this.name = name;
-            this.price = price;
-        }
+    @PostMapping
+    public Plant addPlant(@RequestBody Plant plant) {
+        // Pour ajouter une plante
+        return plantRepository.save(plant);
     }
+
+    // Autres méthodes REST (PUT, DELETE, etc.) si nécessaire
 }

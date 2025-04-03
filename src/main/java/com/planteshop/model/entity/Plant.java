@@ -1,6 +1,6 @@
 package com.planteshop.model.entity;
 
-import javax.persistence.*;
+import jakarta.persistence.*;
 
 @Entity
 public class Plant {
