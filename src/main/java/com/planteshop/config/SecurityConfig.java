@@ -17,18 +17,18 @@ public class SecurityConfig {
         http
             .csrf(csrf -> csrf.disable())
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/", "/plants", "/plants/**", "/css/**", "/js/**", "/webjars/**").permitAll()
+                .requestMatchers("/", "/plants", "/plants/**", "/css/**", "/js/**", "/webjars/**", "/login", "/api/plants/**").permitAll()
                 .requestMatchers("/admin/**").hasRole("ADMIN")
                 .requestMatchers("/cart/**", "/orders/**").authenticated()
-                .anyRequest().authenticated()
+                .anyRequest().permitAll() // Modifié pour permettre l'accès à tout le reste
             )
             .formLogin(form -> form
                 .loginPage("/login")
-                .defaultSuccessUrl("/plants")
+                .defaultSuccessUrl("/plants") // Page après login réussi
                 .permitAll()
             )
             .logout(logout -> logout
-                .logoutSuccessUrl("/plants")
+                .logoutSuccessUrl("/") // Page après logout
                 .permitAll()
             );
 

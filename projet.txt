@@ -9,7 +9,6 @@ spring.datasource.password=tilnede0x1182
 spring.datasource.driver-class-name=org.postgresql.Driver
 
 # JPA
-spring.jpa.hibernate.ddl-auto=update
 spring.jpa.show-sql=true
 spring.jpa.properties.hibernate.format_sql=true
 logging.level.org.hibernate.SQL=DEBUG
@@ -27,10 +26,23 @@ spring.security.user.name=admin
 spring.security.user.password=admin
 spring.security.user.roles=ADMIN
 
-# target/maven-archiver/pom.properties
-artifactId=plant-shop-jpa-spring-boot-hibernate-security
-groupId=com.planteshop
-version=1.0.0
+# Désactivez explicitement cette fonctionnalité
+spring.jpa.open-in-view=false
+
+# Profil normal (dev/prod)
+spring.jpa.hibernate.ddl-auto=update
+
+# Profil seed
+spring.config.activate.on-profile=seed
+spring.jpa.hibernate.ddl-auto=create-drop
+spring.jpa.defer-datasource-initialization=true
+spring.sql.init.mode=always
+
+# Profil dev
+spring.config.activate.on-profile=dev
+spring.jpa.hibernate.ddl-auto=update
+spring.jpa.defer-datasource-initialization=false
+spring.sql.init.mode=never
 
 # src/main/resources/application.properties
 # Server
@@ -43,7 +55,6 @@ spring.datasource.password=tilnede0x1182
 spring.datasource.driver-class-name=org.postgresql.Driver
 
 # JPA
-spring.jpa.hibernate.ddl-auto=update
 spring.jpa.show-sql=true
 spring.jpa.properties.hibernate.format_sql=true
 logging.level.org.hibernate.SQL=DEBUG
@@ -61,16 +72,34 @@ spring.security.user.name=admin
 spring.security.user.password=admin
 spring.security.user.roles=ADMIN
 
+# Désactivez explicitement cette fonctionnalité
+spring.jpa.open-in-view=false
+
+# Profil normal (dev/prod)
+spring.jpa.hibernate.ddl-auto=update
+
+# Profil seed
+spring.config.activate.on-profile=seed
+spring.jpa.hibernate.ddl-auto=create-drop
+spring.jpa.defer-datasource-initialization=true
+spring.sql.init.mode=always
+
+# Profil dev
+spring.config.activate.on-profile=dev
+spring.jpa.hibernate.ddl-auto=update
+spring.jpa.defer-datasource-initialization=false
+spring.sql.init.mode=never
+
 # src/main/java/com/planteshop/repository/OrderRepository.java
 package com.planteshop.repository;
 
-import com.planteshop.model.entity.Order;
+import com.planteshop.model.entity.CustomerOrder;
 import com.planteshop.model.entity.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.List;
 
-public interface OrderRepository extends JpaRepository<Order, Long> {
-    List<Order> findByUser(User user);
+public interface OrderRepository extends JpaRepository<CustomerOrder, Long> {
+    List<CustomerOrder> findByUser(User user);
 }
 
 # src/main/java/com/planteshop/repository/UserRepository.java
@@ -93,73 +122,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 public interface PlantRepository extends JpaRepository<Plant, Long> {
 }
 
-# src/main/java/com/planteshop/model/entity/OrderItem.java
-package com.planteshop.model.entity;
-
-import jakarta.persistence.*;
-
-@Entity
-public class OrderItem {
-    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-
-    private Integer quantity;
-
-    @ManyToOne
-    @JoinColumn(name = "plant_id")
-    private Plant plant;
-
-    @ManyToOne
-    @JoinColumn(name = "order_id")
-    private Order order;
-
-    // Getters, setters
-    public Long getId() { return id; }
-    public void setId(Long id) { this.id = id; }
-    public Integer getQuantity() { return quantity; }
-    public void setQuantity(Integer quantity) { this.quantity = quantity; }
-    public Plant getPlant() { return plant; }
-    public void setPlant(Plant plant) { this.plant = plant; }
-    public Order getOrder() { return order; }
-    public void setOrder(Order order) { this.order = order; }
-}
-
-# src/main/java/com/planteshop/model/entity/User.java
-package com.planteshop.model.entity;
-
-import jakarta.persistence.*;
-import java.util.List;
-
-@Entity
-@Table(name = "users")
-public class User {
-    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-
-    private String name;
-    private String email;
-    private String password;
-    private boolean admin;
-
-    @OneToMany(mappedBy = "user")
-    private List<Order> orders;
-
-    // Getters, setters
-    public Long getId() { return id; }
-    public void setId(Long id) { this.id = id; }
-    public String getName() { return name; }
-    public void setName(String name) { this.name = name; }
-    public String getEmail() { return email; }
-    public void setEmail(String email) { this.email = email; }
-    public String getPassword() { return password; }
-    public void setPassword(String password) { this.password = password; }
-    public boolean isAdmin() { return admin; }
-    public void setAdmin(boolean admin) { this.admin = admin; }
-    public List<Order> getOrders() { return orders; }
-    public void setOrders(List<Order> orders) { this.orders = orders; }
-}
-
-# src/main/java/com/planteshop/model/entity/Order.java
+# src/main/java/com/planteshop/model/entity/CustomerOrder.java
 package com.planteshop.model.entity;
 
 import jakarta.persistence.*;
@@ -167,7 +130,8 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 @Entity
-public class Order {
+@Table(name = "orders")
+public class CustomerOrder {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
@@ -195,6 +159,73 @@ public class Order {
     public void setUser(User user) { this.user = user; }
     public List<OrderItem> getItems() { return items; }
     public void setItems(List<OrderItem> items) { this.items = items; }
+}
+
+# src/main/java/com/planteshop/model/entity/OrderItem.java
+package com.planteshop.model.entity;
+
+import jakarta.persistence.*;
+
+@Entity
+@Table(name = "order_items")
+public class OrderItem {
+    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    private Integer quantity;
+
+    @ManyToOne
+    @JoinColumn(name = "plant_id")
+    private Plant plant;
+
+    @ManyToOne
+    @JoinColumn(name = "order_id")
+    private CustomerOrder order;
+
+    // Getters, setters
+    public Long getId() { return id; }
+    public void setId(Long id) { this.id = id; }
+    public Integer getQuantity() { return quantity; }
+    public void setQuantity(Integer quantity) { this.quantity = quantity; }
+    public Plant getPlant() { return plant; }
+    public void setPlant(Plant plant) { this.plant = plant; }
+    public CustomerOrder getOrder() { return order; }
+    public void setOrder(CustomerOrder order) { this.order = order; }
+}
+
+# src/main/java/com/planteshop/model/entity/User.java
+package com.planteshop.model.entity;
+
+import jakarta.persistence.*;
+import java.util.List;
+
+@Entity
+@Table(name = "users")
+public class User {
+    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    private String name;
+    private String email;
+    private String password;
+    private boolean admin;
+
+    @OneToMany(mappedBy = "user")
+    private List<CustomerOrder> orders;
+
+    // Getters, setters
+    public Long getId() { return id; }
+    public void setId(Long id) { this.id = id; }
+    public String getName() { return name; }
+    public void setName(String name) { this.name = name; }
+    public String getEmail() { return email; }
+    public void setEmail(String email) { this.email = email; }
+    public String getPassword() { return password; }
+    public void setPassword(String password) { this.password = password; }
+    public boolean isAdmin() { return admin; }
+    public void setAdmin(boolean admin) { this.admin = admin; }
+    public List<CustomerOrder> getOrders() { return orders; }
+    public void setOrders(List<CustomerOrder> orders) { this.orders = orders; }
 }
 
 # src/main/java/com/planteshop/model/entity/Plant.java
@@ -228,7 +259,7 @@ public class Plant {
     public void setStock(Integer stock) { this.stock = stock; }
 }
 
-# src/main/java/com/planteshop/controller/api/PlantController.java
+# src/main/java/com/planteshop/controller/api/ApiPlantController.java
 package com.planteshop.controller.api;
 
 import com.planteshop.model.entity.Plant;
@@ -238,31 +269,56 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/plants")
-@CrossOrigin(origins = "*")
-public class PlantController {
-
+public class ApiPlantController {
     private final PlantRepository plantRepository;
 
-    public PlantController(PlantRepository plantRepository) {
+    public ApiPlantController(PlantRepository plantRepository) {
         this.plantRepository = plantRepository;
     }
 
     @GetMapping
     public List<Plant> getAllPlants() {
-        // Lecture réelle dans la base SQLite via le Repository
         return plantRepository.findAll();
+    }
+
+    @GetMapping("/{id}")
+    public Plant getPlantById(@PathVariable Long id) {
+        return plantRepository.findById(id).orElse(null);
     }
 
     @PostMapping
     public Plant addPlant(@RequestBody Plant plant) {
-        // Pour ajouter une plante
         return plantRepository.save(plant);
     }
 
-    // Autres méthodes REST (PUT, DELETE, etc.) si nécessaire
+    @PutMapping("/{id}")
+    public Plant updatePlant(@PathVariable Long id, @RequestBody Plant plant) {
+        plant.setId(id);
+        return plantRepository.save(plant);
+    }
+
+    @DeleteMapping("/{id}")
+    public void deletePlant(@PathVariable Long id) {
+        plantRepository.deleteById(id);
+    }
 }
 
-# src/main/java/com/planteshop/controller/web/PlantController.java
+# src/main/java/com/planteshop/controller/web/LoginController.java
+package com.planteshop.controller.web;
+
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.GetMapping;
+
+@Controller
+public class LoginController {
+
+    @GetMapping("/login")
+    public String login() {
+        return "login"; // Correspond à src/main/resources/templates/login.html
+    }
+}
+
+# src/main/java/com/planteshop/controller/web/WebPlantController.java
 package com.planteshop.controller.web;
 
 import com.planteshop.repository.PlantRepository;
@@ -272,11 +328,16 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 
 @Controller
-public class PlantController {
+public class WebPlantController {
     private final PlantRepository plantRepository;
 
-    public PlantController(PlantRepository plantRepository) {
+    public WebPlantController(PlantRepository plantRepository) {
         this.plantRepository = plantRepository;
+    }
+
+    @GetMapping("/")
+    public String home() {
+        return "redirect:/plants";
     }
 
     @GetMapping("/plants")
@@ -312,18 +373,18 @@ public class SecurityConfig {
         http
             .csrf(csrf -> csrf.disable())
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/", "/plants", "/plants/**", "/css/**", "/js/**", "/webjars/**").permitAll()
+                .requestMatchers("/", "/plants", "/plants/**", "/css/**", "/js/**", "/webjars/**", "/login", "/api/plants/**").permitAll()
                 .requestMatchers("/admin/**").hasRole("ADMIN")
                 .requestMatchers("/cart/**", "/orders/**").authenticated()
-                .anyRequest().authenticated()
+                .anyRequest().permitAll() // Modifié pour permettre l'accès à tout le reste
             )
             .formLogin(form -> form
                 .loginPage("/login")
-                .defaultSuccessUrl("/plants")
+                .defaultSuccessUrl("/plants") // Page après login réussi
                 .permitAll()
             )
             .logout(logout -> logout
-                .logoutSuccessUrl("/plants")
+                .logoutSuccessUrl("/") // Page après logout
                 .permitAll()
             );
 
@@ -333,6 +394,135 @@ public class SecurityConfig {
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
+    }
+}
+
+# src/main/java/com/planteshop/seed/DatabaseSeeder.java
+package com.planteshop.seed;
+
+import com.planteshop.model.entity.Plant;
+import com.planteshop.model.entity.User;
+import com.planteshop.repository.PlantRepository;
+import com.planteshop.repository.UserRepository;
+import net.datafaker.Faker;
+import org.springframework.boot.CommandLineRunner;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Component;
+
+import java.io.FileWriter;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
+@Component
+public class DatabaseSeeder implements CommandLineRunner {
+
+    private final PlantRepository plantRepository;
+    private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
+    private final Faker faker = new Faker();
+
+    // Listes prédéfinies pour des données cohérentes
+    private static final List<String> PLANT_NAMES = Arrays.asList(
+        "Rose", "Tulipe", "Lavande", "Orchidée", "Basilic",
+        "Menthe", "Pivoine", "Tournesol", "Cactus", "Bambou"
+    );
+    private static final List<String> PLANT_CATEGORIES = Arrays.asList("intérieur", "extérieur");
+
+    // Constantes de configuration
+    private static final int NB_PLANTS = 30;
+    private static final int NB_ADMINS = 3;
+    private static final int NB_USERS = 15;
+    private static final String DEFAULT_PASSWORD = "password123";
+
+    public DatabaseSeeder(PlantRepository plantRepository,
+                         UserRepository userRepository,
+                         PasswordEncoder passwordEncoder) {
+        this.plantRepository = plantRepository;
+        this.userRepository = userRepository;
+        this.passwordEncoder = passwordEncoder;
+    }
+
+    @Override
+    public void run(String... args) throws Exception {
+        if (plantRepository.count() == 0 && userRepository.count() == 0) {
+            List<User> users = createUsers();
+            createPlants();
+            generateUsersFile(users);
+            System.out.println("Database seeded successfully!");
+        }
+    }
+
+    private List<User> createUsers() {
+        List<User> users = new ArrayList<>();
+
+        // Admins
+        for (int i = 0; i < NB_ADMINS; i++) {
+            users.add(createUser(true, i));
+        }
+
+        // Users normaux
+        for (int i = 0; i < NB_USERS; i++) {
+            users.add(createUser(false, i));
+        }
+
+        return userRepository.saveAll(users);
+    }
+
+    private User createUser(boolean isAdmin, int index) {
+        User user = new User();
+        user.setName(faker.name().fullName());
+        user.setEmail((isAdmin ? "admin" : "user") + index + "@planteshop.com");
+        user.setPassword(passwordEncoder.encode(DEFAULT_PASSWORD));
+        user.setAdmin(isAdmin);
+        return user;
+    }
+
+    private void createPlants() {
+        List<Plant> plants = new ArrayList<>();
+
+        for (int i = 0; i < NB_PLANTS; i++) {
+            Plant plant = new Plant();
+            plant.setName(PLANT_NAMES.get(i % PLANT_NAMES.size()) + " " + (i + 1));
+            plant.setDescription("Magnifique " + PLANT_NAMES.get(i % PLANT_NAMES.size()).toLowerCase());
+            plant.setPrice(5 + (i * 2.5));
+            plant.setCategory(PLANT_CATEGORIES.get(i % PLANT_CATEGORIES.size()));
+            plant.setStock(10 + i);
+            plants.add(plant);
+        }
+
+        plantRepository.saveAll(plants);
+    }
+
+    private void generateUsersFile(List<User> users) throws IOException {
+        try (FileWriter writer = new FileWriter("users.txt")) {
+            writer.write("=== CREDENTIALS ===\n\n");
+            writer.write("Default password for all users: " + DEFAULT_PASSWORD + "\n\n");
+
+            writer.write("=== ADMINS ===\n");
+            users.stream()
+                .filter(User::isAdmin)
+                .forEach(u -> writeUser(writer, u));
+
+            writer.write("\n=== USERS ===\n");
+            users.stream()
+                .filter(u -> !u.isAdmin())
+                .forEach(u -> writeUser(writer, u));
+        }
+    }
+
+    private void writeUser(FileWriter writer, User user) {
+        try {
+            writer.write(String.format(
+                "Email: %s\nName: %s\nRole: %s\n\n",
+                user.getEmail(),
+                user.getName(),
+                user.isAdmin() ? "ADMIN" : "USER"
+            ));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 }
 
@@ -370,6 +560,13 @@ public class PlantShopApplication {
             <version>42.7.3</version>
             <scope>runtime</scope>
         </dependency>
+
+				<!-- Faker (pour la seed) -->
+				<dependency>
+						<groupId>net.datafaker</groupId>
+						<artifactId>datafaker</artifactId>
+						<version>2.0.2</version>
+				</dependency>
 
         <!-- Web + Thymeleaf -->
         <dependency>
@@ -416,3 +613,131 @@ public class PlantShopApplication {
     </build>
 </project>
 
+
+# Tree du dossier
+.
+├── db
+│   └── plant-shop.db
+├── pom.xml
+├── projet.txt
+├── README.md
+├── script.sh
+├── src
+│   ├── main
+│   │   ├── java
+│   │   │   └── com
+│   │   │       └── planteshop
+│   │   │           ├── config
+│   │   │           │   └── SecurityConfig.java
+│   │   │           ├── controller
+│   │   │           │   ├── admin
+│   │   │           │   ├── api
+│   │   │           │   │   └── ApiPlantController.java
+│   │   │           │   ├── exception
+│   │   │           │   └── web
+│   │   │           │       ├── LoginController.java
+│   │   │           │       └── WebPlantController.java
+│   │   │           ├── model
+│   │   │           │   ├── dto
+│   │   │           │   │   ├── request
+│   │   │           │   │   └── response
+│   │   │           │   ├── entity
+│   │   │           │   │   ├── CustomerOrder.java
+│   │   │           │   │   ├── OrderItem.java
+│   │   │           │   │   ├── Plant.java
+│   │   │           │   │   └── User.java
+│   │   │           │   └── enums
+│   │   │           ├── PlantShopApplication.java
+│   │   │           ├── repository
+│   │   │           │   ├── OrderRepository.java
+│   │   │           │   ├── PlantRepository.java
+│   │   │           │   └── UserRepository.java
+│   │   │           ├── seed
+│   │   │           │   └── DatabaseSeeder.java
+│   │   │           ├── service
+│   │   │           │   └── impl
+│   │   │           └── util
+│   │   └── resources
+│   │       ├── application.properties
+│   │       ├── db
+│   │       │   └── migration
+│   │       │       └── V1__init_schema.sql
+│   │       ├── static
+│   │       │   ├── css
+│   │       │   │   └── style.css
+│   │       │   ├── index.html
+│   │       │   └── js
+│   │       │       └── app.js
+│   │       └── templates
+│   │           ├── admin
+│   │           ├── fragments
+│   │           │   └── base.html
+│   │           ├── login.html
+│   │           ├── orders
+│   │           └── plants
+│   │               └── index.html
+│   └── test
+│       └── java
+│           └── com
+│               └── planteshop
+│                   ├── controller
+│                   └── service
+├── target
+│   ├── classes
+│   │   ├── application.properties
+│   │   ├── com
+│   │   │   └── planteshop
+│   │   │       ├── config
+│   │   │       │   └── SecurityConfig.class
+│   │   │       ├── controller
+│   │   │       │   ├── api
+│   │   │       │   │   └── ApiPlantController.class
+│   │   │       │   └── web
+│   │   │       │       ├── LoginController.class
+│   │   │       │       └── WebPlantController.class
+│   │   │       ├── model
+│   │   │       │   └── entity
+│   │   │       │       ├── CustomerOrder.class
+│   │   │       │       ├── OrderItem.class
+│   │   │       │       ├── Plant.class
+│   │   │       │       └── User.class
+│   │   │       ├── PlantShopApplication.class
+│   │   │       ├── repository
+│   │   │       │   ├── OrderRepository.class
+│   │   │       │   ├── PlantRepository.class
+│   │   │       │   └── UserRepository.class
+│   │   │       └── seed
+│   │   │           └── DatabaseSeeder.class
+│   │   ├── db
+│   │   │   └── migration
+│   │   │       └── V1__init_schema.sql
+│   │   ├── static
+│   │   │   ├── css
+│   │   │   │   └── style.css
+│   │   │   ├── index.html
+│   │   │   └── js
+│   │   │       └── app.js
+│   │   └── templates
+│   │       ├── fragments
+│   │       │   └── base.html
+│   │       ├── login.html
+│   │       └── plants
+│   │           └── index.html
+│   ├── generated-sources
+│   │   └── annotations
+│   ├── generated-test-sources
+│   │   └── test-annotations
+│   ├── maven-status
+│   │   └── maven-compiler-plugin
+│   │       ├── compile
+│   │       │   └── default-compile
+│   │       │       ├── createdFiles.lst
+│   │       │       └── inputFiles.lst
+│   │       └── testCompile
+│   │           └── default-testCompile
+│   │               ├── createdFiles.lst
+│   │               └── inputFiles.lst
+│   └── test-classes
+└── users.txt
+
+72 directories, 52 files

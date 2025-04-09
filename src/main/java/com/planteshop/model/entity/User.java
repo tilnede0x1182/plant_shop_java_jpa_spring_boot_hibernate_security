@@ -15,7 +15,7 @@ public class User {
     private boolean admin;
 
     @OneToMany(mappedBy = "user")
-    private List<Order> orders;
+    private List<CustomerOrder> orders;
 
     // Getters, setters
     public Long getId() { return id; }
@@ -28,6 +28,6 @@ public class User {
     public void setPassword(String password) { this.password = password; }
     public boolean isAdmin() { return admin; }
     public void setAdmin(boolean admin) { this.admin = admin; }
-    public List<Order> getOrders() { return orders; }
-    public void setOrders(List<Order> orders) { this.orders = orders; }
+    public List<CustomerOrder> getOrders() { return orders; }
+    public void setOrders(List<CustomerOrder> orders) { this.orders = orders; }
 }

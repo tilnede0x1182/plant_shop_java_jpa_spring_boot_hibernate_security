@@ -5,10 +5,8 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
 
 @Controller
-@RequestMapping("/plants")
 public class WebPlantController {
     private final PlantRepository plantRepository;
 
@@ -16,13 +14,18 @@ public class WebPlantController {
         this.plantRepository = plantRepository;
     }
 
-    @GetMapping
+    @GetMapping("/")
+    public String home() {
+        return "redirect:/plants";
+    }
+
+    @GetMapping("/plants")
     public String index(Model model) {
         model.addAttribute("plants", plantRepository.findAll());
         return "plants/index";
     }
 
-    @GetMapping("/{id}")
+    @GetMapping("/plants/{id}")
     public String show(@PathVariable Long id, Model model) {
         plantRepository.findById(id).ifPresent(plant -> model.addAttribute("plant", plant));
         return "plants/show";

@@ -4,15 +4,34 @@
   <meta charset="UTF-8">
   <title>Plant Shop</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+  <link href="/css/style.css" rel="stylesheet">
   <style>
-    body { background-color: #f8f9fa; padding: 20px; }
-    .plant-card {
-      background: white;
-      border: 1px solid #ddd;
-      border-radius: 5px;
-      padding: 15px;
-      margin-bottom: 15px;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    .card {
+      transition: transform 0.2s;
+      height: 100%;
+      margin-bottom: 20px;
+    }
+    .card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 10px 20px rgba(0,0,0,.1);
+    }
+    .card-img-top {
+      height: 180px;
+      object-fit: cover;
+      background-color: #f0f8f0;
+    }
+    .btn-success {
+      background-color: #2E8B57;
+      border-color: #2E8B57;
+    }
+    .btn-outline-success {
+      color: #2E8B57;
+      border-color: #2E8B57;
+    }
+    .btn-outline-success:hover {
+      background-color: #2E8B57;
+      color: white;
     }
   </style>
 </head>
@@ -36,18 +55,82 @@
       }, []);
 
       return (
-        <div className="container">
-          <h1 className="mb-4">Plant Shop</h1>
-          <div className="row">
-            {plants.map((plant, index) => (
-              <div key={index} className="col-md-4">
-                <div className="plant-card">
-                  <h5>{plant.name}</h5>
-                  <p>{plant.price} €</p>
+        <div>
+          <nav className="navbar navbar-expand-lg navbar-dark bg-success">
+            <div className="container">
+              <a className="navbar-brand" href="/">🌿 Plant Shop</a>
+              <button className="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span className="navbar-toggler-icon"></span>
+              </button>
+              <div className="collapse navbar-collapse" id="navbarNav">
+                <ul className="navbar-nav ms-auto">
+                  <li className="nav-item">
+                    <a className="nav-link" href="/">Plantes</a>
+                  </li>
+                  <li className="nav-item">
+                    <a className="nav-link" href="#">Panier</a>
+                  </li>
+                  <li className="nav-item">
+                    <a className="nav-link" href="/login">Connexion</a>
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </nav>
+
+          <div className="container mt-4">
+            <div className="d-flex justify-content-between align-items-center mb-4">
+              <h2>🌿 Liste des Plantes</h2>
+              <button className="btn btn-success">
+                <i className="bi bi-plus-lg"></i> Ajouter une plante
+              </button>
+            </div>
+
+            <div className="row">
+              {plants.map((plant) => (
+                <div key={plant.id} className="col-md-4 col-sm-6 mb-4">
+                  <div className="card h-100">
+                    <div className="card-img-top d-flex align-items-center justify-content-center">
+                      <i className="bi bi-flower1 text-success" style={{ fontSize: '4rem' }}></i>
+                    </div>
+                    <div className="card-body">
+                      <h5 className="card-title">{plant.name}</h5>
+                      <p className="card-text">{plant.description}</p>
+                      <div className="d-flex justify-content-between align-items-center">
+                        <span className="badge bg-success rounded-pill">{plant.category}</span>
+                        <span className="text-muted">Stock: {plant.stock}</span>
+                      </div>
+                    </div>
+                    <div className="card-footer d-flex justify-content-between align-items-center">
+                      <h5 className="text-success mb-0">{plant.price.toFixed(2)} €</h5>
+                      <div>
+                        <a href={`/plants/${plant.id}`} className="btn btn-outline-success btn-sm me-1">
+                          <i className="bi bi-eye"></i> Détails
+                        </a>
+                        <button className="btn btn-success btn-sm">
+                          <i className="bi bi-cart-plus"></i>
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <footer className="bg-dark text-white py-4 mt-5">
+            <div className="container">
+              <div className="row">
+                <div className="col-md-6">
+                  <h5>Plant Shop</h5>
+                  <p>Votre boutique en ligne de plantes de qualité.</p>
+                </div>
+                <div className="col-md-6 text-md-end">
+                  <p>© 2025 Plant Shop. Tous droits réservés.</p>
                 </div>
               </div>
-            ))}
-          </div>
+            </div>
+          </footer>
         </div>
       );
     }
@@ -55,5 +138,6 @@
     ReactDOM.createRoot(document.getElementById('root'))
       .render(<App />);
   </script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
