@@ -17,6 +17,7 @@ Application complète de vente de plantes avec architecture modulaire :
   - Spring Security 6
   - JWT Authentication
 - **Build**: Maven
+- **Templates**: Thymeleaf 3.1
 
 ### Frontend
 - **Core**: React 18 (via CDN)

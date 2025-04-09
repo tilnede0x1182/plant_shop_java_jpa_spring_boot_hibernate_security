@@ -16,7 +16,7 @@ public class OrderItem {
 
     @ManyToOne
     @JoinColumn(name = "order_id")
-    private Order order;
+    private CustomerOrder order;
 
     // Getters, setters
     public Long getId() { return id; }
@@ -25,6 +25,6 @@ public class OrderItem {
     public void setQuantity(Integer quantity) { this.quantity = quantity; }
     public Plant getPlant() { return plant; }
     public void setPlant(Plant plant) { this.plant = plant; }
-    public Order getOrder() { return order; }
-    public void setOrder(Order order) { this.order = order; }
+    public CustomerOrder getOrder() { return order; }
+    public void setOrder(CustomerOrder order) { this.order = order; }
 }
