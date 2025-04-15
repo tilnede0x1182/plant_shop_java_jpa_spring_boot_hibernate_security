@@ -1,144 +1,3 @@
-# target/classes/application.properties
-# ======================
-# CONFIGURATION GENERALE
-# ======================
-server.port=8080
-
-# Database
-spring.datasource.url=jdbc:postgresql://localhost:5432/plant_shop
-spring.datasource.username=tilnede0x1182
-spring.datasource.password=tilnede0x1182
-spring.datasource.driver-class-name=org.postgresql.Driver
-
-# JPA/Hibernate
-spring.jpa.show-sql=true
-spring.jpa.properties.hibernate.format_sql=true
-spring.jpa.open-in-view=false
-spring.jpa.hibernate.ddl-auto=update  # Valeur par défaut
-
-# Logging
-logging.level.org.hibernate.SQL=DEBUG
-logging.level.org.hibernate.type.descriptor.sql.BasicBinder=TRACE
-
-# Thymeleaf
-spring.thymeleaf.cache=false
-spring.thymeleaf.prefix=classpath:/templates/
-spring.thymeleaf.suffix=.html
-spring.thymeleaf.mode=HTML
-spring.thymeleaf.encoding=UTF-8
-
-# Security
-spring.security.user.name=admin
-spring.security.user.password=admin
-spring.security.user.roles=ADMIN
-
-# ==================
-# PROFIL SEED (init)
-# ==================
----
-spring.config.activate.on-profile=seed
-spring.jpa.hibernate.ddl-auto=create-drop
-spring.jpa.defer-datasource-initialization=true
-spring.sql.init.mode=always
-spring.datasource.initialization-mode=always
----
-
-# ==================
-# PROFIL DEV
-# ==================
----
-spring.config.activate.on-profile=dev
-spring.thymeleaf.cache=false  # Désactive le cache pour le développement
-spring.jpa.hibernate.ddl-auto=update
-spring.jpa.defer-datasource-initialization=false
-spring.sql.init.mode=never
----
-
-# ==================
-# PROFIL PRODUCTION
-# ==================
----
-spring.config.activate.on-profile=prod
-spring.devtools.enabled=false
-spring.devtools.restart.enabled=false
-spring.jpa.hibernate.ddl-auto=validate  # Empêche les modifications du schéma
-spring.sql.init.mode=never
-spring.thymeleaf.cache=true  # Active le cache en production
----
-
-# target/maven-archiver/pom.properties
-artifactId=plant-shop-jpa-spring-boot-hibernate-security
-groupId=com.planteshop
-version=1.0.0
-
-# src/main/resources/application.properties
-# ======================
-# CONFIGURATION GENERALE
-# ======================
-server.port=8080
-
-# Database
-spring.datasource.url=jdbc:postgresql://localhost:5432/plant_shop
-spring.datasource.username=tilnede0x1182
-spring.datasource.password=tilnede0x1182
-spring.datasource.driver-class-name=org.postgresql.Driver
-
-# JPA/Hibernate
-spring.jpa.show-sql=true
-spring.jpa.properties.hibernate.format_sql=true
-spring.jpa.open-in-view=false
-spring.jpa.hibernate.ddl-auto=update  # Valeur par défaut
-
-# Logging
-logging.level.org.hibernate.SQL=DEBUG
-logging.level.org.hibernate.type.descriptor.sql.BasicBinder=TRACE
-
-# Thymeleaf
-spring.thymeleaf.cache=false
-spring.thymeleaf.prefix=classpath:/templates/
-spring.thymeleaf.suffix=.html
-spring.thymeleaf.mode=HTML
-spring.thymeleaf.encoding=UTF-8
-
-# Security
-spring.security.user.name=admin
-spring.security.user.password=admin
-spring.security.user.roles=ADMIN
-
-# ==================
-# PROFIL SEED (init)
-# ==================
----
-spring.config.activate.on-profile=seed
-spring.jpa.hibernate.ddl-auto=create-drop
-spring.jpa.defer-datasource-initialization=true
-spring.sql.init.mode=always
-spring.datasource.initialization-mode=always
----
-
-# ==================
-# PROFIL DEV
-# ==================
----
-spring.config.activate.on-profile=dev
-spring.thymeleaf.cache=false  # Désactive le cache pour le développement
-spring.jpa.hibernate.ddl-auto=update
-spring.jpa.defer-datasource-initialization=false
-spring.sql.init.mode=never
----
-
-# ==================
-# PROFIL PRODUCTION
-# ==================
----
-spring.config.activate.on-profile=prod
-spring.devtools.enabled=false
-spring.devtools.restart.enabled=false
-spring.jpa.hibernate.ddl-auto=validate  # Empêche les modifications du schéma
-spring.sql.init.mode=never
-spring.thymeleaf.cache=true  # Active le cache en production
----
-
 # src/main/java/com/planteshop/repository/OrderRepository.java
 package com.planteshop.repository;
 
@@ -716,7 +575,7 @@ public class PlantShopApplication {
 │   │   │           │   └── impl
 │   │   │           └── util
 │   │   └── resources
-│   │       ├── application.properties
+│   │       ├── application.yml
 │   │       ├── db
 │   │       │   └── migration
 │   │       │       └── V1__init_schema.sql
@@ -743,7 +602,7 @@ public class PlantShopApplication {
 │                   └── service
 ├── target
 │   ├── classes
-│   │   ├── application.properties
+│   │   ├── application.yml
 │   │   ├── com
 │   │   │   └── planteshop
 │   │   │       ├── config
@@ -787,8 +646,6 @@ public class PlantShopApplication {
 │   │   └── annotations
 │   ├── generated-test-sources
 │   │   └── test-annotations
-│   ├── maven-archiver
-│   │   └── pom.properties
 │   ├── maven-status
 │   │   └── maven-compiler-plugin
 │   │       ├── compile
@@ -799,10 +656,8 @@ public class PlantShopApplication {
 │   │           └── default-testCompile
 │   │               ├── createdFiles.lst
 │   │               └── inputFiles.lst
-│   ├── plant-shop-jpa-spring-boot-hibernate-security-1.0.0.jar
-│   ├── plant-shop-jpa-spring-boot-hibernate-security-1.0.0.jar.original
 │   └── test-classes
 ├── tmp.txt
 └── users.txt
 
-73 directories, 59 files
+72 directories, 56 files
