@@ -48,6 +48,10 @@ db-migrate:
 clean:
 	mvn clean
 
+# Met à jour les dépendances et reconstruit le projet
+update:
+	mvn clean package
+
 # Tâche pour seed la base de données (si vous avez un mécanisme de seed)
 seed:
 	mvn spring-boot:run -Dspring-boot.run.profiles=seed
