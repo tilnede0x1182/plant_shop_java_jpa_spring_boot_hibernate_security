@@ -1,79 +1,21 @@
-=== CREDENTIALS ===
-
-Default password for all users: password123
-
 === ADMINS ===
-Email: admin0@planteshop.com
-Name: Daniel Bode DDS
-Role: ADMIN
-
-Email: admin1@planteshop.com
-Name: Mr. Justin Lindgren
-Role: ADMIN
-
-Email: admin2@planteshop.com
-Name: Gerard Collier
-Role: ADMIN
-
+antonio.beier@planteshop.com purpleant26
+shamika.lind.dds@planteshop.com ivoryraven65
+miles.mckenzie@planteshop.com mintgreenbat91
 
 === USERS ===
-Email: user0@planteshop.com
-Name: Ms. Marcelino Wilkinson
-Role: USER
-
-Email: user1@planteshop.com
-Name: Chu Ondricka
-Role: USER
-
-Email: user2@planteshop.com
-Name: Bethel Maggio
-Role: USER
-
-Email: user3@planteshop.com
-Name: Rupert Fay
-Role: USER
-
-Email: user4@planteshop.com
-Name: Miss Orville Hauck
-Role: USER
-
-Email: user5@planteshop.com
-Name: Ulysses Lubowitz
-Role: USER
-
-Email: user6@planteshop.com
-Name: Carson Zboncak
-Role: USER
-
-Email: user7@planteshop.com
-Name: Albert Schowalter
-Role: USER
-
-Email: user8@planteshop.com
-Name: Charley Kuhic V
-Role: USER
-
-Email: user9@planteshop.com
-Name: Jaime Considine
-Role: USER
-
-Email: user10@planteshop.com
-Name: Stacey Stamm
-Role: USER
-
-Email: user11@planteshop.com
-Name: Ian Weissnat
-Role: USER
-
-Email: user12@planteshop.com
-Name: Kerry Carroll IV
-Role: USER
-
-Email: user13@planteshop.com
-Name: Russel Ziemann
-Role: USER
-
-Email: user14@planteshop.com
-Name: Lauren Hyatt
-Role: USER
-
+miss.salvatore.jenkins@planteshop.com magentadeer10
+dr.birdie.gutkowski@planteshop.com tealbadger88
+violet.kuhlman.i@planteshop.com mintgreenhorse31
+justina.windler@planteshop.com mintgreenfox80
+earnest.erdman@planteshop.com skybluecat94
+ms.ervin.kerluke@planteshop.com indigojellyfish97
+leslee.raynor.ii@planteshop.com violetgnat37
+tobias.volkman.md@planteshop.com lavenderferret84
+miss.agnes.marquardt@planteshop.com whitehare43
+wonda.macejkovic@planteshop.com turquoisejackal21
+mr.shera.bosco@planteshop.com orchidhedgehog28
+germaine.boyer@planteshop.com bluesealion93
+luther.doyle@planteshop.com ivorywoodchuck78
+delphine.bogan@planteshop.com purpleclam73
+dana.mante.phd@planteshop.com turquoisecaribou17
