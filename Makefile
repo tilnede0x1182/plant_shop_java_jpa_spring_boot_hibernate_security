@@ -23,7 +23,7 @@ help:
 
 # Installaton des dépendances
 install:
-	clear && mvn -q clean install | grep -E "WARN|ERROR"
+	clear && mvn -q clean install -U | grep -E "WARN|ERROR"
 
 # Lance l'application
 run:
