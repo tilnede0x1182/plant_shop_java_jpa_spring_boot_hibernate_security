@@ -34,8 +34,7 @@ clean:
 	mvn clean
 
 # Crée les tables de la base de données
-db-create:
-	seed
+db-create: seed
 
 # Supprime les tables de la base de données
 db-drop:
@@ -43,12 +42,10 @@ db-drop:
 	sudo -u postgres psql -d $(DB_NAME) -c "CREATE SCHEMA public;"
 
 # Met à jour les dépendances et reconstruit le projet
-update:
-	reset
+update: reset
 
 # Réinitialise la base de données
-reset:
-	seed
+reset: seed
 
 # Tâche pour seed la base de données (si vous avez un mécanisme de seed)
 seed:
