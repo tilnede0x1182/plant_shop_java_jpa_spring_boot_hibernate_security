@@ -1,143 +1,64 @@
 <!DOCTYPE html>
-<html>
+<html lang="fr">
 <head>
   <meta charset="UTF-8">
-  <title>Plant Shop</title>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
-  <link href="/css/style.css" rel="stylesheet">
-  <style>
-    .card {
-      transition: transform 0.2s;
-      height: 100%;
-      margin-bottom: 20px;
-    }
-    .card:hover {
-      transform: translateY(-5px);
-      box-shadow: 0 10px 20px rgba(0,0,0,.1);
-    }
-    .card-img-top {
-      height: 180px;
-      object-fit: cover;
-      background-color: #f0f8f0;
-    }
-    .btn-success {
-      background-color: #2E8B57;
-      border-color: #2E8B57;
-    }
-    .btn-outline-success {
-      color: #2E8B57;
-      border-color: #2E8B57;
-    }
-    .btn-outline-success:hover {
-      background-color: #2E8B57;
-      color: white;
-    }
-  </style>
+  <title>OrganisationSim - Accueil</title>
+	<link rel="icon" type="image/x-icon" href="favicon/organisation-sim.svg">
+  <link rel="stylesheet" href="style/main.css">
 </head>
 <body>
-  <div id="root"></div>
 
-  <!-- React CDN -->
-  <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
-  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
-  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+<!-- 🔗 Barre de navigation globale -->
+<nav class="navbar">
+  <a href="index.html" class="logo">OrganisationSim</a>
+  <a href="constraints.html">Créer un projet</a>
+  <a href="projects.html">Liste des projets</a>
+</nav>
 
-  <!-- App React -->
-  <script type="text/babel">
-    function App() {
-      const [plants, setPlants] = React.useState([]);
+<header>
+  <h1>Bienvenue sur OrganisationSim</h1>
+</header>
 
-      React.useEffect(() => {
-        fetch('/api/plants')
-          .then(res => res.json())
-          .then(setPlants);
-      }, []);
+<div class="container">
+  <h2>Tableau récapitulatif (Diagramme de Pert simplifié)</h2>
 
-      return (
-        <div>
-          <nav className="navbar navbar-expand-lg navbar-dark bg-success">
-            <div className="container">
-              <a className="navbar-brand" href="/">🌿 Plant Shop</a>
-              <button className="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-                <span className="navbar-toggler-icon"></span>
-              </button>
-              <div className="collapse navbar-collapse" id="navbarNav">
-                <ul className="navbar-nav ms-auto">
-                  <li className="nav-item">
-                    <a className="nav-link" href="/">Plantes</a>
-                  </li>
-                  <li className="nav-item">
-                    <a className="nav-link" href="#">Panier</a>
-                  </li>
-                  <li className="nav-item">
-                    <a className="nav-link" href="/login">Connexion</a>
-                  </li>
-                </ul>
-              </div>
-            </div>
-          </nav>
+  <table class="pert-table">
+    <thead>
+      <tr>
+        <th>Étape</th>
+        <th>Responsable</th>
+        <th>Durée estimée</th>
+        <th>Prérequis</th>
+      </tr>
+    </thead>
+    <tbody id="pertTableBody">
+      <tr>
+        <td>Analyse</td>
+        <td>Chef de projet</td>
+        <td>3 jours</td>
+        <td>-</td>
+      </tr>
+      <tr>
+        <td>Conception</td>
+        <td>Architecte</td>
+        <td>5 jours</td>
+        <td>Analyse</td>
+      </tr>
+      <tr>
+        <td>Développement</td>
+        <td>Équipe Dev</td>
+        <td>10 jours</td>
+        <td>Conception</td>
+      </tr>
+      <tr>
+        <td>Recette</td>
+        <td>QA</td>
+        <td>4 jours</td>
+        <td>Développement</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
 
-          <div className="container mt-4">
-            <div className="d-flex justify-content-between align-items-center mb-4">
-              <h2>🌿 Liste des Plantes</h2>
-              <button className="btn btn-success">
-                <i className="bi bi-plus-lg"></i> Ajouter une plante
-              </button>
-            </div>
-
-            <div className="row">
-              {plants.map((plant) => (
-                <div key={plant.id} className="col-md-4 col-sm-6 mb-4">
-                  <div className="card h-100">
-                    <div className="card-img-top d-flex align-items-center justify-content-center">
-                      <i className="bi bi-flower1 text-success" style={{ fontSize: '4rem' }}></i>
-                    </div>
-                    <div className="card-body">
-                      <h5 className="card-title">{plant.name}</h5>
-                      <p className="card-text">{plant.description}</p>
-                      <div className="d-flex justify-content-between align-items-center">
-                        <span className="badge bg-success rounded-pill">{plant.category}</span>
-                        <span className="text-muted">Stock: {plant.stock}</span>
-                      </div>
-                    </div>
-                    <div className="card-footer d-flex justify-content-between align-items-center">
-                      <h5 className="text-success mb-0">{plant.price.toFixed(2)} €</h5>
-                      <div>
-                        <a href={`/plants/${plant.id}`} className="btn btn-outline-success btn-sm me-1">
-                          <i className="bi bi-eye"></i> Détails
-                        </a>
-                        <button className="btn btn-success btn-sm">
-                          <i className="bi bi-cart-plus"></i>
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          <footer className="bg-dark text-white py-4 mt-5">
-            <div className="container">
-              <div className="row">
-                <div className="col-md-6">
-                  <h5>Plant Shop</h5>
-                  <p>Votre boutique en ligne de plantes de qualité.</p>
-                </div>
-                <div className="col-md-6 text-md-end">
-                  <p>© 2025 Plant Shop. Tous droits réservés.</p>
-                </div>
-              </div>
-            </div>
-          </footer>
-        </div>
-      );
-    }
-
-    ReactDOM.createRoot(document.getElementById('root'))
-      .render(<App />);
-  </script>
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
