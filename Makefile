@@ -23,12 +23,11 @@ help:
 
 # Installaton des dépendances
 install:
-	clear && mvn -q clean install -U | grep -E "WARN|ERROR"
+	clear && mvn clean install
 
 # Lance l'application
 run:
 	clear && mvn -q spring-boot:run -Dspring-boot.run.profiles=$(PROFILE) | grep -E "WARN|ERROR"
-
 
 prod: clean
 	clear && mvn -q spring-boot:run -Dspring-boot.run.profiles=prod | grep -E "WARN|ERROR"

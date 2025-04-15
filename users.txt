@@ -4,76 +4,76 @@ Default password for all users: password123
 
 === ADMINS ===
 Email: admin0@planteshop.com
-Name: Arlen Murazik
+Name: Mr. Malvina D'Amore
 Role: ADMIN
 
 Email: admin1@planteshop.com
-Name: Tasha Stracke
+Name: Annika Frami
 Role: ADMIN
 
 Email: admin2@planteshop.com
-Name: Miss Charley Rempel
+Name: Dr. Hulda Rau
 Role: ADMIN
 
 
 === USERS ===
 Email: user0@planteshop.com
-Name: Lonnie O'Reilly V
+Name: Celia Osinski
 Role: USER
 
 Email: user1@planteshop.com
-Name: Abram Smith
+Name: Dr. Melita Turner
 Role: USER
 
 Email: user2@planteshop.com
-Name: Sean Marquardt II
+Name: Loni Pouros IV
 Role: USER
 
 Email: user3@planteshop.com
-Name: Claretta Brekke
+Name: Bo Grady
 Role: USER
 
 Email: user4@planteshop.com
-Name: Gia VonRueden
+Name: Dottie Greenholt
 Role: USER
 
 Email: user5@planteshop.com
-Name: Janie Ledner
+Name: Mitchel Wintheiser
 Role: USER
 
 Email: user6@planteshop.com
-Name: Cleta Tromp
+Name: Elden Satterfield
 Role: USER
 
 Email: user7@planteshop.com
-Name: Amalia Klocko
+Name: Lee Cole
 Role: USER
 
 Email: user8@planteshop.com
-Name: Diedre Abbott
+Name: Alvaro Maggio MD
 Role: USER
 
 Email: user9@planteshop.com
-Name: Jada Hagenes
+Name: Lindsey Luettgen
 Role: USER
 
 Email: user10@planteshop.com
-Name: Miss Isabella Kuvalis
+Name: Noma Price III
 Role: USER
 
 Email: user11@planteshop.com
-Name: Mr. Clayton Bahringer
+Name: Joaquina Hills
 Role: USER
 
 Email: user12@planteshop.com
-Name: Andrew Boyer MD
+Name: Mr. Maggie Hudson
 Role: USER
 
 Email: user13@planteshop.com
-Name: Mrs. Toshiko Collins
+Name: Heath Gerhold
 Role: USER
 
 Email: user14@planteshop.com
-Name: Kacey Will
+Name: Titus Morar
 Role: USER
 
