@@ -1,5 +1,7 @@
 # target/classes/application.properties
-# Server
+# ======================
+# CONFIGURATION GENERALE
+# ======================
 server.port=8080
 
 # Database
@@ -8,9 +10,13 @@ spring.datasource.username=tilnede0x1182
 spring.datasource.password=tilnede0x1182
 spring.datasource.driver-class-name=org.postgresql.Driver
 
-# JPA
+# JPA/Hibernate
 spring.jpa.show-sql=true
 spring.jpa.properties.hibernate.format_sql=true
+spring.jpa.open-in-view=false
+spring.jpa.hibernate.ddl-auto=update  # Valeur par défaut
+
+# Logging
 logging.level.org.hibernate.SQL=DEBUG
 logging.level.org.hibernate.type.descriptor.sql.BasicBinder=TRACE
 
@@ -26,26 +32,49 @@ spring.security.user.name=admin
 spring.security.user.password=admin
 spring.security.user.roles=ADMIN
 
-# Désactivez explicitement cette fonctionnalité
-spring.jpa.open-in-view=false
-
-# Profil normal (dev/prod)
-spring.jpa.hibernate.ddl-auto=update
-
-# Profil seed
+# ==================
+# PROFIL SEED (init)
+# ==================
+---
 spring.config.activate.on-profile=seed
 spring.jpa.hibernate.ddl-auto=create-drop
 spring.jpa.defer-datasource-initialization=true
 spring.sql.init.mode=always
+spring.datasource.initialization-mode=always
+---
 
-# Profil dev
+# ==================
+# PROFIL DEV
+# ==================
+---
 spring.config.activate.on-profile=dev
+spring.thymeleaf.cache=false  # Désactive le cache pour le développement
 spring.jpa.hibernate.ddl-auto=update
 spring.jpa.defer-datasource-initialization=false
 spring.sql.init.mode=never
+---
+
+# ==================
+# PROFIL PRODUCTION
+# ==================
+---
+spring.config.activate.on-profile=prod
+spring.devtools.enabled=false
+spring.devtools.restart.enabled=false
+spring.jpa.hibernate.ddl-auto=validate  # Empêche les modifications du schéma
+spring.sql.init.mode=never
+spring.thymeleaf.cache=true  # Active le cache en production
+---
+
+# target/maven-archiver/pom.properties
+artifactId=plant-shop-jpa-spring-boot-hibernate-security
+groupId=com.planteshop
+version=1.0.0
 
 # src/main/resources/application.properties
-# Server
+# ======================
+# CONFIGURATION GENERALE
+# ======================
 server.port=8080
 
 # Database
@@ -54,9 +83,13 @@ spring.datasource.username=tilnede0x1182
 spring.datasource.password=tilnede0x1182
 spring.datasource.driver-class-name=org.postgresql.Driver
 
-# JPA
+# JPA/Hibernate
 spring.jpa.show-sql=true
 spring.jpa.properties.hibernate.format_sql=true
+spring.jpa.open-in-view=false
+spring.jpa.hibernate.ddl-auto=update  # Valeur par défaut
+
+# Logging
 logging.level.org.hibernate.SQL=DEBUG
 logging.level.org.hibernate.type.descriptor.sql.BasicBinder=TRACE
 
@@ -72,23 +105,39 @@ spring.security.user.name=admin
 spring.security.user.password=admin
 spring.security.user.roles=ADMIN
 
-# Désactivez explicitement cette fonctionnalité
-spring.jpa.open-in-view=false
-
-# Profil normal (dev/prod)
-spring.jpa.hibernate.ddl-auto=update
-
-# Profil seed
+# ==================
+# PROFIL SEED (init)
+# ==================
+---
 spring.config.activate.on-profile=seed
 spring.jpa.hibernate.ddl-auto=create-drop
 spring.jpa.defer-datasource-initialization=true
 spring.sql.init.mode=always
+spring.datasource.initialization-mode=always
+---
 
-# Profil dev
+# ==================
+# PROFIL DEV
+# ==================
+---
 spring.config.activate.on-profile=dev
+spring.thymeleaf.cache=false  # Désactive le cache pour le développement
 spring.jpa.hibernate.ddl-auto=update
 spring.jpa.defer-datasource-initialization=false
 spring.sql.init.mode=never
+---
+
+# ==================
+# PROFIL PRODUCTION
+# ==================
+---
+spring.config.activate.on-profile=prod
+spring.devtools.enabled=false
+spring.devtools.restart.enabled=false
+spring.jpa.hibernate.ddl-auto=validate  # Empêche les modifications du schéma
+spring.sql.init.mode=never
+spring.thymeleaf.cache=true  # Active le cache en production
+---
 
 # src/main/java/com/planteshop/repository/OrderRepository.java
 package com.planteshop.repository;
@@ -408,6 +457,7 @@ import net.datafaker.Faker;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
+import org.springframework.context.annotation.Profile;
 
 import java.io.FileWriter;
 import java.io.IOException;
@@ -416,6 +466,7 @@ import java.util.Arrays;
 import java.util.List;
 
 @Component
+@Profile("seed")
 public class DatabaseSeeder implements CommandLineRunner {
 
     private final PlantRepository plantRepository;
@@ -558,7 +609,7 @@ public class PlantShopApplication {
             <groupId>org.postgresql</groupId>
             <artifactId>postgresql</artifactId>
             <version>42.7.3</version>
-            <scope>runtime</scope>
+            <!-- <scope>runtime</scope> -->
         </dependency>
 
 				<!-- Faker (pour la seed) -->
@@ -601,6 +652,12 @@ public class PlantShopApplication {
             <artifactId>webjars-locator</artifactId>
             <version>0.46</version>
         </dependency>
+				<!-- Rechargement automatique -->
+				<!-- <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-devtools</artifactId>
+            <optional>true</optional>
+        </dependency> -->
     </dependencies>
 
     <build>
@@ -618,6 +675,7 @@ public class PlantShopApplication {
 .
 ├── db
 │   └── plant-shop.db
+├── Makefile
 ├── pom.xml
 ├── projet.txt
 ├── README.md
@@ -729,6 +787,8 @@ public class PlantShopApplication {
 │   │   └── annotations
 │   ├── generated-test-sources
 │   │   └── test-annotations
+│   ├── maven-archiver
+│   │   └── pom.properties
 │   ├── maven-status
 │   │   └── maven-compiler-plugin
 │   │       ├── compile
@@ -739,7 +799,10 @@ public class PlantShopApplication {
 │   │           └── default-testCompile
 │   │               ├── createdFiles.lst
 │   │               └── inputFiles.lst
+│   ├── plant-shop-jpa-spring-boot-hibernate-security-1.0.0.jar
+│   ├── plant-shop-jpa-spring-boot-hibernate-security-1.0.0.jar.original
 │   └── test-classes
+├── tmp.txt
 └── users.txt
 
-72 directories, 54 files
+73 directories, 59 files

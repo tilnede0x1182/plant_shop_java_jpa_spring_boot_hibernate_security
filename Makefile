@@ -23,15 +23,18 @@ help:
 
 # Lance l'application
 run:
-	mvn spring-boot:run -Dspring-boot.run.profiles=$(PROFILE)
+	mvn -q spring-boot:run -Dspring-boot.run.profiles=$(PROFILE)
+
+prod: clean
+	mvn -q spring-boot:run -Dspring-boot.run.profiles=prod
 
 # Exécute les tests
 test:
-	mvn test
+	mvn -q test
 
 # Nettoie les fichiers générés
 clean:
-	mvn clean
+	mvn -q clean
 
 # Crée les tables de la base de données
 db-create: seed
@@ -49,6 +52,6 @@ reset: seed
 
 # Tâche pour seed la base de données (si vous avez un mécanisme de seed)
 seed:
-	mvn spring-boot:run -Dspring-boot.run.profiles=seed
+	mvn -q spring-boot:run -Dspring-boot.run.profiles=seed
 
 .PHONY: test clean db-create db-drop update reset seed

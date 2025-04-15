@@ -4,76 +4,76 @@ Default password for all users: password123
 
 === ADMINS ===
 Email: admin0@planteshop.com
-Name: Vickey Koelpin
+Name: Earle Walter
 Role: ADMIN
 
 Email: admin1@planteshop.com
-Name: Odessa Thiel
+Name: Earle Kuphal V
 Role: ADMIN
 
 Email: admin2@planteshop.com
-Name: Lindsey Maggio
+Name: Goldie Mitchell
 Role: ADMIN
 
 
 === USERS ===
 Email: user0@planteshop.com
-Name: Catalina Greenfelder
+Name: Preston Waters
 Role: USER
 
 Email: user1@planteshop.com
-Name: Trista Heathcote V
+Name: Guy Dickens
 Role: USER
 
 Email: user2@planteshop.com
-Name: Shakia Little
+Name: Mr. Galina Cruickshank
 Role: USER
 
 Email: user3@planteshop.com
-Name: Dominique Hoeger
+Name: Valeri Feest III
 Role: USER
 
 Email: user4@planteshop.com
-Name: Chance Jacobs V
+Name: Miss Kattie Denesik
 Role: USER
 
 Email: user5@planteshop.com
-Name: Edison Schaefer
+Name: Allena Jacobson
 Role: USER
 
 Email: user6@planteshop.com
-Name: Lorelei Sipes
+Name: Dannie Runolfsdottir
 Role: USER
 
 Email: user7@planteshop.com
-Name: Edwardo Daugherty
+Name: Hollis Schulist
 Role: USER
 
 Email: user8@planteshop.com
-Name: Erik Kiehn
+Name: Beverlee Klocko
 Role: USER
 
 Email: user9@planteshop.com
-Name: Graham Heller
+Name: Zona Ruecker
 Role: USER
 
 Email: user10@planteshop.com
-Name: Dr. Mertie Simonis
+Name: Wade Hessel
 Role: USER
 
 Email: user11@planteshop.com
-Name: Brenna Mayer Sr.
+Name: Kenyetta Donnelly
 Role: USER
 
 Email: user12@planteshop.com
-Name: Miss Omar Veum
+Name: Amos Brown
 Role: USER
 
 Email: user13@planteshop.com
-Name: Sommer Koss
+Name: Tory Balistreri
 Role: USER
 
 Email: user14@planteshop.com
-Name: Sibyl Pagac
+Name: Dr. Inell Kutch
 Role: USER
 
