@@ -21,6 +21,10 @@ help:
 	@echo "  make db-migrate   Applique les migrations de base de données"
 	@echo "  make clean        Nettoie les fichiers générés"
 
+# Installaton des dépendances
+install:
+	clear && mvn -q clean install | grep -E "WARN|ERROR"
+
 # Lance l'application
 run:
 	clear && mvn -q spring-boot:run -Dspring-boot.run.profiles=$(PROFILE) | grep -E "WARN|ERROR"

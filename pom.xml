@@ -19,12 +19,12 @@
             <!-- <scope>runtime</scope> -->
         </dependency>
 
-				<!-- Faker (pour la seed) -->
-				<dependency>
-						<groupId>net.datafaker</groupId>
-						<artifactId>datafaker</artifactId>
-						<version>2.0.2</version>
-				</dependency>
+        <!-- Faker (pour la seed) -->
+        <dependency>
+            <groupId>net.datafaker</groupId>
+            <artifactId>datafaker</artifactId>
+            <version>2.0.2</version>
+        </dependency>
 
         <!-- Web + Thymeleaf -->
         <dependency>
@@ -34,6 +34,11 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-thymeleaf</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>nz.net.ultraq.thymeleaf</groupId>
+            <artifactId>thymeleaf-layout-dialect</artifactId>
+            <version>3.1.1</version>
         </dependency>
 
         <!-- JPA + Hibernate -->
@@ -59,8 +64,8 @@
             <artifactId>webjars-locator</artifactId>
             <version>0.46</version>
         </dependency>
-				<!-- Rechargement automatique -->
-				<!-- <dependency>
+        <!-- Rechargement automatique -->
+        <!-- <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-devtools</artifactId>
             <optional>true</optional>
