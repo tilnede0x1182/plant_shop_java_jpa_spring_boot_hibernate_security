@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html layout:decorate="~{fragments/base}" xmlns:th="http://www.thymeleaf.org">
+    <div layout:fragment="content">
+        <div class="container">
+            <h1 class="mb-4">🌱 Détail de la plante</h1>
+
+            <div class="card mb-4 shadow-sm">
+                <div class="card-body">
+                    <h2 class="card-title" th:text="${plant.name}">Nom de la plante</h2>
+                    <p class="card-text" th:text="${plant.description}">Description</p>
+
+                    <ul class="list-group list-group-flush mb-3">
+                        <li class="list-group-item">
+                            <strong>Catégorie :</strong> <span th:text="${plant.category}">Catégorie</span>
+                        </li>
+                        <li class="list-group-item">
+                            <strong>Prix :</strong> <span th:text="${plant.price}">0.00</span> €
+                        </li>
+                        <li class="list-group-item">
+                            <strong>Stock disponible :</strong> <span th:text="${plant.stock}">0</span>
+                        </li>
+                    </ul>
+
+                    <a href="/plants" class="btn btn-secondary">← Retour à la liste</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</html>

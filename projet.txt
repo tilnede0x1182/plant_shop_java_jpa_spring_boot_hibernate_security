@@ -1,3 +1,8 @@
+# target/maven-archiver/pom.properties
+artifactId=plant-shop-jpa-spring-boot-hibernate-security
+groupId=com.planteshop
+version=1.0.0
+
 # src/main/java/com/planteshop/repository/OrderRepository.java
 package com.planteshop.repository;
 
@@ -471,12 +476,12 @@ public class PlantShopApplication {
             <!-- <scope>runtime</scope> -->
         </dependency>
 
-				<!-- Faker (pour la seed) -->
-				<dependency>
-						<groupId>net.datafaker</groupId>
-						<artifactId>datafaker</artifactId>
-						<version>2.0.2</version>
-				</dependency>
+        <!-- Faker (pour la seed) -->
+        <dependency>
+            <groupId>net.datafaker</groupId>
+            <artifactId>datafaker</artifactId>
+            <version>2.0.2</version>
+        </dependency>
 
         <!-- Web + Thymeleaf -->
         <dependency>
@@ -486,6 +491,11 @@ public class PlantShopApplication {
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-thymeleaf</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>nz.net.ultraq.thymeleaf</groupId>
+            <artifactId>thymeleaf-layout-dialect</artifactId>
+            <version>3.0.0</version>
         </dependency>
 
         <!-- JPA + Hibernate -->
@@ -511,8 +521,8 @@ public class PlantShopApplication {
             <artifactId>webjars-locator</artifactId>
             <version>0.46</version>
         </dependency>
-				<!-- Rechargement automatique -->
-				<!-- <dependency>
+        <!-- Rechargement automatique -->
+        <!-- <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-devtools</artifactId>
             <optional>true</optional>
@@ -646,6 +656,8 @@ public class PlantShopApplication {
 │   │   └── annotations
 │   ├── generated-test-sources
 │   │   └── test-annotations
+│   ├── maven-archiver
+│   │   └── pom.properties
 │   ├── maven-status
 │   │   └── maven-compiler-plugin
 │   │       ├── compile
@@ -656,8 +668,10 @@ public class PlantShopApplication {
 │   │           └── default-testCompile
 │   │               ├── createdFiles.lst
 │   │               └── inputFiles.lst
+│   ├── plant-shop-jpa-spring-boot-hibernate-security-1.0.0.jar
+│   ├── plant-shop-jpa-spring-boot-hibernate-security-1.0.0.jar.original
 │   └── test-classes
 ├── tmp.txt
 └── users.txt
 
-72 directories, 56 files
+73 directories, 59 files
