@@ -4,76 +4,76 @@ Default password for all users: password123
 
 === ADMINS ===
 Email: admin0@planteshop.com
-Name: Mr. Malvina D'Amore
+Name: Daniel Bode DDS
 Role: ADMIN
 
 Email: admin1@planteshop.com
-Name: Annika Frami
+Name: Mr. Justin Lindgren
 Role: ADMIN
 
 Email: admin2@planteshop.com
-Name: Dr. Hulda Rau
+Name: Gerard Collier
 Role: ADMIN
 
 
 === USERS ===
 Email: user0@planteshop.com
-Name: Celia Osinski
+Name: Ms. Marcelino Wilkinson
 Role: USER
 
 Email: user1@planteshop.com
-Name: Dr. Melita Turner
+Name: Chu Ondricka
 Role: USER
 
 Email: user2@planteshop.com
-Name: Loni Pouros IV
+Name: Bethel Maggio
 Role: USER
 
 Email: user3@planteshop.com
-Name: Bo Grady
+Name: Rupert Fay
 Role: USER
 
 Email: user4@planteshop.com
-Name: Dottie Greenholt
+Name: Miss Orville Hauck
 Role: USER
 
 Email: user5@planteshop.com
-Name: Mitchel Wintheiser
+Name: Ulysses Lubowitz
 Role: USER
 
 Email: user6@planteshop.com
-Name: Elden Satterfield
+Name: Carson Zboncak
 Role: USER
 
 Email: user7@planteshop.com
-Name: Lee Cole
+Name: Albert Schowalter
 Role: USER
 
 Email: user8@planteshop.com
-Name: Alvaro Maggio MD
+Name: Charley Kuhic V
 Role: USER
 
 Email: user9@planteshop.com
-Name: Lindsey Luettgen
+Name: Jaime Considine
 Role: USER
 
 Email: user10@planteshop.com
-Name: Noma Price III
+Name: Stacey Stamm
 Role: USER
 
 Email: user11@planteshop.com
-Name: Joaquina Hills
+Name: Ian Weissnat
 Role: USER
 
 Email: user12@planteshop.com
-Name: Mr. Maggie Hudson
+Name: Kerry Carroll IV
 Role: USER
 
 Email: user13@planteshop.com
-Name: Heath Gerhold
+Name: Russel Ziemann
 Role: USER
 
 Email: user14@planteshop.com
-Name: Titus Morar
+Name: Lauren Hyatt
 Role: USER
 
