@@ -23,19 +23,19 @@ help:
 
 # Lance l'application
 run:
-	mvn -q spring-boot:run -Dspring-boot.run.profiles=$(PROFILE) | grep -E "WARN|ERROR"
+	clear && mvn -q spring-boot:run -Dspring-boot.run.profiles=$(PROFILE) | grep -E "WARN|ERROR"
 
 
 prod: clean
-	mvn -q spring-boot:run -Dspring-boot.run.profiles=prod | grep -E "WARN|ERROR"
+	clear && mvn -q spring-boot:run -Dspring-boot.run.profiles=prod | grep -E "WARN|ERROR"
 
 # Exécute les tests
 test:
-	mvn -q test
+	clear && mvn -q test
 
 # Nettoie les fichiers générés
 clean:
-	mvn -q clean
+	clear && mvn -q clean
 
 # Crée les tables de la base de données
 db-create: seed
@@ -53,6 +53,6 @@ reset: seed
 
 # Tâche pour seed la base de données (si vous avez un mécanisme de seed)
 seed:
-	mvn -q spring-boot:run -Dspring-boot.run.profiles=seed | grep -E "WARN|ERROR"
+	clear && mvn -q spring-boot:run -Dspring-boot.run.profiles=seed | grep -E "WARN|ERROR"
 
 .PHONY: test clean db-create db-drop update reset seed
