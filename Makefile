@@ -29,29 +29,29 @@ run:
 test:
 	mvn test
 
-# Crée la base de données
-db-create:
-	psql -U postgres -c "CREATE DATABASE $(DB_NAME);"
-	psql -U postgres -c "CREATE ROLE $(DB_USER) WITH PASSWORD '$(DB_PASSWORD)';"
-	psql -U postgres -c "GRANT ALL PRIVILEGES ON DATABASE $(DB_NAME) TO $(DB_USER);"
-
-# Supprime la base de données
-db-drop:
-	psql -U postgres -c "DROP DATABASE IF EXISTS $(DB_NAME);"
-	psql -U postgres -c "DROP ROLE IF EXISTS $(DB_USER);"
-
-# Applique les migrations de base de données (si vous utilisez Flyway ou Liquibase)
-db-migrate:
-	mvn flyway:migrate -Dflyway.configFiles=src/main/resources/flyway.conf
-
 # Nettoie les fichiers générés
 clean:
 	mvn clean
 
+# Crée les tables de la base de données
+db-create:
+	seed
+
+# Supprime les tables de la base de données
+db-drop:
+	sudo -u postgres psql -d $(DB_NAME) -c "DROP SCHEMA public CASCADE;"
+	sudo -u postgres psql -d $(DB_NAME) -c "CREATE SCHEMA public;"
+
 # Met à jour les dépendances et reconstruit le projet
 update:
-	mvn clean package
+	reset
+
+# Réinitialise la base de données
+reset:
+	seed
 
 # Tâche pour seed la base de données (si vous avez un mécanisme de seed)
 seed:
 	mvn spring-boot:run -Dspring-boot.run.profiles=seed
+
+.PHONY: test clean db-create db-drop update reset seed
