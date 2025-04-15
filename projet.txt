@@ -373,7 +373,7 @@ public class SecurityConfig {
         http
             .csrf(csrf -> csrf.disable())
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/", "/plants", "/plants/**", "/css/**", "/js/**", "/webjars/**", "/login", "/api/plants/**").permitAll()
+                .requestMatchers("/", "/favicon.svg", "/favicon.ico", "/plants", "/plants/**", "/css/**", "/js/**", "/webjars/**", "/login", "/api/plants/**").permitAll()
                 .requestMatchers("/admin/**").hasRole("ADMIN")
                 .requestMatchers("/cart/**", "/orders/**").authenticated()
                 .anyRequest().permitAll() // Modifié pour permettre l'accès à tout le reste
@@ -665,6 +665,7 @@ public class PlantShopApplication {
 │   │       ├── static
 │   │       │   ├── css
 │   │       │   │   └── style.css
+│   │       │   ├── favicon.svg
 │   │       │   ├── index.html
 │   │       │   └── js
 │   │       │       └── app.js
@@ -714,6 +715,7 @@ public class PlantShopApplication {
 │   │   ├── static
 │   │   │   ├── css
 │   │   │   │   └── style.css
+│   │   │   ├── favicon.svg
 │   │   │   ├── index.html
 │   │   │   └── js
 │   │   │       └── app.js
@@ -740,4 +742,4 @@ public class PlantShopApplication {
 │   └── test-classes
 └── users.txt
 
-72 directories, 52 files
+72 directories, 54 files
