@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      layout:decorate="~{fragments/base}"
+      th:with="title='Inscription'">
+<head>
+    <title>Inscription</title>
+</head>
+<body>
+    <div layout:fragment="content">
+        <section class="container pt-5 mt-5">
+            <div class="row justify-content-center">
+                <div class="col-md-6">
+                    <div class="card shadow">
+                        <div class="card-header bg-success text-white">
+                            <h4 class="mb-0">Créer un compte</h4>
+                        </div>
+                        <div class="card-body">
+                            <form th:action="@{/register}" th:object="${user}" method="post">
+                                <div class="mb-3">
+                                    <label class="form-label">Nom complet</label>
+                                    <input type="text" class="form-control" th:field="*{name}" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Adresse email</label>
+                                    <input type="email" class="form-control" th:field="*{email}" required>
+                                    <small class="text-danger" th:if="${#fields.hasErrors('email')}" th:errors="*{email}"></small>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Mot de passe</label>
+                                    <input type="password" class="form-control" th:field="*{password}" required>
+                                </div>
+                                <button type="submit" class="btn btn-success w-100">S'inscrire</button>
+                            </form>
+                            <hr>
+                            <p class="text-center mb-0">
+                                Déjà un compte ?
+																&nbsp;
+                                <a th:href="@{/login}" class="text-success">Se connecter</a>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+</body>
+</html>
