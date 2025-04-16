@@ -89,7 +89,6 @@
     <script src="/js/app.js"></script>
 		<script>
 			function refreshCart(){
-				console.log("refreshCart");
 				const total=(JSON.parse(localStorage.getItem('cart')||'[]'))
 										 .reduce((s,i)=>s+i.qty,0);
 				document.querySelectorAll('.cart-count').forEach(e=>e.textContent=total);
