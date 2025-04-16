@@ -305,6 +305,54 @@ public class WebPlantController {
     }
 }
 
+# src/main/java/com/planteshop/controller/web/RegistrationController.java
+package com.planteshop.controller.web;
+
+import com.planteshop.model.entity.User;
+import com.planteshop.repository.UserRepository;
+import com.planteshop.util.StringUtils;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PostMapping;
+
+@Controller
+public class RegistrationController {
+    private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
+
+    public RegistrationController(UserRepository userRepository, PasswordEncoder passwordEncoder) {
+        this.userRepository = userRepository;
+        this.passwordEncoder = passwordEncoder;
+    }
+
+    @GetMapping("/register")
+    public String showRegistrationForm(Model model) {
+        model.addAttribute("user", new User());
+        return "register";
+    }
+
+    @PostMapping("/register")
+    public String registerUser(@ModelAttribute("user") User user, BindingResult result, Model model) {
+        if (userRepository.findByEmail(user.getEmail()).isPresent()) {
+            result.rejectValue("email", "error.user", "Cet email est déjà utilisé");
+        }
+
+        if (result.hasErrors()) {
+            return "register";
+        }
+
+        user.setPassword(passwordEncoder.encode(user.getPassword()));
+        user.setAdmin(false);
+        userRepository.save(user);
+
+        return "redirect:/login?registered";
+    }
+}
+
 # src/main/java/com/planteshop/config/SecurityConfig.java
 package com.planteshop.config;
 
@@ -325,9 +373,9 @@ public class SecurityConfig {
         http
             .csrf(csrf -> csrf.disable())
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/", "/favicon.svg", "/favicon.ico", "/plants", "/plants/**", "/css/**", "/js/**", "/webjars/**", "/login", "/api/plants/**").permitAll()
+                .requestMatchers("/", "/favicon.svg", "/favicon.ico", "/plants", "/plants/**", "/css/**", "/js/**", "/webjars/**", "/login", "/register", "/api/plants/**", "/cart/**" ).permitAll()
                 .requestMatchers("/admin/**").hasRole("ADMIN")
-                .requestMatchers("/cart/**", "/orders/**", "/my_profile/**").authenticated()
+                .requestMatchers("/orders/**", "/my_profile/**").authenticated()
                 .anyRequest().permitAll() // Modifié pour permettre l'accès à tout le reste
             )
             .formLogin(form -> form
@@ -644,6 +692,7 @@ public class PlantShopApplication {
 │   │   │           │   └── web
 │   │   │           │       ├── LoginController.java
 │   │   │           │       ├── ProfileController.java
+│   │   │           │       ├── RegistrationController.java
 │   │   │           │       └── WebPlantController.java
 │   │   │           ├── model
 │   │   │           │   ├── dto
@@ -687,7 +736,8 @@ public class PlantShopApplication {
 │   │           ├── plants
 │   │           │   ├── index.html
 │   │           │   └── show.html
-│   │           └── profile.html
+│   │           ├── profile.html
+│   │           └── register.html
 │   └── test
 │       └── java
 │           └── com
@@ -710,6 +760,7 @@ public class PlantShopApplication {
 │   │   │       │   └── web
 │   │   │       │       ├── LoginController.class
 │   │   │       │       ├── ProfileController.class
+│   │   │       │       ├── RegistrationController.class
 │   │   │       │       └── WebPlantController.class
 │   │   │       ├── model
 │   │   │       │   ├── dto
@@ -750,7 +801,8 @@ public class PlantShopApplication {
 │   │       ├── plants
 │   │       │   ├── index.html
 │   │       │   └── show.html
-│   │       └── profile.html
+│   │       ├── profile.html
+│   │       └── register.html
 │   ├── generated-sources
 │   │   └── annotations
 │   ├── generated-test-sources
@@ -777,4 +829,4 @@ public class PlantShopApplication {
 ├── tmp.txt
 └── users.txt
 
-86 directories, 70 files
+86 directories, 74 files

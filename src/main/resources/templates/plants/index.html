@@ -14,24 +14,47 @@
         </div>
 
         <div class="row">
-            <div th:each="plant : ${plants}" class="col-md-4 mb-4">
-							<a th:href="@{'/plants/' + ${plant.id}}" class="text-decoration-none text-reset">
-								<div class="card h-100">
-										<div class="card-body">
-												<h5 class="card-title" th:text="${plant.name}">Nom</h5>
-												<p class="card-text" th:text="${plant.description}">Description</p>
-												<p class="text-muted">
-														Prix : <span th:text="${plant.price}">0.0</span> €
-												</p>
-												<p class="text-muted">
-														Stock : <span th:text="${plant.stock}">0</span>
-												</p>
-												<a th:href="@{'/plants/' + ${plant.id}}" class="btn btn-outline-primary">Voir détails</a>
+					<div th:each="plant : ${plants}" class="col-md-4 mb-4">
+						<div class="card h-100">
+								<div class="card-body">
+										<h5 class="card-title" th:text="${plant.name}">Nom</h5>
+										<p class="card-text" th:text="${plant.description}">Description</p>
+										<p class="text-muted">Prix : <span th:text="${plant.price}">0.0</span> €</p>
+										<p class="text-muted">Stock : <span th:text="${plant.stock}">0</span></p>
+
+										<div class="d-flex justify-content-between gap-2">
+												<button type="button"
+																class="btn  flex-grow-1 btn-success add-to-cart"
+																th:data-id="${plant.id}"
+																th:data-name="${plant.name}"
+																th:data-price="${plant.price}">
+														Ajouter au panier
+												</button>
 										</div>
 								</div>
-						</a>
-					</div>
-        </div>
-    </div>
+						</div>
+				</div>
+			</div>
+			<script>
+				document.addEventListener('DOMContentLoaded', () => {
+						const load = () => JSON.parse(localStorage.getItem('cart')||'[]');
+						const save = c  => localStorage.setItem('cart', JSON.stringify(c));
+
+						document.querySelectorAll('.add-to-cart').forEach(btn=>{
+								btn.addEventListener('click', e=>{
+										const id    = btn.dataset.id;
+										const name  = btn.dataset.name;
+										const price = parseFloat(btn.dataset.price);
+
+										const cart = load();
+										const item = cart.find(i => i.id == id);
+										item ? item.qty++ : cart.push({id,name,price,qty:1});
+										save(cart);
+										refreshCart();                 // fonction déjà définie dans base.html
+								});
+						});
+				});
+			</script>
+		</div>
 </body>
 </html>

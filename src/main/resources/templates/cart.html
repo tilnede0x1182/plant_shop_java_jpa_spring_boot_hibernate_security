@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      layout:decorate="~{fragments/base}"
+      th:with="title='Panier'">
+<head>
+    <title>Panier</title>
+</head>
+<body>
+<div layout:fragment="content">
+    <section class="container pt-5 mt-5">
+        <h2 class="mb-4">🛒 Votre panier</h2>
+
+        <div class="table-responsive">
+            <table class="table align-middle">
+                <thead>
+                <tr>
+                    <th>Produit</th>
+                    <th>Prix (€)</th>
+                    <th>Quantité</th>
+                    <th>Sous‑total (€)</th>
+                    <th></th>
+                </tr>
+                </thead>
+                <tbody id="cartBody">
+                <tr id="emptyRow">
+                    <td colspan="5" class="text-center">Votre panier est vide.</td>
+                </tr>
+                </tbody>
+                <tfoot class="table-light">
+                <tr>
+                    <th colspan="3" class="text-end">Total&nbsp;:</th>
+                    <th id="cartTotal">0.00</th>
+                    <th></th>
+                </tr>
+                </tfoot>
+            </table>
+        </div>
+
+        <div class="text-end">
+            <a href="/plants" class="btn btn-outline-success">Continuer les achats</a>
+        </div>
+    </section>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const body   = document.getElementById('cartBody');
+    const totalE = document.getElementById('cartTotal');
+    const countE = document.getElementById('cartCount');
+
+    const load = () => JSON.parse(localStorage.getItem('cart') || '[]');
+    const save = c => localStorage.setItem('cart', JSON.stringify(c));
+
+    function render() {
+        const cart = load();
+        body.innerHTML = '';
+        let total = 0;
+
+        if (cart.length === 0) {
+            body.innerHTML = '<tr><td colspan="5" class="text-center">Votre panier est vide.</td></tr>';
+        } else {
+            cart.forEach((item, i) => {
+                const sub = item.price * item.qty;
+                total += sub;
+                body.insertAdjacentHTML('beforeend', `
+                    <tr>
+                        <td>${item.name}</td>
+                        <td>${item.price.toFixed(2)}</td>
+                        <td>${item.qty}</td>
+                        <td>${sub.toFixed(2)}</td>
+                        <td><button class="btn btn-sm btn-danger" data-i="${i}">✕</button></td>
+                    </tr>
+                `);
+            });
+        }
+
+        totalE.textContent = total.toFixed(2);
+        if (countE) countE.textContent = cart.reduce((s, it) => s + it.qty, 0);
+    }
+
+    body.addEventListener('click', e => {
+        if (e.target.dataset.i !== undefined) {
+            const cart = load();
+            cart.splice(e.target.dataset.i, 1);
+            save(cart);
+            render();
+        }
+    });
+
+    render();
+});
+</script>
+</body>
+</html>

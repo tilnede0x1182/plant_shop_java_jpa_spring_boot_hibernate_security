@@ -37,9 +37,6 @@
 									<li th:if="${finalCurrentUserType == 'visitor'}" class="nav-item">
 											<a class="nav-link" href="/register">Inscription</a>
 									</li>
-									<li th:if="${finalCurrentUserType == 'visitor'}" class="nav-item">
-											<a class="nav-link" href="/cart">Panier (<span id="cartCount">0</span>)</a>
-									</li>
 
 									<li th:if="${loggedUserName}" class="navbar-text text-white me-2"
 										th:text="${loggedUserName}">
@@ -51,8 +48,8 @@
 									<li th:if="${finalCurrentUserType == 'user' || finalCurrentUserType == 'admin'}" class="nav-item">
 										<a class="nav-link" href="/my_profile">Mon Profil</a>
 									</li>
-									<li th:if="${finalCurrentUserType == 'user' || finalCurrentUserType == 'admin'}" class="nav-item">
-										<a class="nav-link" href="/cart">Panier (<span id="cartCount">0</span>)</a>
+									<li th:if="${finalCurrentUserType == 'visitor' || finalCurrentUserType == 'user' || finalCurrentUserType == 'admin'}" class="nav-item">
+										<a class="nav-link" href="/cart">Panier (<span class="cart-count">0</span>)</a>
 									</li>
 									<li th:if="${finalCurrentUserType == 'user' || finalCurrentUserType == 'admin'}" class="nav-item">
 											<a class="nav-link" href="/orders">Mes Commandes</a>
@@ -90,6 +87,16 @@
     <!-- Bootstrap JS -->
     <script src="/webjars/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
     <script src="/js/app.js"></script>
+		<script>
+			function refreshCart(){
+				console.log("refreshCart");
+				const total=(JSON.parse(localStorage.getItem('cart')||'[]'))
+										 .reduce((s,i)=>s+i.qty,0);
+				document.querySelectorAll('.cart-count').forEach(e=>e.textContent=total);
+			}
+			refreshCart();
+			window.addEventListener('storage',e=>e.key==='cart'&&refreshCart());
+		</script>
     </th:block> <!-- Fin du bloc de variables calculées -->
     </th:block> <!-- Fin du bloc de sécurité -->
 </body>
