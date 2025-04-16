@@ -12,6 +12,7 @@ public class ProfileController {
     @GetMapping("/my_profile")
     public String profile(@AuthenticationPrincipal User user, Model model) {
         model.addAttribute("user", user);
+        model.addAttribute("displayName", StringUtils.toCapitalCase(user.getName()));
         return "profile";
     }
 }

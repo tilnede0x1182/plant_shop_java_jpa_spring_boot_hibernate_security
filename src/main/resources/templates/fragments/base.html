@@ -15,17 +15,12 @@
 	<th:block th:with="currentUserType='visitor'">
     <!-- Variables calculées + test manuel -->
     <th:block th:with="
-        UserTypeForTests='user',
+        UserTypeForTests='admin',
         finalCurrentUserType=${UserTypeForTests != '' ? UserTypeForTests : currentUserType},
         isVisitor=${finalCurrentUserType == 'visitor'},
         isUser=${finalCurrentUserType == 'user'},
         isAdmin=${finalCurrentUserType == 'admin'}
     ">
-
-		<script th:inline="javascript">
-			let currentUserType = [[${effectiveUserType}]];
-			console.log("currentUserType =", currentUserType);
-		</script>
 
     <!-- Navbar -->
 		<nav class="navbar navbar-expand-lg navbar-dark bg-dark mb-4 fixed-top">
@@ -49,6 +44,9 @@
 									</li>
 
 									<li th:if="${finalCurrentUserType == 'user' || finalCurrentUserType == 'admin'}" class="nav-item">
+										<span class="text-light me-2" th:text="${displayName}">Nom Utilisateur</span>
+									</li>
+									<li th:if="${finalCurrentUserType == 'user' || finalCurrentUserType == 'admin'}" class="nav-item">
 										<a class="nav-link" href="/my_profile">Mon Profil</a>
 									</li>
 									<li th:if="${finalCurrentUserType == 'user' || finalCurrentUserType == 'admin'}" class="nav-item">
@@ -66,9 +64,6 @@
 													<li><a class="dropdown-item" href="/admin/plants">Gestion Plantes</a></li>
 													<li><a class="dropdown-item" href="/admin/users">Gestion Utilisateurs</a></li>
 											</ul>
-									</li>
-									<li th:if="${finalCurrentUserType == 'admin'}" class="nav-item">
-											<a class="nav-link" href="/orders">Mes Commandes</a>
 									</li>
 
 									<li th:if="${finalCurrentUserType == 'user' or finalCurrentUserType == 'admin'}" class="nav-item">
