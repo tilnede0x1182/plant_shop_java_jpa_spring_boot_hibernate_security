@@ -231,6 +231,7 @@ public class ProfileController {
     @GetMapping("/my_profile")
     public String profile(@AuthenticationPrincipal User user, Model model) {
         model.addAttribute("user", user);
+        model.addAttribute("displayName", StringUtils.toCapitalCase(user.getName()));
         return "profile";
     }
 }
@@ -476,6 +477,30 @@ public class DatabaseSeeder implements CommandLineRunner {
     }
 }
 
+# src/main/java/com/planteshop/util/StringUtils.java
+package com.planteshop.util;
+
+public class StringUtils {
+    public static String toCapitalCase(String text) {
+        if (text == null || text.isEmpty()) {
+            return text;
+        }
+
+        String[] words = text.split("\\s+");
+        StringBuilder result = new StringBuilder();
+
+        for (String word : words) {
+            if (!word.isEmpty()) {
+                result.append(Character.toUpperCase(word.charAt(0)))
+                      .append(word.substring(1).toLowerCase())
+                      .append(" ");
+            }
+        }
+
+        return result.toString().trim();
+    }
+}
+
 # src/main/java/com/planteshop/PlantShopApplication.java
 package com.planteshop;
 
@@ -620,6 +645,7 @@ public class PlantShopApplication {
 │   │   │           ├── service
 │   │   │           │   └── impl
 │   │   │           └── util
+│   │   │               └── StringUtils.java
 │   │   └── resources
 │   │       ├── application.yml
 │   │       ├── db
@@ -685,6 +711,7 @@ public class PlantShopApplication {
 │   │   │       ├── service
 │   │   │       │   └── impl
 │   │   │       └── util
+│   │   │           └── StringUtils.class
 │   │   ├── db
 │   │   │   └── migration
 │   │   │       └── V1__init_schema.sql
@@ -729,4 +756,4 @@ public class PlantShopApplication {
 ├── tmp.txt
 └── users.txt
 
-86 directories, 66 files
+86 directories, 68 files
