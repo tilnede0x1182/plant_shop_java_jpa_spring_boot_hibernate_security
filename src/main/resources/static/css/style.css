@@ -9,3 +9,18 @@
 .navbar {
     box-shadow: 0 2px 4px rgba(0,0,0,.1);
 }
+/* Profile Page Styles */
+.card.profile-card {
+	border-radius: 10px;
+	overflow: hidden;
+}
+
+.profile-icon {
+	font-size: 5rem;
+	color: #28a745;
+}
+
+.profile-badge {
+	font-size: 0.9rem;
+	padding: 0.35em 0.65em;
+}

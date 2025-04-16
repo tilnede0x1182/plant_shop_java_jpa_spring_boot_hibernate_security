@@ -216,6 +216,25 @@ public class ApiPlantController {
     }
 }
 
+# src/main/java/com/planteshop/controller/web/ProfileController.java
+package com.planteshop.controller.web;
+
+import com.planteshop.model.entity.User;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.GetMapping;
+
+@Controller
+public class ProfileController {
+
+    @GetMapping("/my_profile")
+    public String profile(@AuthenticationPrincipal User user, Model model) {
+        model.addAttribute("user", user);
+        return "profile";
+    }
+}
+
 # src/main/java/com/planteshop/controller/web/LoginController.java
 package com.planteshop.controller.web;
 
@@ -288,7 +307,7 @@ public class SecurityConfig {
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/", "/favicon.svg", "/favicon.ico", "/plants", "/plants/**", "/css/**", "/js/**", "/webjars/**", "/login", "/api/plants/**").permitAll()
                 .requestMatchers("/admin/**").hasRole("ADMIN")
-                .requestMatchers("/cart/**", "/orders/**").authenticated()
+                .requestMatchers("/cart/**", "/orders/**", "/my_profile").authenticated()
                 .anyRequest().permitAll() // Modifié pour permettre l'accès à tout le reste
             )
             .formLogin(form -> form
@@ -319,15 +338,13 @@ import com.planteshop.repository.PlantRepository;
 import com.planteshop.repository.UserRepository;
 import net.datafaker.Faker;
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.context.annotation.Profile;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
-import org.springframework.context.annotation.Profile;
 
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 
 @Component
 @Profile("seed")
@@ -338,22 +355,21 @@ public class DatabaseSeeder implements CommandLineRunner {
     private final PasswordEncoder passwordEncoder;
     private final Faker faker = new Faker();
 
-    // Listes prédéfinies pour des données cohérentes
+    private final List<Credential> credentials = new ArrayList<>();
+
     private static final List<String> PLANT_NAMES = Arrays.asList(
         "Rose", "Tulipe", "Lavande", "Orchidée", "Basilic",
         "Menthe", "Pivoine", "Tournesol", "Cactus", "Bambou"
     );
     private static final List<String> PLANT_CATEGORIES = Arrays.asList("intérieur", "extérieur");
 
-    // Constantes de configuration
     private static final int NB_PLANTS = 30;
     private static final int NB_ADMINS = 3;
     private static final int NB_USERS = 15;
-    private static final String DEFAULT_PASSWORD = "password123";
 
     public DatabaseSeeder(PlantRepository plantRepository,
-                         UserRepository userRepository,
-                         PasswordEncoder passwordEncoder) {
+                           UserRepository userRepository,
+                           PasswordEncoder passwordEncoder) {
         this.plantRepository = plantRepository;
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
@@ -364,7 +380,7 @@ public class DatabaseSeeder implements CommandLineRunner {
         if (plantRepository.count() == 0 && userRepository.count() == 0) {
             List<User> users = createUsers();
             createPlants();
-            generateUsersFile(users);
+            generateUsersFile();
             System.out.println("Database seeded successfully!");
         }
     }
@@ -372,26 +388,37 @@ public class DatabaseSeeder implements CommandLineRunner {
     private List<User> createUsers() {
         List<User> users = new ArrayList<>();
 
-        // Admins
         for (int i = 0; i < NB_ADMINS; i++) {
-            users.add(createUser(true, i));
+            users.add(createUser(true));
         }
 
-        // Users normaux
         for (int i = 0; i < NB_USERS; i++) {
-            users.add(createUser(false, i));
+            users.add(createUser(false));
         }
 
         return userRepository.saveAll(users);
     }
 
-    private User createUser(boolean isAdmin, int index) {
+    private User createUser(boolean isAdmin) {
+        String name = faker.name().fullName();
+        String email = generateEmailFromName(name);
+        String rawPassword = faker.color().name().replaceAll("\\s+", "").toLowerCase()
+                             + faker.animal().name().replaceAll("\\s+", "").toLowerCase()
+                             + faker.number().numberBetween(10, 99);
+
         User user = new User();
-        user.setName(faker.name().fullName());
-        user.setEmail((isAdmin ? "admin" : "user") + index + "@planteshop.com");
-        user.setPassword(passwordEncoder.encode(DEFAULT_PASSWORD));
+        user.setName(name);
+        user.setEmail(email);
+        user.setPassword(passwordEncoder.encode(rawPassword));
         user.setAdmin(isAdmin);
+
+        credentials.add(new Credential(email, rawPassword, isAdmin));
         return user;
+    }
+
+    private String generateEmailFromName(String name) {
+        String slug = name.trim().toLowerCase().replaceAll("[^a-z ]", "").replaceAll("\\s+", ".");
+        return slug + "@planteshop.com";
     }
 
     private void createPlants() {
@@ -410,33 +437,41 @@ public class DatabaseSeeder implements CommandLineRunner {
         plantRepository.saveAll(plants);
     }
 
-    private void generateUsersFile(List<User> users) throws IOException {
+    private void generateUsersFile() throws IOException {
         try (FileWriter writer = new FileWriter("users.txt")) {
-            writer.write("=== CREDENTIALS ===\n\n");
-            writer.write("Default password for all users: " + DEFAULT_PASSWORD + "\n\n");
-
             writer.write("=== ADMINS ===\n");
-            users.stream()
-                .filter(User::isAdmin)
-                .forEach(u -> writeUser(writer, u));
+            credentials.stream()
+                .filter(Credential::isAdmin)
+                .forEach(c -> writeCredential(writer, c));
 
             writer.write("\n=== USERS ===\n");
-            users.stream()
-                .filter(u -> !u.isAdmin())
-                .forEach(u -> writeUser(writer, u));
+            credentials.stream()
+                .filter(c -> !c.isAdmin())
+                .forEach(c -> writeCredential(writer, c));
         }
     }
 
-    private void writeUser(FileWriter writer, User user) {
+    private void writeCredential(FileWriter writer, Credential c) {
         try {
-            writer.write(String.format(
-                "Email: %s\nName: %s\nRole: %s\n\n",
-                user.getEmail(),
-                user.getName(),
-                user.isAdmin() ? "ADMIN" : "USER"
-            ));
+            writer.write(c.email + " " + c.password + "\n");
         } catch (IOException e) {
             e.printStackTrace();
+        }
+    }
+
+    private static class Credential {
+        String email;
+        String password;
+        boolean admin;
+
+        public Credential(String email, String password, boolean admin) {
+            this.email = email;
+            this.password = password;
+            this.admin = admin;
+        }
+
+        public boolean isAdmin() {
+            return admin;
         }
     }
 }
@@ -563,6 +598,7 @@ public class PlantShopApplication {
 │   │   │           │   ├── exception
 │   │   │           │   └── web
 │   │   │           │       ├── LoginController.java
+│   │   │           │       ├── ProfileController.java
 │   │   │           │       └── WebPlantController.java
 │   │   │           ├── model
 │   │   │           │   ├── dto
@@ -602,8 +638,10 @@ public class PlantShopApplication {
 │   │           │   └── base.html
 │   │           ├── login.html
 │   │           ├── orders
-│   │           └── plants
-│   │               └── index.html
+│   │           ├── plants
+│   │           │   ├── index.html
+│   │           │   └── show.html
+│   │           └── profile.html
 │   └── test
 │       └── java
 │           └── com
@@ -618,24 +656,35 @@ public class PlantShopApplication {
 │   │   │       ├── config
 │   │   │       │   └── SecurityConfig.class
 │   │   │       ├── controller
+│   │   │       │   ├── admin
 │   │   │       │   ├── api
 │   │   │       │   │   └── ApiPlantController.class
+│   │   │       │   ├── exception
 │   │   │       │   └── web
 │   │   │       │       ├── LoginController.class
+│   │   │       │       ├── ProfileController.class
 │   │   │       │       └── WebPlantController.class
 │   │   │       ├── model
-│   │   │       │   └── entity
-│   │   │       │       ├── CustomerOrder.class
-│   │   │       │       ├── OrderItem.class
-│   │   │       │       ├── Plant.class
-│   │   │       │       └── User.class
+│   │   │       │   ├── dto
+│   │   │       │   │   ├── request
+│   │   │       │   │   └── response
+│   │   │       │   ├── entity
+│   │   │       │   │   ├── CustomerOrder.class
+│   │   │       │   │   ├── OrderItem.class
+│   │   │       │   │   ├── Plant.class
+│   │   │       │   │   └── User.class
+│   │   │       │   └── enums
 │   │   │       ├── PlantShopApplication.class
 │   │   │       ├── repository
 │   │   │       │   ├── OrderRepository.class
 │   │   │       │   ├── PlantRepository.class
 │   │   │       │   └── UserRepository.class
-│   │   │       └── seed
-│   │   │           └── DatabaseSeeder.class
+│   │   │       ├── seed
+│   │   │       │   ├── DatabaseSeeder$Credential.class
+│   │   │       │   └── DatabaseSeeder.class
+│   │   │       ├── service
+│   │   │       │   └── impl
+│   │   │       └── util
 │   │   ├── db
 │   │   │   └── migration
 │   │   │       └── V1__init_schema.sql
@@ -650,8 +699,10 @@ public class PlantShopApplication {
 │   │       ├── fragments
 │   │       │   └── base.html
 │   │       ├── login.html
-│   │       └── plants
-│   │           └── index.html
+│   │       ├── plants
+│   │       │   ├── index.html
+│   │       │   └── show.html
+│   │       └── profile.html
 │   ├── generated-sources
 │   │   └── annotations
 │   ├── generated-test-sources
@@ -671,7 +722,11 @@ public class PlantShopApplication {
 │   ├── plant-shop-jpa-spring-boot-hibernate-security-1.0.0.jar
 │   ├── plant-shop-jpa-spring-boot-hibernate-security-1.0.0.jar.original
 │   └── test-classes
+│       └── com
+│           └── planteshop
+│               ├── controller
+│               └── service
 ├── tmp.txt
 └── users.txt
 
-73 directories, 59 files
+86 directories, 66 files

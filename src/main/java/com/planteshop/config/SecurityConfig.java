@@ -19,7 +19,7 @@ public class SecurityConfig {
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/", "/favicon.svg", "/favicon.ico", "/plants", "/plants/**", "/css/**", "/js/**", "/webjars/**", "/login", "/api/plants/**").permitAll()
                 .requestMatchers("/admin/**").hasRole("ADMIN")
-                .requestMatchers("/cart/**", "/orders/**").authenticated()
+                .requestMatchers("/cart/**", "/orders/**", "/my_profile").authenticated()
                 .anyRequest().permitAll() // Modifié pour permettre l'accès à tout le reste
             )
             .formLogin(form -> form
