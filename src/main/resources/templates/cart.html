@@ -36,59 +36,85 @@
             </table>
         </div>
 
-        <div class="text-end">
-            <a href="/plants" class="btn btn-outline-success">Continuer les achats</a>
-        </div>
+				<div class="text-start">
+					<a href="#" class="btn btn-success">Terminer la commande</a>
+			</div>
     </section>
-</div>
+		<script>
+			document.addEventListener('DOMContentLoaded', () => {
+					const body   = document.getElementById('cartBody');
+					const totalE = document.getElementById('cartTotal');
+					const countE = document.querySelectorAll('.cart-count');
 
-<script>
-document.addEventListener('DOMContentLoaded', () => {
-    const body   = document.getElementById('cartBody');
-    const totalE = document.getElementById('cartTotal');
-    const countE = document.getElementById('cartCount');
+					const load = () => JSON.parse(localStorage.getItem('cart') || '[]');
+					const save = c => localStorage.setItem('cart', JSON.stringify(c));
 
-    const load = () => JSON.parse(localStorage.getItem('cart') || '[]');
-    const save = c => localStorage.setItem('cart', JSON.stringify(c));
+					function render() {
+							const cart = load();
+							body.innerHTML = '';
+							let total = 0;
 
-    function render() {
-        const cart = load();
-        body.innerHTML = '';
-        let total = 0;
+							if (cart.length === 0) {
+									body.innerHTML = '<tr><td colspan="5" class="text-center">Votre panier est vide.</td></tr>';
+							} else {
+								cart.forEach((item, i) => {
+									const sub = item.price * item.qty;
+									total += sub;
+									body.insertAdjacentHTML('beforeend', `
+											<tr>
+													<td>${item.name}</td>
+													<td>${item.price.toFixed(2)}</td>
+													<td>
+														<input type="number"
+																	min="1"
+																	onkeydown="return event.key !== 'e' && event.key !== '-'"
+																	value="${item.qty}"
+																	class="form-control form-control-sm qty-input"
+																	style="width:80px;" data-i="${i}">
+													</td>
+													<td>${sub.toFixed(2)}</td>
+													<td><button class="btn btn-sm btn-danger" data-i="${i}">✕</button></td>
+											</tr>
+								`	);
+								});
+								body.querySelectorAll('.qty-input').forEach(input => {
+									input.addEventListener('input', updateQty);
+									input.addEventListener('blur', updateQty);
+								});
+							}
+							totalE.textContent = total.toFixed(2);
+							countE.forEach(e => e.textContent = cart.reduce((s, it) => s + it.qty, 0));
+					}
 
-        if (cart.length === 0) {
-            body.innerHTML = '<tr><td colspan="5" class="text-center">Votre panier est vide.</td></tr>';
-        } else {
-            cart.forEach((item, i) => {
-                const sub = item.price * item.qty;
-                total += sub;
-                body.insertAdjacentHTML('beforeend', `
-                    <tr>
-                        <td>${item.name}</td>
-                        <td>${item.price.toFixed(2)}</td>
-                        <td>${item.qty}</td>
-                        <td>${sub.toFixed(2)}</td>
-                        <td><button class="btn btn-sm btn-danger" data-i="${i}">✕</button></td>
-                    </tr>
-                `);
-            });
-        }
+					body.addEventListener('click', e => {
+							if (e.target.matches('button[data-i]')) {
+									const cart = load();
+									cart.splice(e.target.dataset.i, 1);
+									save(cart);
+									render();
+							}
+					});
 
-        totalE.textContent = total.toFixed(2);
-        if (countE) countE.textContent = cart.reduce((s, it) => s + it.qty, 0);
-    }
+					function updateQty(e) {
+							const i = e.target.dataset.i;
+							let val = parseInt(e.target.value);
 
-    body.addEventListener('click', e => {
-        if (e.target.dataset.i !== undefined) {
-            const cart = load();
-            cart.splice(e.target.dataset.i, 1);
-            save(cart);
-            render();
-        }
-    });
+							if (isNaN(val) || val < 1) val = 1;
+							e.target.value = val;
 
-    render();
-});
-</script>
+							const cart = load();
+							cart[i].qty = val;
+							save(cart);
+							render();
+					}
+
+					render();
+					body.querySelectorAll('.qty-input').forEach(input => {
+							input.addEventListener('input', updateQty);
+							input.addEventListener('blur', updateQty);
+					});g
+			});
+			</script>
+	</div>
 </body>
 </html>
