@@ -220,6 +220,7 @@ public class ApiPlantController {
 package com.planteshop.controller.web;
 
 import com.planteshop.model.entity.User;
+import com.planteshop.util.StringUtils;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -308,7 +309,7 @@ public class SecurityConfig {
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/", "/favicon.svg", "/favicon.ico", "/plants", "/plants/**", "/css/**", "/js/**", "/webjars/**", "/login", "/api/plants/**").permitAll()
                 .requestMatchers("/admin/**").hasRole("ADMIN")
-                .requestMatchers("/cart/**", "/orders/**", "/my_profile").authenticated()
+                .requestMatchers("/cart/**", "/orders/**", "/my_profile/**").authenticated()
                 .anyRequest().permitAll() // Modifié pour permettre l'accès à tout le reste
             )
             .formLogin(form -> form

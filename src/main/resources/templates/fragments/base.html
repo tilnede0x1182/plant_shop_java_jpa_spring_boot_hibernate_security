@@ -16,10 +16,8 @@
     <!-- Variables calculées + test manuel -->
     <th:block th:with="
         UserTypeForTests='admin',
-        finalCurrentUserType=${UserTypeForTests != '' ? UserTypeForTests : currentUserType},
-        isVisitor=${finalCurrentUserType == 'visitor'},
-        isUser=${finalCurrentUserType == 'user'},
-        isAdmin=${finalCurrentUserType == 'admin'}
+				userNameForTests='Jean Dupont',
+        finalCurrentUserType=${UserTypeForTests != '' ? UserTypeForTests : currentUserType}
     ">
 
     <!-- Navbar -->
@@ -43,9 +41,13 @@
 											<a class="nav-link" href="/cart">Panier (<span id="cartCount">0</span>)</a>
 									</li>
 
-									<li th:if="${finalCurrentUserType == 'user' || finalCurrentUserType == 'admin'}" class="nav-item">
-										<span class="text-light me-2" th:text="${displayName}">Nom Utilisateur</span>
+									<li th:if="${loggedUserName}" class="navbar-text text-white me-2"
+										th:text="${loggedUserName}">
 									</li>
+									<!-- <li th:if="${finalCurrentUserType == 'user' || finalCurrentUserType == 'admin'}"
+										class="nav-item d-flex align-items-center">
+										<span class="text-light me-2" th:text="${userNameForTests}"></span>
+									</li> -->
 									<li th:if="${finalCurrentUserType == 'user' || finalCurrentUserType == 'admin'}" class="nav-item">
 										<a class="nav-link" href="/my_profile">Mon Profil</a>
 									</li>
