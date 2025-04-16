@@ -216,6 +216,24 @@ public class ApiPlantController {
     }
 }
 
+# src/main/java/com/planteshop/controller/GlobalControllerAdvice.java
+// src/main/java/com/planteshop/controller/GlobalControllerAdvice.java
+package com.planteshop.controller;
+
+import com.planteshop.util.StringUtils;
+import com.planteshop.model.entity.User;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.ControllerAdvice;
+import org.springframework.web.bind.annotation.ModelAttribute;
+
+@ControllerAdvice
+public class GlobalControllerAdvice {
+		@ModelAttribute("loggedUserName")
+		public String loggedUserName(@AuthenticationPrincipal User user) {
+				return (user != null) ? StringUtils.toCapitalCase(user.getName()) : null;
+		}
+}
+
 # src/main/java/com/planteshop/controller/web/ProfileController.java
 package com.planteshop.controller.web;
 
@@ -622,6 +640,7 @@ public class PlantShopApplication {
 │   │   │           │   ├── api
 │   │   │           │   │   └── ApiPlantController.java
 │   │   │           │   ├── exception
+│   │   │           │   ├── GlobalControllerAdvice.java
 │   │   │           │   └── web
 │   │   │           │       ├── LoginController.java
 │   │   │           │       ├── ProfileController.java
@@ -687,6 +706,7 @@ public class PlantShopApplication {
 │   │   │       │   ├── api
 │   │   │       │   │   └── ApiPlantController.class
 │   │   │       │   ├── exception
+│   │   │       │   ├── GlobalControllerAdvice.class
 │   │   │       │   └── web
 │   │   │       │       ├── LoginController.class
 │   │   │       │       ├── ProfileController.class
@@ -757,4 +777,4 @@ public class PlantShopApplication {
 ├── tmp.txt
 └── users.txt
 
-86 directories, 68 files
+86 directories, 70 files

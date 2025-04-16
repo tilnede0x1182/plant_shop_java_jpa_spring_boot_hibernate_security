@@ -15,7 +15,7 @@
 	<th:block th:with="currentUserType='visitor'">
     <!-- Variables calculées + test manuel -->
     <th:block th:with="
-        UserTypeForTests='admin',
+        UserTypeForTests='visitor',
 				userNameForTests='Jean Dupont',
         finalCurrentUserType=${UserTypeForTests != '' ? UserTypeForTests : currentUserType}
     ">
