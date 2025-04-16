@@ -1,25 +1,25 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html xmlns:th="http://www.thymeleaf.org"
+      layout:decorate="~{fragments/base}"
+      th:with="title='Connexion'">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Connexion - PlantShop</title>
-    <link th:href="@{/webjars/bootstrap/5.3.2/css/bootstrap.min.css}" rel="stylesheet">
+    <title>Connexion</title>
 </head>
-<body class="bg-light">
-    <div class="container mt-5">
+<body>
+<div layout:fragment="content">
+    <section class="container pt-5 mt-5">
         <div class="row justify-content-center">
             <div class="col-md-6 col-lg-4">
                 <div class="card shadow">
+                    <div class="card-header bg-success text-white">
+                        <h4 class="mb-0 text-center">Connexion</h4>
+                    </div>
                     <div class="card-body p-4">
-                        <h2 class="card-title text-center mb-4">Connexion</h2>
 
-                        <!-- Message d'erreur -->
                         <div th:if="${param.error}" class="alert alert-danger">
                             Identifiants invalides
                         </div>
 
-                        <!-- Formulaire de login -->
                         <form th:action="@{/login}" method="post">
                             <div class="mb-3">
                                 <label for="username" class="form-label">Email</label>
@@ -29,20 +29,18 @@
                                 <label for="password" class="form-label">Mot de passe</label>
                                 <input type="password" class="form-control" id="password" name="password" required>
                             </div>
-                            <button type="submit" class="btn btn-primary w-100">Se connecter</button>
+                            <button type="submit" class="btn btn-success w-100">Se connecter</button>
                         </form>
 
-                        <!-- Lien vers la page d'accueil -->
-                        <div class="mt-3 text-center">
-                            <a th:href="@{/}" class="text-decoration-none">Retour à l'accueil</a>
-                        </div>
+												<div class="mt-3 text-center">
+													<span>Pas encore de compte ?&nbsp;</span>
+													<a th:href="@{/register}" class="text-success text-decoration-none">Inscrivez-vous !</a>
+											</div>
                     </div>
                 </div>
             </div>
         </div>
-    </div>
-
-    <!-- Scripts Bootstrap -->
-    <script th:src="@{/webjars/bootstrap/5.3.2/js/bootstrap.bundle.min.js}"></script>
+    </section>
+</div>
 </body>
 </html>
