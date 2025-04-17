@@ -1,8 +1,8 @@
 package com.planteshop.controller.web;
 
 import com.planteshop.model.entity.User;
+import com.planteshop.model.enums.RoleType;
 import com.planteshop.repository.UserRepository;
-import com.planteshop.util.StringUtils;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -38,7 +38,7 @@ public class RegistrationController {
         }
 
         user.setPassword(passwordEncoder.encode(user.getPassword()));
-        user.setAdmin(false);
+        user.setRole(RoleType.USER);
         userRepository.save(user);
 
         return "redirect:/login?registered";

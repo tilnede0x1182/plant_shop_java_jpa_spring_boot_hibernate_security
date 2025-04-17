@@ -35,6 +35,15 @@ import org.springframework.data.jpa.repository.JpaRepository;
 public interface PlantRepository extends JpaRepository<Plant, Long> {
 }
 
+# src/main/java/com/planteshop/model/enums/RoleType.java
+package com.planteshop.model.enums;
+
+public enum RoleType {
+    VISITOR,
+    USER,
+    ADMIN
+}
+
 # src/main/java/com/planteshop/model/entity/CustomerOrder.java
 package com.planteshop.model.entity;
 
@@ -216,24 +225,6 @@ public class ApiPlantController {
     }
 }
 
-# src/main/java/com/planteshop/controller/GlobalControllerAdvice.java
-// src/main/java/com/planteshop/controller/GlobalControllerAdvice.java
-package com.planteshop.controller;
-
-import com.planteshop.util.StringUtils;
-import com.planteshop.model.entity.User;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.ControllerAdvice;
-import org.springframework.web.bind.annotation.ModelAttribute;
-
-@ControllerAdvice
-public class GlobalControllerAdvice {
-		@ModelAttribute("loggedUserName")
-		public String loggedUserName(@AuthenticationPrincipal User user) {
-				return (user != null) ? StringUtils.toCapitalCase(user.getName()) : null;
-		}
-}
-
 # src/main/java/com/planteshop/controller/web/ProfileController.java
 package com.planteshop.controller.web;
 
@@ -267,6 +258,21 @@ public class LoginController {
     @GetMapping("/login")
     public String login() {
         return "login"; // Correspond à src/main/resources/templates/login.html
+    }
+}
+
+# src/main/java/com/planteshop/controller/web/CartController.java
+package com.planteshop.controller.web;
+
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.GetMapping;
+
+@Controller
+public class CartController {
+
+    @GetMapping("/cart")
+    public String cart() {
+        return "cart";
     }
 }
 
@@ -350,6 +356,29 @@ public class RegistrationController {
         userRepository.save(user);
 
         return "redirect:/login?registered";
+    }
+}
+
+# src/main/java/com/planteshop/controller/GlobalUserTypeAdvice.java
+package com.planteshop.controller;
+
+import com.planteshop.model.entity.User;
+import com.planteshop.model.enums.RoleType;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.ControllerAdvice;
+import org.springframework.web.bind.annotation.ModelAttribute;
+
+@ControllerAdvice
+public class GlobalUserTypeAdvice {
+
+    @ModelAttribute("finalCurrentUserType")
+    public String finalCurrentUserType(@AuthenticationPrincipal User user) {
+        if (user == null) return "visitor";
+        return switch (user.getRole()) {
+            case ADMIN -> "admin";
+            case USER -> "user";
+            default -> "visitor";
+        };
     }
 }
 
@@ -688,8 +717,9 @@ public class PlantShopApplication {
 │   │   │           │   ├── api
 │   │   │           │   │   └── ApiPlantController.java
 │   │   │           │   ├── exception
-│   │   │           │   ├── GlobalControllerAdvice.java
+│   │   │           │   ├── GlobalUserTypeAdvice.java
 │   │   │           │   └── web
+│   │   │           │       ├── CartController.java
 │   │   │           │       ├── LoginController.java
 │   │   │           │       ├── ProfileController.java
 │   │   │           │       ├── RegistrationController.java
@@ -704,6 +734,7 @@ public class PlantShopApplication {
 │   │   │           │   │   ├── Plant.java
 │   │   │           │   │   └── User.java
 │   │   │           │   └── enums
+│   │   │           │       └── RoleType.java
 │   │   │           ├── PlantShopApplication.java
 │   │   │           ├── repository
 │   │   │           │   ├── OrderRepository.java
@@ -729,6 +760,7 @@ public class PlantShopApplication {
 │   │       │       └── app.js
 │   │       └── templates
 │   │           ├── admin
+│   │           ├── cart.html
 │   │           ├── fragments
 │   │           │   └── base.html
 │   │           ├── login.html
@@ -750,18 +782,15 @@ public class PlantShopApplication {
 │   │   ├── com
 │   │   │   └── planteshop
 │   │   │       ├── config
-│   │   │       │   └── SecurityConfig.class
 │   │   │       ├── controller
 │   │   │       │   ├── admin
 │   │   │       │   ├── api
-│   │   │       │   │   └── ApiPlantController.class
 │   │   │       │   ├── exception
-│   │   │       │   ├── GlobalControllerAdvice.class
+│   │   │       │   ├── GlobalUserTypeAdvice.class
 │   │   │       │   └── web
-│   │   │       │       ├── LoginController.class
+│   │   │       │       ├── CartController.class
 │   │   │       │       ├── ProfileController.class
-│   │   │       │       ├── RegistrationController.class
-│   │   │       │       └── WebPlantController.class
+│   │   │       │       └── RegistrationController.class
 │   │   │       ├── model
 │   │   │       │   ├── dto
 │   │   │       │   │   ├── request
@@ -772,7 +801,7 @@ public class PlantShopApplication {
 │   │   │       │   │   ├── Plant.class
 │   │   │       │   │   └── User.class
 │   │   │       │   └── enums
-│   │   │       ├── PlantShopApplication.class
+│   │   │       │       └── RoleType.class
 │   │   │       ├── repository
 │   │   │       │   ├── OrderRepository.class
 │   │   │       │   ├── PlantRepository.class
@@ -795,6 +824,7 @@ public class PlantShopApplication {
 │   │   │   └── js
 │   │   │       └── app.js
 │   │   └── templates
+│   │       ├── cart.html
 │   │       ├── fragments
 │   │       │   └── base.html
 │   │       ├── login.html
@@ -829,4 +859,4 @@ public class PlantShopApplication {
 ├── tmp.txt
 └── users.txt
 
-86 directories, 74 files
+86 directories, 75 files

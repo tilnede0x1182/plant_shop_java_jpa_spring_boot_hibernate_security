@@ -1,60 +1,58 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org"
-      layout:decorate="~{fragments/base}"
-      th:with="title='Liste des plantes'">
+<html xmlns:th="http://www.thymeleaf.org" layout:decorate="~{fragments/base}" th:with="title='Liste des plantes'">
+
 <head>
-    <title>Plantes</title>
+	<title>Plantes</title>
 </head>
+
 <body>
-    <div layout:fragment="content">
-        <h1 class="mb-4">🌿 Liste des Plantes</h1>
+	<div layout:fragment="content">
+		<section class="container pt-5 mt-5">
+			<div sec:authorize="hasRole('ADMIN')" class="mb-3">
+				<a href="/admin/plants/new" class="btn btn-primary">Ajouter une plante</a>
+			</div>
 
-        <div sec:authorize="hasRole('ADMIN')" class="mb-3">
-            <a href="/admin/plants/new" class="btn btn-primary">Ajouter une plante</a>
-        </div>
+			<div class="row">
+				<div th:each="plant : ${plants}" class="col-md-4 mb-4">
+					<div class="card h-100">
+						<div class="card-body">
+							<h5 class="card-title" th:text="${plant.name}">Nom</h5>
+							<p class="card-text" th:text="${plant.description}">Description</p>
+							<p class="text-muted">Prix : <span th:text="${plant.price}">0.0</span> €</p>
+							<p class="text-muted">Stock : <span th:text="${plant.stock}">0</span></p>
 
-        <div class="row">
-					<div th:each="plant : ${plants}" class="col-md-4 mb-4">
-						<div class="card h-100">
-								<div class="card-body">
-										<h5 class="card-title" th:text="${plant.name}">Nom</h5>
-										<p class="card-text" th:text="${plant.description}">Description</p>
-										<p class="text-muted">Prix : <span th:text="${plant.price}">0.0</span> €</p>
-										<p class="text-muted">Stock : <span th:text="${plant.stock}">0</span></p>
-
-										<div class="d-flex justify-content-between gap-2">
-												<button type="button"
-																class="btn  flex-grow-1 btn-success add-to-cart"
-																th:data-id="${plant.id}"
-																th:data-name="${plant.name}"
-																th:data-price="${plant.price}">
-														Ajouter au panier
-												</button>
-										</div>
-								</div>
+							<div class="d-flex justify-content-between gap-2">
+								<button type="button" class="btn  flex-grow-1 btn-success add-to-cart" th:data-id="${plant.id}"
+									th:data-name="${plant.name}" th:data-price="${plant.price}">
+									Ajouter au panier
+								</button>
+							</div>
 						</div>
+					</div>
 				</div>
 			</div>
-			<script>
-				document.addEventListener('DOMContentLoaded', () => {
-						const load = () => JSON.parse(localStorage.getItem('cart')||'[]');
-						const save = c  => localStorage.setItem('cart', JSON.stringify(c));
+		</section>
+		<script>
+			document.addEventListener('DOMContentLoaded', () => {
+				const load = () => JSON.parse(localStorage.getItem('cart') || '[]');
+				const save = c => localStorage.setItem('cart', JSON.stringify(c));
 
-						document.querySelectorAll('.add-to-cart').forEach(btn=>{
-								btn.addEventListener('click', e=>{
-										const id    = btn.dataset.id;
-										const name  = btn.dataset.name;
-										const price = parseFloat(btn.dataset.price);
+				document.querySelectorAll('.add-to-cart').forEach(btn => {
+					btn.addEventListener('click', e => {
+						const id = btn.dataset.id;
+						const name = btn.dataset.name;
+						const price = parseFloat(btn.dataset.price);
 
-										const cart = load();
-										const item = cart.find(i => i.id == id);
-										item ? item.qty++ : cart.push({id,name,price,qty:1});
-										save(cart);
-										refreshCart();                 // fonction déjà définie dans base.html
-								});
-						});
+						const cart = load();
+						const item = cart.find(i => i.id == id);
+						item ? item.qty++ : cart.push({id, name, price, qty: 1});
+						save(cart);
+						refreshCart();                 // fonction déjà définie dans base.html
+					});
 				});
-			</script>
-		</div>
+			});
+		</script>
+	</div>
 </body>
+
 </html>

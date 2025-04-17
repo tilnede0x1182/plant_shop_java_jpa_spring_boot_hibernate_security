@@ -1,102 +1,99 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>PlantShop - [[${title}]]</title>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>PlantShop - [[${title}]]</title>
 
-    <!-- Bootstrap CSS -->
-    <link rel="stylesheet" href="/webjars/bootstrap/5.3.2/css/bootstrap.min.css">
+	<!-- Bootstrap CSS -->
+	<link rel="stylesheet" href="/webjars/bootstrap/5.3.2/css/bootstrap.min.css">
 
-    <!-- Custom CSS -->
-    <link rel="stylesheet" th:href="@{/css/style.css}">
+	<!-- Custom CSS -->
+	<link rel="stylesheet" th:href="@{/css/style.css}">
 </head>
+
 <body>
 	<th:block th:with="currentUserType='visitor'">
-    <!-- Variables calculées + test manuel -->
-    <th:block th:with="
+		<!-- Variables calculées + test manuel -->
+		<th:block th:with="
         UserTypeForTests='visitor',
 				userNameForTests='Jean Dupont',
         finalCurrentUserType=${UserTypeForTests != '' ? UserTypeForTests : currentUserType}
     ">
 
-    <!-- Navbar -->
-		<nav class="navbar navbar-expand-lg navbar-dark bg-dark mb-4 fixed-top">
-			<div class="container">
+			<!-- Navbar -->
+			<nav class="navbar navbar-expand-lg navbar-dark bg-dark mb-4 fixed-top">
+				<div class="container">
 					<a class="navbar-brand" href="/">🌿 PlantShop</a>
 					<button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-							<span class="navbar-toggler-icon"></span>
+						<span class="navbar-toggler-icon"></span>
 					</button>
 
 					<div class="collapse navbar-collapse" id="navbarNav">
-							<ul class="navbar-nav me-auto"></ul>
-							<ul class="navbar-nav">
-									<li th:if="${finalCurrentUserType == 'visitor'}" class="nav-item">
-											<a class="nav-link" href="/login">Connexion</a>
-									</li>
-									<li th:if="${finalCurrentUserType == 'visitor'}" class="nav-item">
-											<a class="nav-link" href="/register">Inscription</a>
-									</li>
+						<ul class="navbar-nav me-auto"></ul>
+						<ul class="navbar-nav">
+							<li th:if="${loggedUserName}" class="navbar-text text-white me-2" th:text="${loggedUserName}">
+							</li>
+							<li
+								th:if="${finalCurrentUserType == 'visitor' || finalCurrentUserType == 'user' || finalCurrentUserType == 'admin'}"
+								class="nav-item">
+								<a class="nav-link" href="/cart">Panier (<span class="cart-count">0</span>)</a>
+							</li>
+							<li th:if="${finalCurrentUserType == 'visitor'}" class="nav-item">
+								<a class="nav-link" href="/login">Connexion</a>
+							</li>
+							<li th:if="${finalCurrentUserType == 'visitor'}" class="nav-item">
+								<a class="nav-link" href="/register">Inscription</a>
+							</li>
+							<li th:if="${finalCurrentUserType == 'user' || finalCurrentUserType == 'admin'}" class="nav-item">
+								<a class="nav-link" href="/my_profile">Mon Profil</a>
+							</li>
+							<li th:if="${finalCurrentUserType == 'user' || finalCurrentUserType == 'admin'}" class="nav-item">
+								<a class="nav-link" href="/orders">Mes Commandes</a>
+							</li>
 
-									<li th:if="${loggedUserName}" class="navbar-text text-white me-2"
-										th:text="${loggedUserName}">
-									</li>
-									<!-- <li th:if="${finalCurrentUserType == 'user' || finalCurrentUserType == 'admin'}"
-										class="nav-item d-flex align-items-center">
-										<span class="text-light me-2" th:text="${userNameForTests}"></span>
-									</li> -->
-									<li th:if="${finalCurrentUserType == 'user' || finalCurrentUserType == 'admin'}" class="nav-item">
-										<a class="nav-link" href="/my_profile">Mon Profil</a>
-									</li>
-									<li th:if="${finalCurrentUserType == 'visitor' || finalCurrentUserType == 'user' || finalCurrentUserType == 'admin'}" class="nav-item">
-										<a class="nav-link" href="/cart">Panier (<span class="cart-count">0</span>)</a>
-									</li>
-									<li th:if="${finalCurrentUserType == 'user' || finalCurrentUserType == 'admin'}" class="nav-item">
-											<a class="nav-link" href="/orders">Mes Commandes</a>
-									</li>
+							<li th:if="${finalCurrentUserType == 'admin'}" class="nav-item dropdown">
+								<a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+									Admin
+								</a>
+								<ul class="dropdown-menu">
+									<li><a class="dropdown-item" href="/admin/plants">Gestion Plantes</a></li>
+									<li><a class="dropdown-item" href="/admin/users">Gestion Utilisateurs</a></li>
+								</ul>
+							</li>
 
-									<li th:if="${finalCurrentUserType == 'admin'}" class="nav-item dropdown">
-											<a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
-													Admin
-											</a>
-											<ul class="dropdown-menu">
-													<li><a class="dropdown-item" href="/admin/plants">Gestion Plantes</a></li>
-													<li><a class="dropdown-item" href="/admin/users">Gestion Utilisateurs</a></li>
-											</ul>
-									</li>
-
-									<li th:if="${finalCurrentUserType == 'user' or finalCurrentUserType == 'admin'}" class="nav-item">
-											<form th:action="@{/logout}" method="post">
-													<button type="submit" class="nav-link btn btn-link">Déconnexion</button>
-											</form>
-									</li>
-							</ul>
+							<li th:if="${finalCurrentUserType == 'user' or finalCurrentUserType == 'admin'}" class="nav-item">
+								<form th:action="@{/logout}" method="post">
+									<button type="submit" class="nav-link btn btn-link">Déconnexion</button>
+								</form>
+							</li>
+						</ul>
 					</div>
+				</div>
+			</nav>
+
+			<div class="container">
+				<!-- Messages flash -->
+				<div th:if="${message}" class="alert alert-success" th:text="${message}"></div>
+				<div th:if="${error}" class="alert alert-danger" th:text="${error}"></div>
+
+				<!-- Contenu principal -->
+				<div layout:fragment="content"></div>
 			</div>
-		</nav>
 
-    <div class="container">
-        <!-- Messages flash -->
-        <div th:if="${message}" class="alert alert-success" th:text="${message}"></div>
-        <div th:if="${error}" class="alert alert-danger" th:text="${error}"></div>
-
-        <!-- Contenu principal -->
-        <div layout:fragment="content"></div>
-    </div>
-
-    <!-- Bootstrap JS -->
-    <script src="/webjars/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
-    <script src="/js/app.js"></script>
-		<script>
-			function refreshCart(){
-				const total=(JSON.parse(localStorage.getItem('cart')||'[]'))
-										 .reduce((s,i)=>s+i.qty,0);
-				document.querySelectorAll('.cart-count').forEach(e=>e.textContent=total);
-			}
-			refreshCart();
-			window.addEventListener('storage',e=>e.key==='cart'&&refreshCart());
-		</script>
-    </th:block> <!-- Fin du bloc de variables calculées -->
-    </th:block> <!-- Fin du bloc de sécurité -->
+			<!-- Bootstrap JS -->
+			<script src="/webjars/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
+			<script src="/js/app.js"></script>
+			<script>
+				function refreshCart() {
+					const total = (JSON.parse(localStorage.getItem('cart') || '[]'))
+						.reduce((s, i) => s + i.qty, 0);
+					document.querySelectorAll('.cart-count').forEach(e => e.textContent = total);
+				}
+				refreshCart();
+				window.addEventListener('storage', e => e.key === 'cart' && refreshCart());
+			</script>
+		</th:block> <!-- Fin du bloc de variables calculées -->
+	</th:block> <!-- Fin du bloc de sécurité -->
 </body>
 </html>

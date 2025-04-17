@@ -1,5 +1,6 @@
 package com.planteshop.model.entity;
 
+import com.planteshop.model.enums.RoleType;
 import jakarta.persistence.*;
 import java.util.List;
 
@@ -12,12 +13,13 @@ public class User {
     private String name;
     private String email;
     private String password;
-    private boolean admin;
+
+    @Enumerated(EnumType.STRING)
+    private RoleType role;
 
     @OneToMany(mappedBy = "user")
     private List<CustomerOrder> orders;
 
-    // Getters, setters
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
     public String getName() { return name; }
@@ -26,8 +28,8 @@ public class User {
     public void setEmail(String email) { this.email = email; }
     public String getPassword() { return password; }
     public void setPassword(String password) { this.password = password; }
-    public boolean isAdmin() { return admin; }
-    public void setAdmin(boolean admin) { this.admin = admin; }
+    public RoleType getRole() { return role; }
+    public void setRole(RoleType role) { this.role = role; }
     public List<CustomerOrder> getOrders() { return orders; }
     public void setOrders(List<CustomerOrder> orders) { this.orders = orders; }
 }
