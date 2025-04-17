@@ -1,18 +1,23 @@
 package com.planteshop.seed;
 
-import com.planteshop.model.entity.Plant;
-import com.planteshop.model.entity.User;
-import com.planteshop.repository.PlantRepository;
-import com.planteshop.repository.UserRepository;
-import net.datafaker.Faker;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Profile;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
-import java.io.FileWriter;
-import java.io.IOException;
-import java.util.*;
+import com.planteshop.model.entity.Plant;
+import com.planteshop.model.entity.User;
+import com.planteshop.model.enums.RoleType;
+import com.planteshop.repository.PlantRepository;
+import com.planteshop.repository.UserRepository;
+
+import net.datafaker.Faker;
 
 @Component
 @Profile("seed")
@@ -78,7 +83,7 @@ public class DatabaseSeeder implements CommandLineRunner {
         user.setName(name);
         user.setEmail(email);
         user.setPassword(passwordEncoder.encode(rawPassword));
-        user.setAdmin(isAdmin);
+        user.setRole(isAdmin ? RoleType.ADMIN : RoleType.USER);
 
         credentials.add(new Credential(email, rawPassword, isAdmin));
         return user;
