@@ -8,7 +8,7 @@
 <body>
 	<div layout:fragment="content">
 		<section class="container pt-5 mt-5">
-			<div sec:authorize="hasRole('ADMIN')" class="mb-3">
+			<div th:if="${finalCurrentUserType == 'admin'}" class="mb-3">
 				<a href="/admin/plants/new" class="btn btn-primary">Ajouter une plante</a>
 			</div>
 

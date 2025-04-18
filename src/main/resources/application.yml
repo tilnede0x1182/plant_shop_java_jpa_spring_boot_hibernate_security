@@ -21,11 +21,11 @@ spring:
     mode: HTML
     encoding: UTF-8
     cache: false
-  security:
-    user:
-      name: admin
-      password: admin
-      roles: ADMIN
+  # security:
+  #   user:
+  #     name: admin
+  #     password: admin
+  #     roles: ADMIN
   sql:
     init:
       mode: never

@@ -86,6 +86,8 @@ public class DatabaseSeeder implements CommandLineRunner {
         user.setRole(isAdmin ? RoleType.ADMIN : RoleType.USER);
 
         credentials.add(new Credential(email, rawPassword, isAdmin));
+				System.err.println("DEBUG : 📝 Créé : " + email + " | " + rawPassword + " | role=" + (isAdmin ? "ADMIN" : "USER"));
+
         return user;
     }
 

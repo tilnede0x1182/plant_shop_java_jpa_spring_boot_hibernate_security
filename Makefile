@@ -27,7 +27,7 @@ install:
 
 # Lance l'application
 run:
-	clear && mvn -q spring-boot:run -Dspring-boot.run.profiles=$(PROFILE) | grep -E "WARN|ERROR"
+	clear && mvn -q spring-boot:run -Dspring-boot.run.profiles=$(PROFILE) | grep -E "WARN|ERROR|DEBUG :"
 
 prod: clean
 	clear && mvn -q spring-boot:run -Dspring-boot.run.profiles=prod | grep -E "WARN|ERROR"
@@ -56,6 +56,7 @@ reset: seed
 
 # Tâche pour seed la base de données (si vous avez un mécanisme de seed)
 seed:
-	clear && mvn -q spring-boot:run -Dspring-boot.run.profiles=seed | grep -E "WARN|ERROR"
+	# clear && mvn -q spring-boot:run -Dspring-boot.run.profiles=seed | grep -E "WARN|ERROR|DEBUG :"
+	clear && mvn -q spring-boot:run -Dspring-boot.run.profiles=seed | grep -E "WARN|ERROR|DEBUG :|DEBUG"
 
 .PHONY: test clean db-create db-drop update reset seed

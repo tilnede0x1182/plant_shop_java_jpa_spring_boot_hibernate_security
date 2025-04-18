@@ -118,6 +118,7 @@ public class OrderItem {
 # src/main/java/com/planteshop/model/entity/User.java
 package com.planteshop.model.entity;
 
+import com.planteshop.model.enums.RoleType;
 import jakarta.persistence.*;
 import java.util.List;
 
@@ -130,12 +131,13 @@ public class User {
     private String name;
     private String email;
     private String password;
-    private boolean admin;
+
+    @Enumerated(EnumType.STRING)
+    private RoleType role;
 
     @OneToMany(mappedBy = "user")
     private List<CustomerOrder> orders;
 
-    // Getters, setters
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
     public String getName() { return name; }
@@ -144,8 +146,8 @@ public class User {
     public void setEmail(String email) { this.email = email; }
     public String getPassword() { return password; }
     public void setPassword(String password) { this.password = password; }
-    public boolean isAdmin() { return admin; }
-    public void setAdmin(boolean admin) { this.admin = admin; }
+    public RoleType getRole() { return role; }
+    public void setRole(RoleType role) { this.role = role; }
     public List<CustomerOrder> getOrders() { return orders; }
     public void setOrders(List<CustomerOrder> orders) { this.orders = orders; }
 }
@@ -179,6 +181,47 @@ public class Plant {
     public void setCategory(String category) { this.category = category; }
     public Integer getStock() { return stock; }
     public void setStock(Integer stock) { this.stock = stock; }
+}
+
+# src/main/java/com/planteshop/service/impl/UserDetailsServiceImpl.java
+package com.planteshop.service.impl;
+
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.stereotype.Service;
+
+import com.planteshop.model.entity.User;
+import com.planteshop.repository.UserRepository;
+
+@Service
+public class UserDetailsServiceImpl implements UserDetailsService {
+
+    private final UserRepository userRepository;
+
+    public UserDetailsServiceImpl(UserRepository userRepository) {
+        this.userRepository = userRepository;
+    }
+
+    @Override
+    public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
+				System.err.println("⚙️ Méthode loadUserByUsername appelée");
+        System.err.println("🔍 Tentative de connexion avec : " + email);
+        User user = userRepository.findByEmail(email)
+            .orElseThrow(() -> {
+                System.err.println("Email introuvable en base : " + email);
+                return new UsernameNotFoundException("Utilisateur non trouvé");
+            });
+
+				System.err.println("DEBUG : Utilisateur trouvé : " + user.getEmail());
+				System.err.println("DEBUG : Hash stocké : " + user.getPassword());
+				return org.springframework.security.core.userdetails.User
+					.withUsername(user.getEmail())
+					.password(user.getPassword())
+					.roles(user.getRole().name())
+					.build();
+
+    }
 }
 
 # src/main/java/com/planteshop/controller/api/ApiPlantController.java
@@ -315,8 +358,8 @@ public class WebPlantController {
 package com.planteshop.controller.web;
 
 import com.planteshop.model.entity.User;
+import com.planteshop.model.enums.RoleType;
 import com.planteshop.repository.UserRepository;
-import com.planteshop.util.StringUtils;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -352,7 +395,7 @@ public class RegistrationController {
         }
 
         user.setPassword(passwordEncoder.encode(user.getPassword()));
-        user.setAdmin(false);
+        user.setRole(RoleType.USER);
         userRepository.save(user);
 
         return "redirect:/login?registered";
@@ -363,7 +406,6 @@ public class RegistrationController {
 package com.planteshop.controller;
 
 import com.planteshop.model.entity.User;
-import com.planteshop.model.enums.RoleType;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ModelAttribute;
@@ -389,59 +431,88 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+
+import com.planteshop.repository.UserRepository;
+import com.planteshop.service.impl.UserDetailsServiceImpl;
 
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
 
-    @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-        http
-            .csrf(csrf -> csrf.disable())
-            .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/", "/favicon.svg", "/favicon.ico", "/plants", "/plants/**", "/css/**", "/js/**", "/webjars/**", "/login", "/register", "/api/plants/**", "/cart/**" ).permitAll()
-                .requestMatchers("/admin/**").hasRole("ADMIN")
-                .requestMatchers("/orders/**", "/my_profile/**").authenticated()
-                .anyRequest().permitAll() // Modifié pour permettre l'accès à tout le reste
-            )
-            .formLogin(form -> form
-                .loginPage("/login")
-                .defaultSuccessUrl("/plants") // Page après login réussi
-                .permitAll()
-            )
-            .logout(logout -> logout
-                .logoutSuccessUrl("/") // Page après logout
-                .permitAll()
-            );
+	@Bean
+	public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+		http
+				.csrf(csrf -> csrf.disable())
+				.authorizeHttpRequests(auth -> auth
+						.requestMatchers(
+								"/",
+								"/favicon.svg",
+								"/favicon.ico",
+								"/plants",
+								"/plants/**",
+								"/css/**",
+								"/js/**",
+								"/webjars/**",
+								"/login",
 
-        return http.build();
-    }
+								"/register",
+								"/api/plants/**",
+								"/cart/**")
 
-    @Bean
-    public PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder();
-    }
+						.permitAll()
+						.requestMatchers("/admin/**").hasRole("ADMIN")
+						.requestMatchers("/orders/**", "/my_profile/**").authenticated()
+						.anyRequest().permitAll() // Modifié pour permettre l'accès à tout le reste
+				)
+				.formLogin(form -> form
+						.loginPage("/login")
+						.usernameParameter("email")
+						.defaultSuccessUrl("/plants") // Page après login réussi
+						.permitAll())
+				.logout(logout -> logout
+						.logoutSuccessUrl("/") // Page après logout
+						.permitAll());
+
+		return http.build();
+	}
+
+	@Bean
+	public PasswordEncoder passwordEncoder() {
+		return new BCryptPasswordEncoder();
+	}
+
+	@Bean
+	public UserDetailsService userDetailsService(UserRepository userRepository) {
+		System.err.println("Bean UserDetailsServiceImpl créé");
+		return new UserDetailsServiceImpl(userRepository);
+	}
 }
 
 # src/main/java/com/planteshop/seed/DatabaseSeeder.java
 package com.planteshop.seed;
 
-import com.planteshop.model.entity.Plant;
-import com.planteshop.model.entity.User;
-import com.planteshop.repository.PlantRepository;
-import com.planteshop.repository.UserRepository;
-import net.datafaker.Faker;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Profile;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
-import java.io.FileWriter;
-import java.io.IOException;
-import java.util.*;
+import com.planteshop.model.entity.Plant;
+import com.planteshop.model.entity.User;
+import com.planteshop.model.enums.RoleType;
+import com.planteshop.repository.PlantRepository;
+import com.planteshop.repository.UserRepository;
+
+import net.datafaker.Faker;
 
 @Component
 @Profile("seed")
@@ -507,9 +578,11 @@ public class DatabaseSeeder implements CommandLineRunner {
         user.setName(name);
         user.setEmail(email);
         user.setPassword(passwordEncoder.encode(rawPassword));
-        user.setAdmin(isAdmin);
+        user.setRole(isAdmin ? RoleType.ADMIN : RoleType.USER);
 
         credentials.add(new Credential(email, rawPassword, isAdmin));
+				System.err.println("DEBUG : 📝 Créé : " + email + " | " + rawPassword + " | role=" + (isAdmin ? "ADMIN" : "USER"));
+
         return user;
     }
 
@@ -744,6 +817,7 @@ public class PlantShopApplication {
 │   │   │           │   └── DatabaseSeeder.java
 │   │   │           ├── service
 │   │   │           │   └── impl
+│   │   │           │       └── UserDetailsServiceImpl.java
 │   │   │           └── util
 │   │   │               └── StringUtils.java
 │   │   └── resources
@@ -782,15 +856,20 @@ public class PlantShopApplication {
 │   │   ├── com
 │   │   │   └── planteshop
 │   │   │       ├── config
+│   │   │       │   └── SecurityConfig.class
 │   │   │       ├── controller
 │   │   │       │   ├── admin
 │   │   │       │   ├── api
+│   │   │       │   │   └── ApiPlantController.class
 │   │   │       │   ├── exception
+│   │   │       │   ├── GlobalUserTypeAdvice$1.class
 │   │   │       │   ├── GlobalUserTypeAdvice.class
 │   │   │       │   └── web
 │   │   │       │       ├── CartController.class
+│   │   │       │       ├── LoginController.class
 │   │   │       │       ├── ProfileController.class
-│   │   │       │       └── RegistrationController.class
+│   │   │       │       ├── RegistrationController.class
+│   │   │       │       └── WebPlantController.class
 │   │   │       ├── model
 │   │   │       │   ├── dto
 │   │   │       │   │   ├── request
@@ -802,6 +881,7 @@ public class PlantShopApplication {
 │   │   │       │   │   └── User.class
 │   │   │       │   └── enums
 │   │   │       │       └── RoleType.class
+│   │   │       ├── PlantShopApplication.class
 │   │   │       ├── repository
 │   │   │       │   ├── OrderRepository.class
 │   │   │       │   ├── PlantRepository.class
@@ -811,6 +891,7 @@ public class PlantShopApplication {
 │   │   │       │   └── DatabaseSeeder.class
 │   │   │       ├── service
 │   │   │       │   └── impl
+│   │   │       │       └── UserDetailsServiceImpl.class
 │   │   │       └── util
 │   │   │           └── StringUtils.class
 │   │   ├── db
@@ -859,4 +940,4 @@ public class PlantShopApplication {
 ├── tmp.txt
 └── users.txt
 
-86 directories, 75 files
+86 directories, 83 files
