@@ -21,6 +21,11 @@ spring:
     mode: HTML
     encoding: UTF-8
     cache: false
+  security:
+    user:
+      name: admin
+      password: admin
+      roles: ADMIN
   sql:
     init:
       mode: never
@@ -29,7 +34,6 @@ logging:
   level:
     org.hibernate.SQL: DEBUG
     org.hibernate.type.descriptor.sql.BasicBinder: TRACE
-    org.springframework.security: DEBUG
 
 ---
 
