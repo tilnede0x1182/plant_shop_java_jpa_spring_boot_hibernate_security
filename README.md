@@ -12,7 +12,7 @@ Application complète de vente de plantes avec architecture modulaire :
 - **Persistence**:
   - JPA 3.1 (Jakarta)
   - Hibernate 6.2
-  - SQLite (Production) / H2 (Dev)
+  - PostgreSQL 42.7.3 (via driver JDBC)
 - **Sécurité**:
   - Spring Security 6
   - JWT Authentication

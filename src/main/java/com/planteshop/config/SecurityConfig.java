@@ -4,39 +4,63 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+
+import com.planteshop.repository.UserRepository;
+import com.planteshop.service.impl.UserDetailsServiceImpl;
 
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
 
-    @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-        http
-            .csrf(csrf -> csrf.disable())
-            .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/", "/favicon.svg", "/favicon.ico", "/plants", "/plants/**", "/css/**", "/js/**", "/webjars/**", "/login", "/register", "/api/plants/**", "/cart/**" ).permitAll()
-                .requestMatchers("/admin/**").hasRole("ADMIN")
-                .requestMatchers("/orders/**", "/my_profile/**").authenticated()
-                .anyRequest().permitAll() // Modifié pour permettre l'accès à tout le reste
-            )
-            .formLogin(form -> form
-                .loginPage("/login")
-                .defaultSuccessUrl("/plants") // Page après login réussi
-                .permitAll()
-            )
-            .logout(logout -> logout
-                .logoutSuccessUrl("/") // Page après logout
-                .permitAll()
-            );
+	@Bean
+	public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+		http
+				.csrf(csrf -> csrf.disable())
+				.authorizeHttpRequests(auth -> auth
+						.requestMatchers(
+								"/",
+								"/favicon.svg",
+								"/favicon.ico",
+								"/plants",
+								"/plants/**",
+								"/css/**",
+								"/js/**",
+								"/webjars/**",
+								"/login",
 
-        return http.build();
-    }
+								"/register",
+								"/api/plants/**",
+								"/cart/**")
 
-    @Bean
-    public PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder();
-    }
+						.permitAll()
+						.requestMatchers("/admin/**").hasRole("ADMIN")
+						.requestMatchers("/orders/**", "/my_profile/**").authenticated()
+						.anyRequest().permitAll() // Modifié pour permettre l'accès à tout le reste
+				)
+				.formLogin(form -> form
+						.loginPage("/login")
+						.usernameParameter("email")
+						.defaultSuccessUrl("/plants") // Page après login réussi
+						.permitAll())
+				.logout(logout -> logout
+						.logoutSuccessUrl("/") // Page après logout
+						.permitAll());
+
+		return http.build();
+	}
+
+	@Bean
+	public PasswordEncoder passwordEncoder() {
+		return new BCryptPasswordEncoder();
+	}
+
+	@Bean
+	public UserDetailsService userDetailsService(UserRepository userRepository) {
+		System.err.println("Bean UserDetailsServiceImpl créé");
+		return new UserDetailsServiceImpl(userRepository);
+	}
 }
