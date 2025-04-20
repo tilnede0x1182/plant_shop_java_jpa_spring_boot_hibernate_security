@@ -1,7 +1,1239 @@
+# target/classes/static/index.html
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>OrganisationSim - Accueil</title>
+	<link rel="icon" type="image/x-icon" href="favicon/organisation-sim.svg">
+  <link rel="stylesheet" href="style/main.css">
+</head>
+<body>
+
+<!-- 🔗 Barre de navigation globale -->
+<nav class="navbar">
+  <a href="index.html" class="logo">OrganisationSim</a>
+  <a href="constraints.html">Créer un projet</a>
+  <a href="projects.html">Liste des projets</a>
+</nav>
+
+<header>
+  <h1>Bienvenue sur OrganisationSim</h1>
+</header>
+
+<div class="container">
+  <h2>Tableau récapitulatif (Diagramme de Pert simplifié)</h2>
+
+  <table class="pert-table">
+    <thead>
+      <tr>
+        <th>Étape</th>
+        <th>Responsable</th>
+        <th>Durée estimée</th>
+        <th>Prérequis</th>
+      </tr>
+    </thead>
+    <tbody id="pertTableBody">
+      <tr>
+        <td>Analyse</td>
+        <td>Chef de projet</td>
+        <td>3 jours</td>
+        <td>-</td>
+      </tr>
+      <tr>
+        <td>Conception</td>
+        <td>Architecte</td>
+        <td>5 jours</td>
+        <td>Analyse</td>
+      </tr>
+      <tr>
+        <td>Développement</td>
+        <td>Équipe Dev</td>
+        <td>10 jours</td>
+        <td>Conception</td>
+      </tr>
+      <tr>
+        <td>Recette</td>
+        <td>QA</td>
+        <td>4 jours</td>
+        <td>Développement</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+</body>
+</html>
+
+# target/classes/templates/login.html
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      layout:decorate="~{fragments/base}"
+      th:with="title='Connexion'">
+<head>
+    <title>Connexion</title>
+</head>
+<body>
+<div layout:fragment="content">
+    <section class="container pt-5 mt-5">
+        <div class="row justify-content-center">
+            <div class="col-md-6 col-lg-4">
+                <div class="card shadow">
+                    <div class="card-header bg-success text-white">
+                        <h4 class="mb-0 text-center">Connexion</h4>
+                    </div>
+                    <div class="card-body p-4">
+
+                        <div th:if="${param.error}" class="alert alert-danger">
+                            Identifiants invalides
+                        </div>
+
+                        <form th:action="@{/login}" method="post">
+                            <div class="mb-3">
+                                <label for="username" class="form-label">Email</label>
+                                <input type="text" class="form-control" id="username" name="email" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="password" class="form-label">Mot de passe</label>
+                                <input type="password" class="form-control" id="password" name="password" required>
+                            </div>
+                            <button type="submit" class="btn btn-success w-100">Se connecter</button>
+                        </form>
+
+												<div class="mt-3 text-center">
+													<span>Pas encore de compte ?&nbsp;</span>
+													<a th:href="@{/register}" class="text-success text-decoration-none">Inscrivez-vous !</a>
+											</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+</div>
+</body>
+</html>
+
+# target/classes/templates/plants/show.html
+<!DOCTYPE html>
+<html layout:decorate="~{fragments/base}" xmlns:th="http://www.thymeleaf.org">
+    <div layout:fragment="content">
+        <div class="container">
+            <h1 class="mb-4">🌱 Détail de la plante</h1>
+
+            <div class="card mb-4 shadow-sm">
+                <div class="card-body">
+                    <h2 class="card-title" th:text="${plant.name}">Nom de la plante</h2>
+                    <p class="card-text" th:text="${plant.description}">Description</p>
+
+                    <ul class="list-group list-group-flush mb-3">
+                        <li class="list-group-item">
+                            <strong>Catégorie :</strong> <span th:text="${plant.category}">Catégorie</span>
+                        </li>
+                        <li class="list-group-item">
+                            <strong>Prix :</strong> <span th:text="${plant.price}">0.00</span> €
+                        </li>
+                        <li class="list-group-item">
+                            <strong>Stock disponible :</strong> <span th:text="${plant.stock}">0</span>
+                        </li>
+                    </ul>
+
+                    <a href="/plants" class="btn btn-secondary">Retour à la liste</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</html>
+
+# target/classes/templates/plants/index.html
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" layout:decorate="~{fragments/base}" th:with="title='Liste des plantes'">
+
+<head>
+	<title>Plantes</title>
+</head>
+
+<body>
+	<div layout:fragment="content">
+		<section class="container pt-5 mt-5">
+			<div th:if="${finalCurrentUserType == 'admin'}" class="mb-3">
+				<a href="/admin/plants/new" class="btn btn-primary">Ajouter une plante</a>
+			</div>
+
+			<div class="row">
+				<div th:each="plant : ${plants}" class="col-md-4 mb-4">
+					<div class="card h-100">
+						<div class="card-body">
+							<a th:href="@{/plants/{id}(id=${plant.id})}" class="stretched-link text-decoration-none text-dark">
+								<h5 class="card-title" th:text="${plant.name}">Nom</h5>
+								<p class="card-text" th:text="${plant.description}">Description</p>
+								<p class="text-muted">Prix : <span th:text="${plant.price}">0.0</span> €</p>
+								<p class="text-muted">Stock : <span th:text="${plant.stock}">0</span></p>
+
+								<div class="d-flex justify-content-between gap-2">
+									<button type="button" class="btn  flex-grow-1 btn-success add-to-cart" th:data-id="${plant.id}"
+										th:data-name="${plant.name}" th:data-price="${plant.price}">
+										Ajouter au panier
+									</button>
+								</div>
+							</a>
+						</div>
+					</div>
+				</div>
+			</div>
+		</section>
+		<script>
+			document.addEventListener('DOMContentLoaded', () => {
+				const load = () => JSON.parse(localStorage.getItem('cart') || '[]');
+				const save = c => localStorage.setItem('cart', JSON.stringify(c));
+
+				document.querySelectorAll('.add-to-cart').forEach(btn => {
+					btn.addEventListener('click', e => {
+						const id = btn.dataset.id;
+						const name = btn.dataset.name;
+						const price = parseFloat(btn.dataset.price);
+
+						const cart = load();
+						const item = cart.find(i => i.id == id);
+						item ? item.qty++ : cart.push({id, name, price, qty: 1});
+						save(cart);
+						refreshCart();                 // fonction déjà définie dans base.html
+					});
+				});
+			});
+		</script>
+	</div>
+</body>
+
+</html>
+
+# target/classes/templates/register.html
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      layout:decorate="~{fragments/base}"
+      th:with="title='Inscription'">
+<head>
+    <title>Inscription</title>
+</head>
+<body>
+    <div layout:fragment="content">
+        <section class="container pt-5 mt-5">
+            <div class="row justify-content-center">
+                <div class="col-md-6">
+                    <div class="card shadow">
+                        <div class="card-header bg-success text-white">
+                            <h4 class="mb-0">Créer un compte</h4>
+                        </div>
+                        <div class="card-body">
+                            <form th:action="@{/register}" th:object="${user}" method="post">
+                                <div class="mb-3">
+                                    <label class="form-label">Nom complet</label>
+                                    <input type="text" class="form-control" th:field="*{name}" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Adresse email</label>
+                                    <input type="email" class="form-control" th:field="*{email}" required>
+                                    <small class="text-danger" th:if="${#fields.hasErrors('email')}" th:errors="*{email}"></small>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Mot de passe</label>
+                                    <input type="password" class="form-control" th:field="*{password}" required>
+                                </div>
+                                <button type="submit" class="btn btn-success w-100">S'inscrire</button>
+                            </form>
+                            <hr>
+                            <p class="text-center mb-0">
+                                Déjà un compte ?
+																&nbsp;
+                                <a th:href="@{/login}" class="text-success">Se connecter</a>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+</body>
+</html>
+
+# target/classes/templates/cart.html
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      layout:decorate="~{fragments/base}"
+      th:with="title='Panier'">
+<head>
+    <title>Panier</title>
+</head>
+<body>
+<div layout:fragment="content">
+    <section class="container pt-5 mt-5">
+        <h2 class="mb-4">🛒 Votre panier</h2>
+
+        <div class="table-responsive">
+            <table class="table align-middle">
+                <thead>
+                <tr>
+                    <th>Produit</th>
+                    <th>Prix (€)</th>
+                    <th>Quantité</th>
+                    <th>Sous‑total (€)</th>
+                    <th></th>
+                </tr>
+                </thead>
+                <tbody id="cartBody">
+                <tr id="emptyRow">
+                    <td colspan="5" class="text-center">Votre panier est vide.</td>
+                </tr>
+                </tbody>
+                <tfoot class="table-light">
+                <tr>
+                    <th colspan="3" class="text-end">Total&nbsp;:</th>
+                    <th id="cartTotal">0.00</th>
+                    <th></th>
+                </tr>
+                </tfoot>
+            </table>
+        </div>
+
+				<div class="text-start">
+					<a href="#" class="btn btn-success">Terminer la commande</a>
+			</div>
+    </section>
+		<script>
+			document.addEventListener('DOMContentLoaded', () => {
+					const body   = document.getElementById('cartBody');
+					const totalE = document.getElementById('cartTotal');
+					const countE = document.querySelectorAll('.cart-count');
+
+					const load = () => JSON.parse(localStorage.getItem('cart') || '[]');
+					const save = c => localStorage.setItem('cart', JSON.stringify(c));
+
+					function render() {
+							const cart = load();
+							body.innerHTML = '';
+							let total = 0;
+
+							if (cart.length === 0) {
+									body.innerHTML = '<tr><td colspan="5" class="text-center">Votre panier est vide.</td></tr>';
+							} else {
+								cart.forEach((item, i) => {
+									const sub = item.price * item.qty;
+									total += sub;
+									body.insertAdjacentHTML('beforeend', `
+											<tr>
+													<td>${item.name}</td>
+													<td>${item.price.toFixed(2)}</td>
+													<td>
+														<input type="number"
+																	min="1"
+																	onkeydown="return event.key !== 'e' && event.key !== '-'"
+																	value="${item.qty}"
+																	class="form-control form-control-sm qty-input"
+																	style="width:80px;" data-i="${i}">
+													</td>
+													<td>${sub.toFixed(2)}</td>
+													<td><button class="btn btn-sm btn-danger" data-i="${i}">✕</button></td>
+											</tr>
+								`	);
+								});
+								body.querySelectorAll('.qty-input').forEach(input => {
+									input.addEventListener('input', updateQty);
+									input.addEventListener('blur', updateQty);
+								});
+							}
+							totalE.textContent = total.toFixed(2);
+							countE.forEach(e => e.textContent = cart.reduce((s, it) => s + it.qty, 0));
+					}
+
+					body.addEventListener('click', e => {
+							if (e.target.matches('button[data-i]')) {
+									const cart = load();
+									cart.splice(e.target.dataset.i, 1);
+									save(cart);
+									render();
+							}
+					});
+
+					function updateQty(e) {
+							const i = e.target.dataset.i;
+							let val = parseInt(e.target.value);
+
+							if (isNaN(val) || val < 1) val = 1;
+							e.target.value = val;
+
+							const cart = load();
+							cart[i].qty = val;
+							save(cart);
+							render();
+					}
+
+					render();
+					body.querySelectorAll('.qty-input').forEach(input => {
+							input.addEventListener('input', updateQty);
+							input.addEventListener('blur', updateQty);
+					});g
+			});
+			</script>
+	</div>
+</body>
+</html>
+
+# target/classes/templates/profile.html
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Mon Profil | PlantShop</title>
+    <link rel="stylesheet" href="/webjars/bootstrap/5.3.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <div th:replace="~{fragments/base :: header}"></div>
+
+    <main class="container my-5">
+        <div class="row justify-content-center">
+            <div class="col-md-8">
+                <div class="card shadow">
+                    <div class="card-header bg-success text-white">
+                        <h2 class="h4 mb-0">Mon Profil</h2>
+                    </div>
+                    <div class="card-body">
+                        <div class="row mb-4">
+                            <div class="col-md-4 text-center">
+                                <div class="rounded-circle bg-light d-flex align-items-center justify-content-center"
+                                     style="width: 150px; height: 150px; margin: 0 auto;">
+                                    <i class="fas fa-user fa-3x text-success"></i>
+                                </div>
+                            </div>
+                            <div class="col-md-8">
+                                <h3 class="h5" th:text="${user.name}">Nom Utilisateur</h3>
+                                <p class="text-muted" th:text="${user.email}">email@example.com</p>
+
+                                <div class="mt-3" th:if="${user.admin}">
+                                    <span class="badge bg-warning text-dark">Administrateur</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="border-top pt-3">
+                            <h4 class="h5 mb-3">Informations du compte</h4>
+                            <dl class="row">
+                                <dt class="col-sm-3">Nom complet</dt>
+                                <dd class="col-sm-9" th:text="${user.name}">-</dd>
+
+                                <dt class="col-sm-3">Email</dt>
+                                <dd class="col-sm-9" th:text="${user.email}">-</dd>
+
+                                <dt class="col-sm-3">Type de compte</dt>
+                                <dd class="col-sm-9">
+                                    <span th:if="${user.admin}">Administrateur</span>
+                                    <span th:unless="${user.admin}">Utilisateur standard</span>
+                                </dd>
+                            </dl>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <div th:replace="~{fragments/base :: footer}"></div>
+
+    <script src="/webjars/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
+    <script src="https://kit.fontawesome.com/a14342fe13.js" crossorigin="anonymous"></script>
+</body>
+</html>
+
+# target/classes/templates/fragments/base.html
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>PlantShop - [[${title}]]</title>
+
+	<!-- Bootstrap CSS -->
+	<link rel="stylesheet" href="/webjars/bootstrap/5.3.2/css/bootstrap.min.css">
+
+	<!-- Custom CSS -->
+	<link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+
+<body>
+	<th:block th:with="userRoleString=${userRole}">
+
+		<script th:inline="javascript">
+			document.addEventListener('DOMContentLoaded', () => {
+				console.log('userRoleString = [[${userRoleString}]]');
+			});
+		</script>
+		<!-- Navbar -->
+		<nav class="navbar navbar-expand-lg navbar-dark bg-dark mb-4 fixed-top">
+			<div class="container">
+				<a class="navbar-brand" href="/">🌿 PlantShop</a>
+				<button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+					<span class="navbar-toggler-icon"></span>
+				</button>
+
+				<div class="collapse navbar-collapse" id="navbarNav">
+					<ul class="navbar-nav me-auto"></ul>
+					<ul class="navbar-nav">
+						<li th:if="${loggedUserName}" class="navbar-text text-white me-2" th:text="${loggedUserName}">
+						</li>
+						<li
+							th:if="${userRoleString == 'visitor' || userRoleString == 'user' || userRoleString == 'admin'}"
+							class="nav-item">
+							<a class="nav-link" href="/cart">Panier (<span class="cart-count">0</span>)</a>
+						</li>
+						<li th:if="${userRoleString == 'visitor'}" class="nav-item">
+							<a class="nav-link" href="/login">Connexion</a>
+						</li>
+						<li th:if="${userRoleString == 'visitor'}" class="nav-item">
+							<a class="nav-link" href="/register">Inscription</a>
+						</li>
+						<li th:if="${userRoleString == 'user' || userRoleString == 'admin'}" class="nav-item">
+							<a class="nav-link" href="/my_profile">Mon Profil</a>
+						</li>
+						<li th:if="${userRoleString == 'user' || userRoleString == 'admin'}" class="nav-item">
+							<a class="nav-link" href="/orders">Mes Commandes</a>
+						</li>
+
+						<li th:if="${userRoleString == 'admin'}" class="nav-item dropdown">
+							<a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+								Admin
+							</a>
+							<ul class="dropdown-menu">
+								<li><a class="dropdown-item" href="/admin/plants">Gestion Plantes</a></li>
+								<li><a class="dropdown-item" href="/admin/users">Gestion Utilisateurs</a></li>
+							</ul>
+						</li>
+
+						<li th:if="${userRoleString == 'user' or userRoleString == 'admin'}" class="nav-item">
+							<form th:action="@{/logout}" method="post">
+								<button type="submit" class="nav-link btn btn-link">Déconnexion</button>
+							</form>
+						</li>
+					</ul>
+				</div>
+			</div>
+		</nav>
+
+		<div class="container">
+			<!-- Messages flash -->
+			<div th:if="${message}" class="alert alert-success" th:text="${message}"></div>
+			<div th:if="${error}" class="alert alert-danger" th:text="${error}"></div>
+
+			<!-- Contenu principal -->
+			<div layout:fragment="content"></div>
+		</div>
+
+		<!-- Bootstrap JS -->
+		<script src="/webjars/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
+		<script src="/js/app.js"></script>
+		<script th:inline="javascript">
+			function refreshCart() {
+				const total = (JSON.parse(localStorage.getItem('cart') || '[]'))
+					.reduce((s, i) => s + i.qty, 0);
+				document.querySelectorAll('.cart-count').forEach(e => e.textContent = total);
+			}
+			refreshCart();
+			window.addEventListener('storage', e => e.key === 'cart' && refreshCart());
+		</script>
+	</th:block> <!-- Fin du bloc de variables calculées -->
+	</th:block> <!-- Fin du bloc de sécurité -->
+</body>
+
+</html>
+
+# target/classes/templates/fragments/navbar.html
+<!-- templates/fragments/navbar.html -->
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark mb-4 fixed-top"
+     th:fragment="navbar"                         <!-- ← nom du fragment -->
+     xmlns:th="http://www.thymeleaf.org">
+
+  <div class="container">
+    <a class="navbar-brand" href="/">🌿 PlantShop</a>
+
+    <!-- burger -->
+    <button class="navbar-toggler" type="button"
+            data-bs-toggle="collapse" data-bs-target="#navbarNav">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div class="collapse navbar-collapse" id="navbarNav">
+
+      <ul class="navbar-nav me-auto"></ul> <!-- espace gauche -->
+
+      <!-- on récupère la variable calculée dans GlobalUserTypeAdvice -->
+      <ul class="navbar-nav"
+          th:with="role=${userRole}, name=${#authentication.principal?.name}">
+
+        <li th:if="${name}" class="navbar-text text-white me-2"
+            th:text="${name}"></li>
+
+        <li class="nav-item">
+          <a class="nav-link" href="/cart">Panier
+            (<span class="cart-count">0</span>)
+          </a>
+        </li>
+
+        <!-- VISITEUR -->
+        <li th:if="${role == 'visitor'}" class="nav-item">
+          <a class="nav-link" href="/login">Connexion</a>
+        </li>
+        <li th:if="${role == 'visitor'}" class="nav-item">
+          <a class="nav-link" href="/register">Inscription</a>
+        </li>
+
+        <!-- UTILISATEUR / ADMIN -->
+        <li th:if="${role == 'user' || role == 'admin'}" class="nav-item">
+          <a class="nav-link" href="/my_profile">Mon profil</a>
+        </li>
+        <li th:if="${role == 'user' || role == 'admin'}" class="nav-item">
+          <a class="nav-link" href="/orders">Mes commandes</a>
+        </li>
+
+        <!-- ADMIN -->
+        <li th:if="${role == 'admin'}" class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle" href="#" role="button"
+             data-bs-toggle="dropdown">Admin</a>
+          <ul class="dropdown-menu">
+            <li><a class="dropdown-item" href="/admin/plants">Gestion plantes</a></li>
+            <li><a class="dropdown-item" href="/admin/users">Gestion utilisateurs</a></li>
+          </ul>
+        </li>
+
+        <!-- Déconnexion -->
+        <li th:if="${role == 'user' || role == 'admin'}" class="nav-item">
+          <form th:action="@{/logout}" method="post">
+            <button type="submit" class="nav-link btn btn-link">Déconnexion</button>
+          </form>
+        </li>
+      </ul>
+    </div>
+  </div>
+</nav>
+
 # target/maven-archiver/pom.properties
 artifactId=plant-shop-jpa-spring-boot-hibernate-security
 groupId=com.planteshop
 version=1.0.0
+
+# src/main/resources/static/index.html
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>OrganisationSim - Accueil</title>
+	<link rel="icon" type="image/x-icon" href="favicon/organisation-sim.svg">
+  <link rel="stylesheet" href="style/main.css">
+</head>
+<body>
+
+<!-- 🔗 Barre de navigation globale -->
+<nav class="navbar">
+  <a href="index.html" class="logo">OrganisationSim</a>
+  <a href="constraints.html">Créer un projet</a>
+  <a href="projects.html">Liste des projets</a>
+</nav>
+
+<header>
+  <h1>Bienvenue sur OrganisationSim</h1>
+</header>
+
+<div class="container">
+  <h2>Tableau récapitulatif (Diagramme de Pert simplifié)</h2>
+
+  <table class="pert-table">
+    <thead>
+      <tr>
+        <th>Étape</th>
+        <th>Responsable</th>
+        <th>Durée estimée</th>
+        <th>Prérequis</th>
+      </tr>
+    </thead>
+    <tbody id="pertTableBody">
+      <tr>
+        <td>Analyse</td>
+        <td>Chef de projet</td>
+        <td>3 jours</td>
+        <td>-</td>
+      </tr>
+      <tr>
+        <td>Conception</td>
+        <td>Architecte</td>
+        <td>5 jours</td>
+        <td>Analyse</td>
+      </tr>
+      <tr>
+        <td>Développement</td>
+        <td>Équipe Dev</td>
+        <td>10 jours</td>
+        <td>Conception</td>
+      </tr>
+      <tr>
+        <td>Recette</td>
+        <td>QA</td>
+        <td>4 jours</td>
+        <td>Développement</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+</body>
+</html>
+
+# src/main/resources/templates/login.html
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      layout:decorate="~{fragments/base}"
+      th:with="title='Connexion'">
+<head>
+    <title>Connexion</title>
+</head>
+<body>
+<div layout:fragment="content">
+    <section class="container pt-5 mt-5">
+        <div class="row justify-content-center">
+            <div class="col-md-6 col-lg-4">
+                <div class="card shadow">
+                    <div class="card-header bg-success text-white">
+                        <h4 class="mb-0 text-center">Connexion</h4>
+                    </div>
+                    <div class="card-body p-4">
+
+                        <div th:if="${param.error}" class="alert alert-danger">
+                            Identifiants invalides
+                        </div>
+
+                        <form th:action="@{/login}" method="post">
+                            <div class="mb-3">
+                                <label for="username" class="form-label">Email</label>
+                                <input type="text" class="form-control" id="username" name="email" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="password" class="form-label">Mot de passe</label>
+                                <input type="password" class="form-control" id="password" name="password" required>
+                            </div>
+                            <button type="submit" class="btn btn-success w-100">Se connecter</button>
+                        </form>
+
+												<div class="mt-3 text-center">
+													<span>Pas encore de compte ?&nbsp;</span>
+													<a th:href="@{/register}" class="text-success text-decoration-none">Inscrivez-vous !</a>
+											</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+</div>
+</body>
+</html>
+
+# src/main/resources/templates/plants/show.html
+<!DOCTYPE html>
+<html layout:decorate="~{fragments/base}" xmlns:th="http://www.thymeleaf.org">
+    <div layout:fragment="content">
+        <div class="container">
+            <h1 class="mb-4">🌱 Détail de la plante</h1>
+
+            <div class="card mb-4 shadow-sm">
+                <div class="card-body">
+                    <h2 class="card-title" th:text="${plant.name}">Nom de la plante</h2>
+                    <p class="card-text" th:text="${plant.description}">Description</p>
+
+                    <ul class="list-group list-group-flush mb-3">
+                        <li class="list-group-item">
+                            <strong>Catégorie :</strong> <span th:text="${plant.category}">Catégorie</span>
+                        </li>
+                        <li class="list-group-item">
+                            <strong>Prix :</strong> <span th:text="${plant.price}">0.00</span> €
+                        </li>
+                        <li class="list-group-item">
+                            <strong>Stock disponible :</strong> <span th:text="${plant.stock}">0</span>
+                        </li>
+                    </ul>
+
+                    <a href="/plants" class="btn btn-secondary">Retour à la liste</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</html>
+
+# src/main/resources/templates/plants/index.html
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" layout:decorate="~{fragments/base}" th:with="title='Liste des plantes'">
+
+<head>
+	<title>Plantes</title>
+</head>
+
+<body>
+	<div layout:fragment="content">
+		<section class="container pt-5 mt-5">
+			<div th:if="${finalCurrentUserType == 'admin'}" class="mb-3">
+				<a href="/admin/plants/new" class="btn btn-primary">Ajouter une plante</a>
+			</div>
+
+			<div class="row">
+				<div th:each="plant : ${plants}" class="col-md-4 mb-4">
+					<div class="card h-100">
+						<div class="card-body">
+							<a th:href="@{/plants/{id}(id=${plant.id})}" class="stretched-link text-decoration-none text-dark">
+								<h5 class="card-title" th:text="${plant.name}">Nom</h5>
+								<p class="card-text" th:text="${plant.description}">Description</p>
+								<p class="text-muted">Prix : <span th:text="${plant.price}">0.0</span> €</p>
+								<p class="text-muted">Stock : <span th:text="${plant.stock}">0</span></p>
+
+								<div class="d-flex justify-content-between gap-2">
+									<button type="button" class="btn  flex-grow-1 btn-success add-to-cart" th:data-id="${plant.id}"
+										th:data-name="${plant.name}" th:data-price="${plant.price}">
+										Ajouter au panier
+									</button>
+								</div>
+							</a>
+						</div>
+					</div>
+				</div>
+			</div>
+		</section>
+		<script>
+			document.addEventListener('DOMContentLoaded', () => {
+				const load = () => JSON.parse(localStorage.getItem('cart') || '[]');
+				const save = c => localStorage.setItem('cart', JSON.stringify(c));
+
+				document.querySelectorAll('.add-to-cart').forEach(btn => {
+					btn.addEventListener('click', e => {
+						const id = btn.dataset.id;
+						const name = btn.dataset.name;
+						const price = parseFloat(btn.dataset.price);
+
+						const cart = load();
+						const item = cart.find(i => i.id == id);
+						item ? item.qty++ : cart.push({id, name, price, qty: 1});
+						save(cart);
+						refreshCart();                 // fonction déjà définie dans base.html
+					});
+				});
+			});
+		</script>
+	</div>
+</body>
+
+</html>
+
+# src/main/resources/templates/register.html
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      layout:decorate="~{fragments/base}"
+      th:with="title='Inscription'">
+<head>
+    <title>Inscription</title>
+</head>
+<body>
+    <div layout:fragment="content">
+        <section class="container pt-5 mt-5">
+            <div class="row justify-content-center">
+                <div class="col-md-6">
+                    <div class="card shadow">
+                        <div class="card-header bg-success text-white">
+                            <h4 class="mb-0">Créer un compte</h4>
+                        </div>
+                        <div class="card-body">
+                            <form th:action="@{/register}" th:object="${user}" method="post">
+                                <div class="mb-3">
+                                    <label class="form-label">Nom complet</label>
+                                    <input type="text" class="form-control" th:field="*{name}" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Adresse email</label>
+                                    <input type="email" class="form-control" th:field="*{email}" required>
+                                    <small class="text-danger" th:if="${#fields.hasErrors('email')}" th:errors="*{email}"></small>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Mot de passe</label>
+                                    <input type="password" class="form-control" th:field="*{password}" required>
+                                </div>
+                                <button type="submit" class="btn btn-success w-100">S'inscrire</button>
+                            </form>
+                            <hr>
+                            <p class="text-center mb-0">
+                                Déjà un compte ?
+																&nbsp;
+                                <a th:href="@{/login}" class="text-success">Se connecter</a>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+</body>
+</html>
+
+# src/main/resources/templates/cart.html
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      layout:decorate="~{fragments/base}"
+      th:with="title='Panier'">
+<head>
+    <title>Panier</title>
+</head>
+<body>
+<div layout:fragment="content">
+    <section class="container pt-5 mt-5">
+        <h2 class="mb-4">🛒 Votre panier</h2>
+
+        <div class="table-responsive">
+            <table class="table align-middle">
+                <thead>
+                <tr>
+                    <th>Produit</th>
+                    <th>Prix (€)</th>
+                    <th>Quantité</th>
+                    <th>Sous‑total (€)</th>
+                    <th></th>
+                </tr>
+                </thead>
+                <tbody id="cartBody">
+                <tr id="emptyRow">
+                    <td colspan="5" class="text-center">Votre panier est vide.</td>
+                </tr>
+                </tbody>
+                <tfoot class="table-light">
+                <tr>
+                    <th colspan="3" class="text-end">Total&nbsp;:</th>
+                    <th id="cartTotal">0.00</th>
+                    <th></th>
+                </tr>
+                </tfoot>
+            </table>
+        </div>
+
+				<div class="text-start">
+					<a href="#" class="btn btn-success">Terminer la commande</a>
+			</div>
+    </section>
+		<script>
+			document.addEventListener('DOMContentLoaded', () => {
+					const body   = document.getElementById('cartBody');
+					const totalE = document.getElementById('cartTotal');
+					const countE = document.querySelectorAll('.cart-count');
+
+					const load = () => JSON.parse(localStorage.getItem('cart') || '[]');
+					const save = c => localStorage.setItem('cart', JSON.stringify(c));
+
+					function render() {
+							const cart = load();
+							body.innerHTML = '';
+							let total = 0;
+
+							if (cart.length === 0) {
+									body.innerHTML = '<tr><td colspan="5" class="text-center">Votre panier est vide.</td></tr>';
+							} else {
+								cart.forEach((item, i) => {
+									const sub = item.price * item.qty;
+									total += sub;
+									body.insertAdjacentHTML('beforeend', `
+											<tr>
+													<td>${item.name}</td>
+													<td>${item.price.toFixed(2)}</td>
+													<td>
+														<input type="number"
+																	min="1"
+																	onkeydown="return event.key !== 'e' && event.key !== '-'"
+																	value="${item.qty}"
+																	class="form-control form-control-sm qty-input"
+																	style="width:80px;" data-i="${i}">
+													</td>
+													<td>${sub.toFixed(2)}</td>
+													<td><button class="btn btn-sm btn-danger" data-i="${i}">✕</button></td>
+											</tr>
+								`	);
+								});
+								body.querySelectorAll('.qty-input').forEach(input => {
+									input.addEventListener('input', updateQty);
+									input.addEventListener('blur', updateQty);
+								});
+							}
+							totalE.textContent = total.toFixed(2);
+							countE.forEach(e => e.textContent = cart.reduce((s, it) => s + it.qty, 0));
+					}
+
+					body.addEventListener('click', e => {
+							if (e.target.matches('button[data-i]')) {
+									const cart = load();
+									cart.splice(e.target.dataset.i, 1);
+									save(cart);
+									render();
+							}
+					});
+
+					function updateQty(e) {
+							const i = e.target.dataset.i;
+							let val = parseInt(e.target.value);
+
+							if (isNaN(val) || val < 1) val = 1;
+							e.target.value = val;
+
+							const cart = load();
+							cart[i].qty = val;
+							save(cart);
+							render();
+					}
+
+					render();
+					body.querySelectorAll('.qty-input').forEach(input => {
+							input.addEventListener('input', updateQty);
+							input.addEventListener('blur', updateQty);
+					});g
+			});
+			</script>
+	</div>
+</body>
+</html>
+
+# src/main/resources/templates/profile.html
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Mon Profil | PlantShop</title>
+    <link rel="stylesheet" href="/webjars/bootstrap/5.3.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <div th:replace="~{fragments/base :: header}"></div>
+
+    <main class="container my-5">
+        <div class="row justify-content-center">
+            <div class="col-md-8">
+                <div class="card shadow">
+                    <div class="card-header bg-success text-white">
+                        <h2 class="h4 mb-0">Mon Profil</h2>
+                    </div>
+                    <div class="card-body">
+                        <div class="row mb-4">
+                            <div class="col-md-4 text-center">
+                                <div class="rounded-circle bg-light d-flex align-items-center justify-content-center"
+                                     style="width: 150px; height: 150px; margin: 0 auto;">
+                                    <i class="fas fa-user fa-3x text-success"></i>
+                                </div>
+                            </div>
+                            <div class="col-md-8">
+                                <h3 class="h5" th:text="${user.name}">Nom Utilisateur</h3>
+                                <p class="text-muted" th:text="${user.email}">email@example.com</p>
+
+                                <div class="mt-3" th:if="${user.admin}">
+                                    <span class="badge bg-warning text-dark">Administrateur</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="border-top pt-3">
+                            <h4 class="h5 mb-3">Informations du compte</h4>
+                            <dl class="row">
+                                <dt class="col-sm-3">Nom complet</dt>
+                                <dd class="col-sm-9" th:text="${user.name}">-</dd>
+
+                                <dt class="col-sm-3">Email</dt>
+                                <dd class="col-sm-9" th:text="${user.email}">-</dd>
+
+                                <dt class="col-sm-3">Type de compte</dt>
+                                <dd class="col-sm-9">
+                                    <span th:if="${user.admin}">Administrateur</span>
+                                    <span th:unless="${user.admin}">Utilisateur standard</span>
+                                </dd>
+                            </dl>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <div th:replace="~{fragments/base :: footer}"></div>
+
+    <script src="/webjars/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
+    <script src="https://kit.fontawesome.com/a14342fe13.js" crossorigin="anonymous"></script>
+</body>
+</html>
+
+# src/main/resources/templates/fragments/base.html
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>PlantShop - [[${title}]]</title>
+
+	<!-- Bootstrap CSS -->
+	<link rel="stylesheet" href="/webjars/bootstrap/5.3.2/css/bootstrap.min.css">
+
+	<!-- Custom CSS -->
+	<link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+
+<body>
+	<th:block th:with="userRoleString=${userRole}">
+
+		<script th:inline="javascript">
+			document.addEventListener('DOMContentLoaded', () => {
+				console.log('userRoleString = [[${userRoleString}]]');
+			});
+		</script>
+		<!-- Navbar -->
+		<nav class="navbar navbar-expand-lg navbar-dark bg-dark mb-4 fixed-top">
+			<div class="container">
+				<a class="navbar-brand" href="/">🌿 PlantShop</a>
+				<button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+					<span class="navbar-toggler-icon"></span>
+				</button>
+
+				<div class="collapse navbar-collapse" id="navbarNav">
+					<ul class="navbar-nav me-auto"></ul>
+					<ul class="navbar-nav">
+						<li th:if="${loggedUserName}" class="navbar-text text-white me-2" th:text="${loggedUserName}">
+						</li>
+						<li
+							th:if="${userRoleString == 'visitor' || userRoleString == 'user' || userRoleString == 'admin'}"
+							class="nav-item">
+							<a class="nav-link" href="/cart">Panier (<span class="cart-count">0</span>)</a>
+						</li>
+						<li th:if="${userRoleString == 'visitor'}" class="nav-item">
+							<a class="nav-link" href="/login">Connexion</a>
+						</li>
+						<li th:if="${userRoleString == 'visitor'}" class="nav-item">
+							<a class="nav-link" href="/register">Inscription</a>
+						</li>
+						<li th:if="${userRoleString == 'user' || userRoleString == 'admin'}" class="nav-item">
+							<a class="nav-link" href="/my_profile">Mon Profil</a>
+						</li>
+						<li th:if="${userRoleString == 'user' || userRoleString == 'admin'}" class="nav-item">
+							<a class="nav-link" href="/orders">Mes Commandes</a>
+						</li>
+
+						<li th:if="${userRoleString == 'admin'}" class="nav-item dropdown">
+							<a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+								Admin
+							</a>
+							<ul class="dropdown-menu">
+								<li><a class="dropdown-item" href="/admin/plants">Gestion Plantes</a></li>
+								<li><a class="dropdown-item" href="/admin/users">Gestion Utilisateurs</a></li>
+							</ul>
+						</li>
+
+						<li th:if="${userRoleString == 'user' or userRoleString == 'admin'}" class="nav-item">
+							<form th:action="@{/logout}" method="post">
+								<button type="submit" class="nav-link btn btn-link">Déconnexion</button>
+							</form>
+						</li>
+					</ul>
+				</div>
+			</div>
+		</nav>
+
+		<div class="container">
+			<!-- Messages flash -->
+			<div th:if="${message}" class="alert alert-success" th:text="${message}"></div>
+			<div th:if="${error}" class="alert alert-danger" th:text="${error}"></div>
+
+			<!-- Contenu principal -->
+			<div layout:fragment="content"></div>
+		</div>
+
+		<!-- Bootstrap JS -->
+		<script src="/webjars/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
+		<script src="/js/app.js"></script>
+		<script th:inline="javascript">
+			function refreshCart() {
+				const total = (JSON.parse(localStorage.getItem('cart') || '[]'))
+					.reduce((s, i) => s + i.qty, 0);
+				document.querySelectorAll('.cart-count').forEach(e => e.textContent = total);
+			}
+			refreshCart();
+			window.addEventListener('storage', e => e.key === 'cart' && refreshCart());
+		</script>
+	</th:block> <!-- Fin du bloc de variables calculées -->
+	</th:block> <!-- Fin du bloc de sécurité -->
+</body>
+
+</html>
+
+# src/main/resources/templates/fragments/navbar.html
+<!-- templates/fragments/navbar.html -->
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark mb-4 fixed-top"
+     th:fragment="navbar"                         <!-- ← nom du fragment -->
+     xmlns:th="http://www.thymeleaf.org">
+
+  <div class="container">
+    <a class="navbar-brand" href="/">🌿 PlantShop</a>
+
+    <!-- burger -->
+    <button class="navbar-toggler" type="button"
+            data-bs-toggle="collapse" data-bs-target="#navbarNav">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div class="collapse navbar-collapse" id="navbarNav">
+
+      <ul class="navbar-nav me-auto"></ul> <!-- espace gauche -->
+
+      <!-- on récupère la variable calculée dans GlobalUserTypeAdvice -->
+      <ul class="navbar-nav"
+          th:with="role=${userRole}, name=${#authentication.principal?.name}">
+
+        <li th:if="${name}" class="navbar-text text-white me-2"
+            th:text="${name}"></li>
+
+        <li class="nav-item">
+          <a class="nav-link" href="/cart">Panier
+            (<span class="cart-count">0</span>)
+          </a>
+        </li>
+
+        <!-- VISITEUR -->
+        <li th:if="${role == 'visitor'}" class="nav-item">
+          <a class="nav-link" href="/login">Connexion</a>
+        </li>
+        <li th:if="${role == 'visitor'}" class="nav-item">
+          <a class="nav-link" href="/register">Inscription</a>
+        </li>
+
+        <!-- UTILISATEUR / ADMIN -->
+        <li th:if="${role == 'user' || role == 'admin'}" class="nav-item">
+          <a class="nav-link" href="/my_profile">Mon profil</a>
+        </li>
+        <li th:if="${role == 'user' || role == 'admin'}" class="nav-item">
+          <a class="nav-link" href="/orders">Mes commandes</a>
+        </li>
+
+        <!-- ADMIN -->
+        <li th:if="${role == 'admin'}" class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle" href="#" role="button"
+             data-bs-toggle="dropdown">Admin</a>
+          <ul class="dropdown-menu">
+            <li><a class="dropdown-item" href="/admin/plants">Gestion plantes</a></li>
+            <li><a class="dropdown-item" href="/admin/users">Gestion utilisateurs</a></li>
+          </ul>
+        </li>
+
+        <!-- Déconnexion -->
+        <li th:if="${role == 'user' || role == 'admin'}" class="nav-item">
+          <form th:action="@{/logout}" method="post">
+            <button type="submit" class="nav-link btn btn-link">Déconnexion</button>
+          </form>
+        </li>
+      </ul>
+    </div>
+  </div>
+</nav>
 
 # src/main/java/com/planteshop/repository/OrderRepository.java
 package com.planteshop.repository;
@@ -218,26 +1450,6 @@ public class UserDetailsServiceImpl implements UserDetailsService {
         this.userRepository = userRepository;
     }
 
-    // @Override
-    // public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
-		// 		System.err.println("⚙️ Méthode loadUserByUsername appelée");
-    //     System.err.println("🔍 Tentative de connexion avec : " + email);
-    //     User user = userRepository.findByEmail(email)
-    //         .orElseThrow(() -> {
-    //             System.err.println("Email introuvable en base : " + email);
-    //             return new UsernameNotFoundException("Utilisateur non trouvé");
-    //         });
-
-		// 		System.err.println("DEBUG : Utilisateur trouvé : " + user.getEmail());
-		// 		System.err.println("DEBUG : Hash stocké : " + user.getPassword());
-		// 		return org.springframework.security.core.userdetails.User
-		// 			.withUsername(user.getEmail())
-		// 			.password(user.getPassword())
-		// 			.roles(user.getRole().name())
-		// 			.build();
-
-    // }
-
 		public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
 			return userRepository.findByEmail(email)
 						 .orElseThrow(() -> new UsernameNotFoundException("Utilisateur non trouvé"));
@@ -288,15 +1500,23 @@ public class ApiPlantController {
     }
 }
 
+# src/main/java/com/planteshop/controller/web/RequiredArgsConstructor.java
+package com.planteshop.controller.web;
+
+public @interface RequiredArgsConstructor {
+
+}
+
 # src/main/java/com/planteshop/controller/web/ProfileController.java
 package com.planteshop.controller.web;
 
-import com.planteshop.model.entity.User;
-import com.planteshop.util.StringUtils;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+
+import com.planteshop.model.entity.User;
+import com.planteshop.util.StringUtils;
 
 @Controller
 public class ProfileController {
@@ -426,31 +1646,25 @@ public class RegistrationController {
 package com.planteshop.controller;
 
 import com.planteshop.model.entity.User;
-import com.planteshop.model.enums.RoleType;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.authentication.AnonymousAuthenticationToken;
 
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ModelAttribute;
 
 @ControllerAdvice
 public class GlobalUserTypeAdvice {
-	/**
-	 * Expose l’énum directement à la vue.
-	 * - VISITOR si pas connecté
-	 * - USER / ADMIN sinon
-	 */
-	// @ModelAttribute("userRole")
-	// public String userRole(@AuthenticationPrincipal User user) {
-	// 	try {
-	// 		return user.getRole().name().toLowerCase();
-	// 	} catch (Exception exception) {
-	// 		System.err.println("DEBUG : GlobalUserTypeAdvice.serRole - Error : "+exception);
-	// 		return "visitor";
-	// 	}
-	// }
-
 	@ModelAttribute("userRole")
-	public String userRole(@AuthenticationPrincipal User user) {
+	public String userRole(Authentication authentication) {
+
+			if (authentication == null                       // pas de session
+					|| !authentication.isAuthenticated()         // pas encore validée
+					|| authentication instanceof AnonymousAuthenticationToken) {
+					return "visitor";
+			}
+
+			// on sait qu’on a notre entité User comme Principal
+			User user = (User) authentication.getPrincipal();
 			return user.getRole().name().toLowerCase();
 	}
 }
@@ -817,6 +2031,7 @@ public class PlantShopApplication {
 │   │   │           │       ├── LoginController.java
 │   │   │           │       ├── ProfileController.java
 │   │   │           │       ├── RegistrationController.java
+│   │   │           │       ├── RequiredArgsConstructor.java
 │   │   │           │       └── WebPlantController.java
 │   │   │           ├── model
 │   │   │           │   ├── dto
@@ -857,7 +2072,8 @@ public class PlantShopApplication {
 │   │           ├── admin
 │   │           ├── cart.html
 │   │           ├── fragments
-│   │           │   └── base.html
+│   │           │   ├── base.html
+│   │           │   └── navbar.html
 │   │           ├── login.html
 │   │           ├── orders
 │   │           ├── plants
@@ -890,6 +2106,7 @@ public class PlantShopApplication {
 │   │   │       │       ├── LoginController.class
 │   │   │       │       ├── ProfileController.class
 │   │   │       │       ├── RegistrationController.class
+│   │   │       │       ├── RequiredArgsConstructor.class
 │   │   │       │       └── WebPlantController.class
 │   │   │       ├── model
 │   │   │       │   ├── dto
@@ -928,7 +2145,8 @@ public class PlantShopApplication {
 │   │   └── templates
 │   │       ├── cart.html
 │   │       ├── fragments
-│   │       │   └── base.html
+│   │       │   ├── base.html
+│   │       │   └── navbar.html
 │   │       ├── login.html
 │   │       ├── plants
 │   │       │   ├── index.html
@@ -961,4 +2179,4 @@ public class PlantShopApplication {
 ├── tmp.txt
 └── users.txt
 
-86 directories, 83 files
+86 directories, 87 files

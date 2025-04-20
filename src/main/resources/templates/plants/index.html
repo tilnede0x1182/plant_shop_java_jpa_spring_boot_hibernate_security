@@ -16,17 +16,19 @@
 				<div th:each="plant : ${plants}" class="col-md-4 mb-4">
 					<div class="card h-100">
 						<div class="card-body">
-							<h5 class="card-title" th:text="${plant.name}">Nom</h5>
-							<p class="card-text" th:text="${plant.description}">Description</p>
-							<p class="text-muted">Prix : <span th:text="${plant.price}">0.0</span> €</p>
-							<p class="text-muted">Stock : <span th:text="${plant.stock}">0</span></p>
+							<a th:href="@{/plants/{id}(id=${plant.id})}" class="stretched-link text-decoration-none text-dark">
+								<h5 class="card-title" th:text="${plant.name}">Nom</h5>
+								<p class="card-text" th:text="${plant.description}">Description</p>
+								<p class="text-muted">Prix : <span th:text="${plant.price}">0.0</span> €</p>
+								<p class="text-muted">Stock : <span th:text="${plant.stock}">0</span></p>
 
-							<div class="d-flex justify-content-between gap-2">
-								<button type="button" class="btn  flex-grow-1 btn-success add-to-cart" th:data-id="${plant.id}"
-									th:data-name="${plant.name}" th:data-price="${plant.price}">
-									Ajouter au panier
-								</button>
-							</div>
+								<div class="d-flex justify-content-between gap-2">
+									<button type="button" class="btn  flex-grow-1 btn-success add-to-cart" th:data-id="${plant.id}"
+										th:data-name="${plant.name}" th:data-price="${plant.price}">
+										Ajouter au panier
+									</button>
+								</div>
+							</a>
 						</div>
 					</div>
 				</div>
