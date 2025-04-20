@@ -1,67 +1,51 @@
-<!-- templates/fragments/navbar.html -->
-<nav class="navbar navbar-expand-lg navbar-dark bg-dark mb-4 fixed-top"
-     th:fragment="navbar"                         <!-- ← nom du fragment -->
-     xmlns:th="http://www.thymeleaf.org">
+<nav th:fragment="navbar" class="navbar navbar-expand-lg navbar-dark bg-dark mb-4 fixed-top">
+	<!-- Navbar -->
+	<nav class="navbar navbar-expand-lg navbar-dark bg-dark mb-4 fixed-top">
+		<div class="container">
+			<a class="navbar-brand" href="/">🌿 PlantShop</a>
+			<button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+				<span class="navbar-toggler-icon"></span>
+			</button>
 
-  <div class="container">
-    <a class="navbar-brand" href="/">🌿 PlantShop</a>
+			<div class="collapse navbar-collapse" id="navbarNav">
+				<ul class="navbar-nav me-auto"></ul>
+				<ul class="navbar-nav">
+					<li th:if="${loggedUserName}" class="navbar-text text-white me-2" th:text="${loggedUserName}">
+					</li>
+					<li th:if="${userRoleString == 'visitor' || userRoleString == 'user' || userRoleString == 'admin'}"
+						class="nav-item">
+						<a class="nav-link" href="/cart">Panier (<span class="cart-count">0</span>)</a>
+					</li>
+					<li th:if="${userRoleString == 'visitor'}" class="nav-item">
+						<a class="nav-link" href="/login">Connexion</a>
+					</li>
+					<li th:if="${userRoleString == 'visitor'}" class="nav-item">
+						<a class="nav-link" href="/register">Inscription</a>
+					</li>
+					<li th:if="${userRoleString == 'user' || userRoleString == 'admin'}" class="nav-item">
+						<a class="nav-link" href="/my_profile">Mon Profil</a>
+					</li>
+					<li th:if="${userRoleString == 'user' || userRoleString == 'admin'}" class="nav-item">
+						<a class="nav-link" href="/orders">Mes Commandes</a>
+					</li>
 
-    <!-- burger -->
-    <button class="navbar-toggler" type="button"
-            data-bs-toggle="collapse" data-bs-target="#navbarNav">
-      <span class="navbar-toggler-icon"></span>
-    </button>
+					<li th:if="${userRoleString == 'admin'}" class="nav-item dropdown">
+						<a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+							Admin
+						</a>
+						<ul class="dropdown-menu">
+							<li><a class="dropdown-item" href="/admin/plants">Gestion Plantes</a></li>
+							<li><a class="dropdown-item" href="/admin/users">Gestion Utilisateurs</a></li>
+						</ul>
+					</li>
 
-    <div class="collapse navbar-collapse" id="navbarNav">
-
-      <ul class="navbar-nav me-auto"></ul> <!-- espace gauche -->
-
-      <!-- on récupère la variable calculée dans GlobalUserTypeAdvice -->
-      <ul class="navbar-nav"
-          th:with="role=${userRole}, name=${#authentication.principal?.name}">
-
-        <li th:if="${name}" class="navbar-text text-white me-2"
-            th:text="${name}"></li>
-
-        <li class="nav-item">
-          <a class="nav-link" href="/cart">Panier
-            (<span class="cart-count">0</span>)
-          </a>
-        </li>
-
-        <!-- VISITEUR -->
-        <li th:if="${role == 'visitor'}" class="nav-item">
-          <a class="nav-link" href="/login">Connexion</a>
-        </li>
-        <li th:if="${role == 'visitor'}" class="nav-item">
-          <a class="nav-link" href="/register">Inscription</a>
-        </li>
-
-        <!-- UTILISATEUR / ADMIN -->
-        <li th:if="${role == 'user' || role == 'admin'}" class="nav-item">
-          <a class="nav-link" href="/my_profile">Mon profil</a>
-        </li>
-        <li th:if="${role == 'user' || role == 'admin'}" class="nav-item">
-          <a class="nav-link" href="/orders">Mes commandes</a>
-        </li>
-
-        <!-- ADMIN -->
-        <li th:if="${role == 'admin'}" class="nav-item dropdown">
-          <a class="nav-link dropdown-toggle" href="#" role="button"
-             data-bs-toggle="dropdown">Admin</a>
-          <ul class="dropdown-menu">
-            <li><a class="dropdown-item" href="/admin/plants">Gestion plantes</a></li>
-            <li><a class="dropdown-item" href="/admin/users">Gestion utilisateurs</a></li>
-          </ul>
-        </li>
-
-        <!-- Déconnexion -->
-        <li th:if="${role == 'user' || role == 'admin'}" class="nav-item">
-          <form th:action="@{/logout}" method="post">
-            <button type="submit" class="nav-link btn btn-link">Déconnexion</button>
-          </form>
-        </li>
-      </ul>
-    </div>
-  </div>
+					<li th:if="${userRoleString == 'user' or userRoleString == 'admin'}" class="nav-item">
+						<form th:action="@{/logout}" method="post">
+							<button type="submit" class="nav-link btn btn-link">Déconnexion</button>
+						</form>
+					</li>
+				</ul>
+			</div>
+		</div>
+	</nav>
 </nav>
