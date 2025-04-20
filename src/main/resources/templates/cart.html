@@ -61,7 +61,7 @@
 									const sub = item.price * item.qty;
 									total += sub;
 									body.insertAdjacentHTML('beforeend', `
-											<tr>
+											 <tr style="cursor:pointer;" onclick="window.location='/plants/${item.id}'">
 													<td>${item.name}</td>
 													<td>${item.price.toFixed(2)}</td>
 													<td>
