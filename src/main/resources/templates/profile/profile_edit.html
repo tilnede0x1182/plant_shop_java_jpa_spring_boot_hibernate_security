@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html  lang="fr"
+       xmlns:th="http://www.thymeleaf.org"
+       layout:decorate="~{fragments/base}"
+       th:with="title='Modifier mon profil'">
+
+<head>
+  <meta charset="UTF-8">
+  <title>Modifier | PlantShop</title>
+</head>
+
+<body>
+<div layout:fragment="content">
+  <main class="container pt-5 mt-5">
+    <div class="row justify-content-center">
+      <div class="col-md-8">
+        <div class="card shadow">
+          <div class="card-header bg-success text-white">
+            <h2 class="h5 mb-0">Modifier mon profil</h2>
+          </div>
+
+          <form th:action="@{/my_profile/edit}" th:object="${user}" method="post"
+                class="card-body needs-validation" novalidate>
+
+            <div class="mb-3">
+              <label class="form-label">Nom complet</label>
+              <input type="text" class="form-control" th:field="*{name}" required>
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label">Email</label>
+              <input type="email" class="form-control" th:field="*{email}" required>
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label">Nouveau mot de passe
+                     <small class="text-muted">(laissez vide pour ne pas changer)</small>
+              </label>
+              <input type="password" class="form-control" th:field="*{password}">
+            </div>
+
+            <div class="d-flex gap-2">
+              <button type="submit" class="btn btn-success flex-grow-1">Enregistrer</button>
+              <a href="/my_profile" class="btn btn-outline-secondary flex-grow-1">Annuler</a>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+</body>
+</html>

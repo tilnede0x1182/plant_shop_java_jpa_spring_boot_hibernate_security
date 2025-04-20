@@ -64,6 +64,93 @@
 </body>
 </html>
 
+# target/classes/application0.yml
+server:
+  port: 8080
+
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/plant_shop
+    username: tilnede0x1182
+    password: tilnede0x1182
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    show-sql: true
+    open-in-view: false
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        format_sql: true
+  thymeleaf:
+    prefix: classpath:/templates/
+    suffix: .html
+    mode: HTML
+    encoding: UTF-8
+    cache: false
+  security:
+    user:
+      name: admin
+      password: admin
+      roles: ADMIN
+  sql:
+    init:
+      mode: never
+
+logging:
+  level:
+    org.hibernate.SQL: DEBUG
+    org.hibernate.type.descriptor.sql.BasicBinder: TRACE
+
+---
+
+spring:
+  config:
+    activate:
+      on-profile: dev
+  thymeleaf:
+    cache: false
+  jpa:
+    hibernate:
+      ddl-auto: update
+    defer-datasource-initialization: false
+  sql:
+    init:
+      mode: never
+
+---
+
+spring:
+  config:
+    activate:
+      on-profile: seed
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    defer-datasource-initialization: true
+  sql:
+    init:
+      mode: always
+
+---
+
+spring:
+  config:
+    activate:
+      on-profile: prod
+  devtools:
+    enabled: false
+    restart:
+      enabled: false
+  thymeleaf:
+    cache: true
+  jpa:
+    hibernate:
+      ddl-auto: validate
+  sql:
+    init:
+      mode: never
+
 # target/classes/templates/login.html
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org"
@@ -384,71 +471,113 @@
 </body>
 </html>
 
-# target/classes/templates/profile.html
+# target/classes/templates/profile/profile_edit.html
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org" lang="fr">
+<html  lang="fr"
+       xmlns:th="http://www.thymeleaf.org"
+       layout:decorate="~{fragments/base}"
+       th:with="title='Modifier mon profil'">
+
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Mon Profil | PlantShop</title>
-    <link rel="stylesheet" href="/webjars/bootstrap/5.3.2/css/bootstrap.min.css">
-    <link rel="stylesheet" href="/css/style.css">
+  <meta charset="UTF-8">
+  <title>Modifier | PlantShop</title>
 </head>
+
 <body>
-    <div th:replace="~{fragments/base :: header}"></div>
+<div layout:fragment="content">
+  <main class="container pt-5 mt-5">
+    <div class="row justify-content-center">
+      <div class="col-md-8">
+        <div class="card shadow">
+          <div class="card-header bg-success text-white">
+            <h2 class="h5 mb-0">Modifier mon profil</h2>
+          </div>
 
-    <main class="container my-5">
-        <div class="row justify-content-center">
-            <div class="col-md-8">
-                <div class="card shadow">
-                    <div class="card-header bg-success text-white">
-                        <h2 class="h4 mb-0">Mon Profil</h2>
-                    </div>
-                    <div class="card-body">
-                        <div class="row mb-4">
-                            <div class="col-md-4 text-center">
-                                <div class="rounded-circle bg-light d-flex align-items-center justify-content-center"
-                                     style="width: 150px; height: 150px; margin: 0 auto;">
-                                    <i class="fas fa-user fa-3x text-success"></i>
-                                </div>
-                            </div>
-                            <div class="col-md-8">
-                                <h3 class="h5" th:text="${user.name}">Nom Utilisateur</h3>
-                                <p class="text-muted" th:text="${user.email}">email@example.com</p>
+          <form th:action="@{/my_profile/edit}" th:object="${user}" method="post"
+                class="card-body needs-validation" novalidate>
 
-                                <div class="mt-3" th:if="${user.admin}">
-                                    <span class="badge bg-warning text-dark">Administrateur</span>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="border-top pt-3">
-                            <h4 class="h5 mb-3">Informations du compte</h4>
-                            <dl class="row">
-                                <dt class="col-sm-3">Nom complet</dt>
-                                <dd class="col-sm-9" th:text="${user.name}">-</dd>
-
-                                <dt class="col-sm-3">Email</dt>
-                                <dd class="col-sm-9" th:text="${user.email}">-</dd>
-
-                                <dt class="col-sm-3">Type de compte</dt>
-                                <dd class="col-sm-9">
-                                    <span th:if="${user.admin}">Administrateur</span>
-                                    <span th:unless="${user.admin}">Utilisateur standard</span>
-                                </dd>
-                            </dl>
-                        </div>
-                    </div>
-                </div>
+            <div class="mb-3">
+              <label class="form-label">Nom complet</label>
+              <input type="text" class="form-control" th:field="*{name}" required>
             </div>
+
+            <div class="mb-3">
+              <label class="form-label">Email</label>
+              <input type="email" class="form-control" th:field="*{email}" required>
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label">Nouveau mot de passe
+                     <small class="text-muted">(laissez vide pour ne pas changer)</small>
+              </label>
+              <input type="password" class="form-control" th:field="*{password}">
+            </div>
+
+            <div class="d-flex gap-2">
+              <button type="submit" class="btn btn-success flex-grow-1">Enregistrer</button>
+              <a href="/my_profile" class="btn btn-outline-secondary flex-grow-1">Annuler</a>
+            </div>
+          </form>
         </div>
-    </main>
-
-    <div th:replace="~{fragments/base :: footer}"></div>
-
-    <script src="/webjars/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
-    <script src="https://kit.fontawesome.com/a14342fe13.js" crossorigin="anonymous"></script>
+      </div>
+    </div>
+  </main>
+</div>
 </body>
+</html>
+
+# target/classes/templates/profile/profile.html
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{fragments/base}"
+      th:with="title='Mon Profil'"
+      lang="fr">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Mon Profil | PlantShop</title>
+  <link rel="stylesheet" href="/webjars/bootstrap/5.3.2/css/bootstrap.min.css">
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+
+<body>
+  <div layout:fragment="content">
+    <main class="container pt-5 mt-5">
+      <div class="row justify-content-center">
+        <div class="col-md-8">
+          <div class="card shadow">
+            <div class="card-header bg-success text-white">
+              <h2 class="h4 mb-0">Mon Profil</h2>
+            </div>
+            <div class="card-body">
+              <dl class="row">
+                <dt class="col-sm-4">Nom complet</dt>
+                <dd class="col-sm-8" th:text="${user.name}">-</dd>
+
+                <dt class="col-sm-4">Email</dt>
+                <dd class="col-sm-8" th:text="${user.email}">-</dd>
+
+                <dt class="col-sm-4">Administrateur</dt>
+                <dd class="col-sm-8">
+                  <span th:text="${userRoleString == 'admin'} ? 'Oui' : 'Non'">-</span>
+                </dd>
+								<div class="mt-4 text-start">
+									<a href="/my_profile/edit" class="btn btn-primary px-5">Modifier</a>
+								</div>
+              </dl>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script src="/webjars/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
+  <script src="https://kit.fontawesome.com/a14342fe13.js" crossorigin="anonymous"></script>
+</body>
+
 </html>
 
 # target/classes/templates/fragments/base.html
@@ -469,63 +598,8 @@
 
 <body>
 	<th:block th:with="userRoleString=${userRole}">
-
-		<script th:inline="javascript">
-			document.addEventListener('DOMContentLoaded', () => {
-				console.log('userRoleString = [[${userRoleString}]]');
-			});
-		</script>
 		<!-- Navbar -->
-		<nav class="navbar navbar-expand-lg navbar-dark bg-dark mb-4 fixed-top">
-			<div class="container">
-				<a class="navbar-brand" href="/">🌿 PlantShop</a>
-				<button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-					<span class="navbar-toggler-icon"></span>
-				</button>
-
-				<div class="collapse navbar-collapse" id="navbarNav">
-					<ul class="navbar-nav me-auto"></ul>
-					<ul class="navbar-nav">
-						<li th:if="${loggedUserName}" class="navbar-text text-white me-2" th:text="${loggedUserName}">
-						</li>
-						<li
-							th:if="${userRoleString == 'visitor' || userRoleString == 'user' || userRoleString == 'admin'}"
-							class="nav-item">
-							<a class="nav-link" href="/cart">Panier (<span class="cart-count">0</span>)</a>
-						</li>
-						<li th:if="${userRoleString == 'visitor'}" class="nav-item">
-							<a class="nav-link" href="/login">Connexion</a>
-						</li>
-						<li th:if="${userRoleString == 'visitor'}" class="nav-item">
-							<a class="nav-link" href="/register">Inscription</a>
-						</li>
-						<li th:if="${userRoleString == 'user' || userRoleString == 'admin'}" class="nav-item">
-							<a class="nav-link" href="/my_profile">Mon Profil</a>
-						</li>
-						<li th:if="${userRoleString == 'user' || userRoleString == 'admin'}" class="nav-item">
-							<a class="nav-link" href="/orders">Mes Commandes</a>
-						</li>
-
-						<li th:if="${userRoleString == 'admin'}" class="nav-item dropdown">
-							<a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
-								Admin
-							</a>
-							<ul class="dropdown-menu">
-								<li><a class="dropdown-item" href="/admin/plants">Gestion Plantes</a></li>
-								<li><a class="dropdown-item" href="/admin/users">Gestion Utilisateurs</a></li>
-							</ul>
-						</li>
-
-						<li th:if="${userRoleString == 'user' or userRoleString == 'admin'}" class="nav-item">
-							<form th:action="@{/logout}" method="post">
-								<button type="submit" class="nav-link btn btn-link">Déconnexion</button>
-							</form>
-						</li>
-					</ul>
-				</div>
-			</div>
-		</nav>
-
+		<div th:replace="~{fragments/navbar :: navbar}"></div>
 		<div class="container">
 			<!-- Messages flash -->
 			<div th:if="${message}" class="alert alert-success" th:text="${message}"></div>
@@ -547,79 +621,63 @@
 			refreshCart();
 			window.addEventListener('storage', e => e.key === 'cart' && refreshCart());
 		</script>
-	</th:block> <!-- Fin du bloc de variables calculées -->
-	</th:block> <!-- Fin du bloc de sécurité -->
-</body>
+	</th:block>
+
+	</body>
 
 </html>
 
 # target/classes/templates/fragments/navbar.html
-<!-- templates/fragments/navbar.html -->
-<nav class="navbar navbar-expand-lg navbar-dark bg-dark mb-4 fixed-top"
-     th:fragment="navbar"                         <!-- ← nom du fragment -->
-     xmlns:th="http://www.thymeleaf.org">
+<nav th:fragment="navbar" class="navbar navbar-expand-lg navbar-dark bg-dark mb-4 fixed-top">
+	<!-- Navbar -->
+	<nav class="navbar navbar-expand-lg navbar-dark bg-dark mb-4 fixed-top">
+		<div class="container">
+			<a class="navbar-brand" href="/">🌿 PlantShop</a>
+			<button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+				<span class="navbar-toggler-icon"></span>
+			</button>
 
-  <div class="container">
-    <a class="navbar-brand" href="/">🌿 PlantShop</a>
+			<div class="collapse navbar-collapse" id="navbarNav">
+				<ul class="navbar-nav me-auto"></ul>
+				<ul class="navbar-nav">
+					<li th:if="${loggedUserName}" class="navbar-text text-white me-2" th:text="${loggedUserName}">
+					</li>
+					<li th:if="${userRoleString == 'visitor' || userRoleString == 'user' || userRoleString == 'admin'}"
+						class="nav-item">
+						<a class="nav-link" href="/cart">Panier (<span class="cart-count">0</span>)</a>
+					</li>
+					<li th:if="${userRoleString == 'visitor'}" class="nav-item">
+						<a class="nav-link" href="/login">Connexion</a>
+					</li>
+					<li th:if="${userRoleString == 'visitor'}" class="nav-item">
+						<a class="nav-link" href="/register">Inscription</a>
+					</li>
+					<li th:if="${userRoleString == 'user' || userRoleString == 'admin'}" class="nav-item">
+						<a class="nav-link" href="/my_profile">Mon Profil</a>
+					</li>
+					<li th:if="${userRoleString == 'user' || userRoleString == 'admin'}" class="nav-item">
+						<a class="nav-link" href="/orders">Mes Commandes</a>
+					</li>
 
-    <!-- burger -->
-    <button class="navbar-toggler" type="button"
-            data-bs-toggle="collapse" data-bs-target="#navbarNav">
-      <span class="navbar-toggler-icon"></span>
-    </button>
+					<li th:if="${userRoleString == 'admin'}" class="nav-item dropdown">
+						<a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+							Admin
+						</a>
+						<ul class="dropdown-menu">
+							<li><a class="dropdown-item" href="/admin/plants">Gestion Plantes</a></li>
+							<li><a class="dropdown-item" href="/admin/users">Gestion Utilisateurs</a></li>
+						</ul>
+					</li>
 
-    <div class="collapse navbar-collapse" id="navbarNav">
-
-      <ul class="navbar-nav me-auto"></ul> <!-- espace gauche -->
-
-      <!-- on récupère la variable calculée dans GlobalUserTypeAdvice -->
-      <ul class="navbar-nav"
-          th:with="role=${userRole}, name=${#authentication.principal?.name}">
-
-        <li th:if="${name}" class="navbar-text text-white me-2"
-            th:text="${name}"></li>
-
-        <li class="nav-item">
-          <a class="nav-link" href="/cart">Panier
-            (<span class="cart-count">0</span>)
-          </a>
-        </li>
-
-        <!-- VISITEUR -->
-        <li th:if="${role == 'visitor'}" class="nav-item">
-          <a class="nav-link" href="/login">Connexion</a>
-        </li>
-        <li th:if="${role == 'visitor'}" class="nav-item">
-          <a class="nav-link" href="/register">Inscription</a>
-        </li>
-
-        <!-- UTILISATEUR / ADMIN -->
-        <li th:if="${role == 'user' || role == 'admin'}" class="nav-item">
-          <a class="nav-link" href="/my_profile">Mon profil</a>
-        </li>
-        <li th:if="${role == 'user' || role == 'admin'}" class="nav-item">
-          <a class="nav-link" href="/orders">Mes commandes</a>
-        </li>
-
-        <!-- ADMIN -->
-        <li th:if="${role == 'admin'}" class="nav-item dropdown">
-          <a class="nav-link dropdown-toggle" href="#" role="button"
-             data-bs-toggle="dropdown">Admin</a>
-          <ul class="dropdown-menu">
-            <li><a class="dropdown-item" href="/admin/plants">Gestion plantes</a></li>
-            <li><a class="dropdown-item" href="/admin/users">Gestion utilisateurs</a></li>
-          </ul>
-        </li>
-
-        <!-- Déconnexion -->
-        <li th:if="${role == 'user' || role == 'admin'}" class="nav-item">
-          <form th:action="@{/logout}" method="post">
-            <button type="submit" class="nav-link btn btn-link">Déconnexion</button>
-          </form>
-        </li>
-      </ul>
-    </div>
-  </div>
+					<li th:if="${userRoleString == 'user' or userRoleString == 'admin'}" class="nav-item">
+						<form th:action="@{/logout}" method="post">
+							<button type="submit" class="nav-link btn btn-link">Déconnexion</button>
+						</form>
+					</li>
+				</ul>
+			</div>
+		</div>
+	</nav>
 </nav>
 
 # target/classes/application.yml
@@ -873,6 +931,93 @@ seed:
 
 </body>
 </html>
+
+# src/main/resources/application0.yml
+server:
+  port: 8080
+
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/plant_shop
+    username: tilnede0x1182
+    password: tilnede0x1182
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    show-sql: true
+    open-in-view: false
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        format_sql: true
+  thymeleaf:
+    prefix: classpath:/templates/
+    suffix: .html
+    mode: HTML
+    encoding: UTF-8
+    cache: false
+  security:
+    user:
+      name: admin
+      password: admin
+      roles: ADMIN
+  sql:
+    init:
+      mode: never
+
+logging:
+  level:
+    org.hibernate.SQL: DEBUG
+    org.hibernate.type.descriptor.sql.BasicBinder: TRACE
+
+---
+
+spring:
+  config:
+    activate:
+      on-profile: dev
+  thymeleaf:
+    cache: false
+  jpa:
+    hibernate:
+      ddl-auto: update
+    defer-datasource-initialization: false
+  sql:
+    init:
+      mode: never
+
+---
+
+spring:
+  config:
+    activate:
+      on-profile: seed
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    defer-datasource-initialization: true
+  sql:
+    init:
+      mode: always
+
+---
+
+spring:
+  config:
+    activate:
+      on-profile: prod
+  devtools:
+    enabled: false
+    restart:
+      enabled: false
+  thymeleaf:
+    cache: true
+  jpa:
+    hibernate:
+      ddl-auto: validate
+  sql:
+    init:
+      mode: never
 
 # src/main/resources/templates/login.html
 <!DOCTYPE html>
@@ -1194,71 +1339,113 @@ seed:
 </body>
 </html>
 
-# src/main/resources/templates/profile.html
+# src/main/resources/templates/profile/profile_edit.html
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org" lang="fr">
+<html  lang="fr"
+       xmlns:th="http://www.thymeleaf.org"
+       layout:decorate="~{fragments/base}"
+       th:with="title='Modifier mon profil'">
+
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Mon Profil | PlantShop</title>
-    <link rel="stylesheet" href="/webjars/bootstrap/5.3.2/css/bootstrap.min.css">
-    <link rel="stylesheet" href="/css/style.css">
+  <meta charset="UTF-8">
+  <title>Modifier | PlantShop</title>
 </head>
+
 <body>
-    <div th:replace="~{fragments/base :: header}"></div>
+<div layout:fragment="content">
+  <main class="container pt-5 mt-5">
+    <div class="row justify-content-center">
+      <div class="col-md-8">
+        <div class="card shadow">
+          <div class="card-header bg-success text-white">
+            <h2 class="h5 mb-0">Modifier mon profil</h2>
+          </div>
 
-    <main class="container my-5">
-        <div class="row justify-content-center">
-            <div class="col-md-8">
-                <div class="card shadow">
-                    <div class="card-header bg-success text-white">
-                        <h2 class="h4 mb-0">Mon Profil</h2>
-                    </div>
-                    <div class="card-body">
-                        <div class="row mb-4">
-                            <div class="col-md-4 text-center">
-                                <div class="rounded-circle bg-light d-flex align-items-center justify-content-center"
-                                     style="width: 150px; height: 150px; margin: 0 auto;">
-                                    <i class="fas fa-user fa-3x text-success"></i>
-                                </div>
-                            </div>
-                            <div class="col-md-8">
-                                <h3 class="h5" th:text="${user.name}">Nom Utilisateur</h3>
-                                <p class="text-muted" th:text="${user.email}">email@example.com</p>
+          <form th:action="@{/my_profile/edit}" th:object="${user}" method="post"
+                class="card-body needs-validation" novalidate>
 
-                                <div class="mt-3" th:if="${user.admin}">
-                                    <span class="badge bg-warning text-dark">Administrateur</span>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="border-top pt-3">
-                            <h4 class="h5 mb-3">Informations du compte</h4>
-                            <dl class="row">
-                                <dt class="col-sm-3">Nom complet</dt>
-                                <dd class="col-sm-9" th:text="${user.name}">-</dd>
-
-                                <dt class="col-sm-3">Email</dt>
-                                <dd class="col-sm-9" th:text="${user.email}">-</dd>
-
-                                <dt class="col-sm-3">Type de compte</dt>
-                                <dd class="col-sm-9">
-                                    <span th:if="${user.admin}">Administrateur</span>
-                                    <span th:unless="${user.admin}">Utilisateur standard</span>
-                                </dd>
-                            </dl>
-                        </div>
-                    </div>
-                </div>
+            <div class="mb-3">
+              <label class="form-label">Nom complet</label>
+              <input type="text" class="form-control" th:field="*{name}" required>
             </div>
+
+            <div class="mb-3">
+              <label class="form-label">Email</label>
+              <input type="email" class="form-control" th:field="*{email}" required>
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label">Nouveau mot de passe
+                     <small class="text-muted">(laissez vide pour ne pas changer)</small>
+              </label>
+              <input type="password" class="form-control" th:field="*{password}">
+            </div>
+
+            <div class="d-flex gap-2">
+              <button type="submit" class="btn btn-success flex-grow-1">Enregistrer</button>
+              <a href="/my_profile" class="btn btn-outline-secondary flex-grow-1">Annuler</a>
+            </div>
+          </form>
         </div>
-    </main>
-
-    <div th:replace="~{fragments/base :: footer}"></div>
-
-    <script src="/webjars/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
-    <script src="https://kit.fontawesome.com/a14342fe13.js" crossorigin="anonymous"></script>
+      </div>
+    </div>
+  </main>
+</div>
 </body>
+</html>
+
+# src/main/resources/templates/profile/profile.html
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{fragments/base}"
+      th:with="title='Mon Profil'"
+      lang="fr">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Mon Profil | PlantShop</title>
+  <link rel="stylesheet" href="/webjars/bootstrap/5.3.2/css/bootstrap.min.css">
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+
+<body>
+  <div layout:fragment="content">
+    <main class="container pt-5 mt-5">
+      <div class="row justify-content-center">
+        <div class="col-md-8">
+          <div class="card shadow">
+            <div class="card-header bg-success text-white">
+              <h2 class="h4 mb-0">Mon Profil</h2>
+            </div>
+            <div class="card-body">
+              <dl class="row">
+                <dt class="col-sm-4">Nom complet</dt>
+                <dd class="col-sm-8" th:text="${user.name}">-</dd>
+
+                <dt class="col-sm-4">Email</dt>
+                <dd class="col-sm-8" th:text="${user.email}">-</dd>
+
+                <dt class="col-sm-4">Administrateur</dt>
+                <dd class="col-sm-8">
+                  <span th:text="${userRoleString == 'admin'} ? 'Oui' : 'Non'">-</span>
+                </dd>
+								<div class="mt-4 text-start">
+									<a href="/my_profile/edit" class="btn btn-primary px-5">Modifier</a>
+								</div>
+              </dl>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script src="/webjars/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
+  <script src="https://kit.fontawesome.com/a14342fe13.js" crossorigin="anonymous"></script>
+</body>
+
 </html>
 
 # src/main/resources/templates/fragments/base.html
@@ -1279,63 +1466,8 @@ seed:
 
 <body>
 	<th:block th:with="userRoleString=${userRole}">
-
-		<script th:inline="javascript">
-			document.addEventListener('DOMContentLoaded', () => {
-				console.log('userRoleString = [[${userRoleString}]]');
-			});
-		</script>
 		<!-- Navbar -->
-		<nav class="navbar navbar-expand-lg navbar-dark bg-dark mb-4 fixed-top">
-			<div class="container">
-				<a class="navbar-brand" href="/">🌿 PlantShop</a>
-				<button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-					<span class="navbar-toggler-icon"></span>
-				</button>
-
-				<div class="collapse navbar-collapse" id="navbarNav">
-					<ul class="navbar-nav me-auto"></ul>
-					<ul class="navbar-nav">
-						<li th:if="${loggedUserName}" class="navbar-text text-white me-2" th:text="${loggedUserName}">
-						</li>
-						<li
-							th:if="${userRoleString == 'visitor' || userRoleString == 'user' || userRoleString == 'admin'}"
-							class="nav-item">
-							<a class="nav-link" href="/cart">Panier (<span class="cart-count">0</span>)</a>
-						</li>
-						<li th:if="${userRoleString == 'visitor'}" class="nav-item">
-							<a class="nav-link" href="/login">Connexion</a>
-						</li>
-						<li th:if="${userRoleString == 'visitor'}" class="nav-item">
-							<a class="nav-link" href="/register">Inscription</a>
-						</li>
-						<li th:if="${userRoleString == 'user' || userRoleString == 'admin'}" class="nav-item">
-							<a class="nav-link" href="/my_profile">Mon Profil</a>
-						</li>
-						<li th:if="${userRoleString == 'user' || userRoleString == 'admin'}" class="nav-item">
-							<a class="nav-link" href="/orders">Mes Commandes</a>
-						</li>
-
-						<li th:if="${userRoleString == 'admin'}" class="nav-item dropdown">
-							<a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
-								Admin
-							</a>
-							<ul class="dropdown-menu">
-								<li><a class="dropdown-item" href="/admin/plants">Gestion Plantes</a></li>
-								<li><a class="dropdown-item" href="/admin/users">Gestion Utilisateurs</a></li>
-							</ul>
-						</li>
-
-						<li th:if="${userRoleString == 'user' or userRoleString == 'admin'}" class="nav-item">
-							<form th:action="@{/logout}" method="post">
-								<button type="submit" class="nav-link btn btn-link">Déconnexion</button>
-							</form>
-						</li>
-					</ul>
-				</div>
-			</div>
-		</nav>
-
+		<div th:replace="~{fragments/navbar :: navbar}"></div>
 		<div class="container">
 			<!-- Messages flash -->
 			<div th:if="${message}" class="alert alert-success" th:text="${message}"></div>
@@ -1357,79 +1489,63 @@ seed:
 			refreshCart();
 			window.addEventListener('storage', e => e.key === 'cart' && refreshCart());
 		</script>
-	</th:block> <!-- Fin du bloc de variables calculées -->
-	</th:block> <!-- Fin du bloc de sécurité -->
-</body>
+	</th:block>
+
+	</body>
 
 </html>
 
 # src/main/resources/templates/fragments/navbar.html
-<!-- templates/fragments/navbar.html -->
-<nav class="navbar navbar-expand-lg navbar-dark bg-dark mb-4 fixed-top"
-     th:fragment="navbar"                         <!-- ← nom du fragment -->
-     xmlns:th="http://www.thymeleaf.org">
+<nav th:fragment="navbar" class="navbar navbar-expand-lg navbar-dark bg-dark mb-4 fixed-top">
+	<!-- Navbar -->
+	<nav class="navbar navbar-expand-lg navbar-dark bg-dark mb-4 fixed-top">
+		<div class="container">
+			<a class="navbar-brand" href="/">🌿 PlantShop</a>
+			<button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+				<span class="navbar-toggler-icon"></span>
+			</button>
 
-  <div class="container">
-    <a class="navbar-brand" href="/">🌿 PlantShop</a>
+			<div class="collapse navbar-collapse" id="navbarNav">
+				<ul class="navbar-nav me-auto"></ul>
+				<ul class="navbar-nav">
+					<li th:if="${loggedUserName}" class="navbar-text text-white me-2" th:text="${loggedUserName}">
+					</li>
+					<li th:if="${userRoleString == 'visitor' || userRoleString == 'user' || userRoleString == 'admin'}"
+						class="nav-item">
+						<a class="nav-link" href="/cart">Panier (<span class="cart-count">0</span>)</a>
+					</li>
+					<li th:if="${userRoleString == 'visitor'}" class="nav-item">
+						<a class="nav-link" href="/login">Connexion</a>
+					</li>
+					<li th:if="${userRoleString == 'visitor'}" class="nav-item">
+						<a class="nav-link" href="/register">Inscription</a>
+					</li>
+					<li th:if="${userRoleString == 'user' || userRoleString == 'admin'}" class="nav-item">
+						<a class="nav-link" href="/my_profile">Mon Profil</a>
+					</li>
+					<li th:if="${userRoleString == 'user' || userRoleString == 'admin'}" class="nav-item">
+						<a class="nav-link" href="/orders">Mes Commandes</a>
+					</li>
 
-    <!-- burger -->
-    <button class="navbar-toggler" type="button"
-            data-bs-toggle="collapse" data-bs-target="#navbarNav">
-      <span class="navbar-toggler-icon"></span>
-    </button>
+					<li th:if="${userRoleString == 'admin'}" class="nav-item dropdown">
+						<a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+							Admin
+						</a>
+						<ul class="dropdown-menu">
+							<li><a class="dropdown-item" href="/admin/plants">Gestion Plantes</a></li>
+							<li><a class="dropdown-item" href="/admin/users">Gestion Utilisateurs</a></li>
+						</ul>
+					</li>
 
-    <div class="collapse navbar-collapse" id="navbarNav">
-
-      <ul class="navbar-nav me-auto"></ul> <!-- espace gauche -->
-
-      <!-- on récupère la variable calculée dans GlobalUserTypeAdvice -->
-      <ul class="navbar-nav"
-          th:with="role=${userRole}, name=${#authentication.principal?.name}">
-
-        <li th:if="${name}" class="navbar-text text-white me-2"
-            th:text="${name}"></li>
-
-        <li class="nav-item">
-          <a class="nav-link" href="/cart">Panier
-            (<span class="cart-count">0</span>)
-          </a>
-        </li>
-
-        <!-- VISITEUR -->
-        <li th:if="${role == 'visitor'}" class="nav-item">
-          <a class="nav-link" href="/login">Connexion</a>
-        </li>
-        <li th:if="${role == 'visitor'}" class="nav-item">
-          <a class="nav-link" href="/register">Inscription</a>
-        </li>
-
-        <!-- UTILISATEUR / ADMIN -->
-        <li th:if="${role == 'user' || role == 'admin'}" class="nav-item">
-          <a class="nav-link" href="/my_profile">Mon profil</a>
-        </li>
-        <li th:if="${role == 'user' || role == 'admin'}" class="nav-item">
-          <a class="nav-link" href="/orders">Mes commandes</a>
-        </li>
-
-        <!-- ADMIN -->
-        <li th:if="${role == 'admin'}" class="nav-item dropdown">
-          <a class="nav-link dropdown-toggle" href="#" role="button"
-             data-bs-toggle="dropdown">Admin</a>
-          <ul class="dropdown-menu">
-            <li><a class="dropdown-item" href="/admin/plants">Gestion plantes</a></li>
-            <li><a class="dropdown-item" href="/admin/users">Gestion utilisateurs</a></li>
-          </ul>
-        </li>
-
-        <!-- Déconnexion -->
-        <li th:if="${role == 'user' || role == 'admin'}" class="nav-item">
-          <form th:action="@{/logout}" method="post">
-            <button type="submit" class="nav-link btn btn-link">Déconnexion</button>
-          </form>
-        </li>
-      </ul>
-    </div>
-  </div>
+					<li th:if="${userRoleString == 'user' or userRoleString == 'admin'}" class="nav-item">
+						<form th:action="@{/logout}" method="post">
+							<button type="submit" class="nav-link btn btn-link">Déconnexion</button>
+						</form>
+					</li>
+				</ul>
+			</div>
+		</div>
+	</nav>
 </nav>
 
 # src/main/resources/application.yml
@@ -1622,7 +1738,9 @@ spring:
 │   │   │           │   ├── api
 │   │   │           │   │   └── ApiPlantController.java
 │   │   │           │   ├── exception
+│   │   │           │   ├── GlobalControllerAdvice.java
 │   │   │           │   ├── GlobalUserTypeAdvice.java
+│   │   │           │   ├── RoleType.java
 │   │   │           │   └── web
 │   │   │           │       ├── CartController.java
 │   │   │           │       ├── LoginController.java
@@ -1654,6 +1772,7 @@ spring:
 │   │   │           └── util
 │   │   │               └── StringUtils.java
 │   │   └── resources
+│   │       ├── application0.yml
 │   │       ├── application.yml
 │   │       ├── db
 │   │       │   └── migration
@@ -1676,7 +1795,9 @@ spring:
 │   │           ├── plants
 │   │           │   ├── index.html
 │   │           │   └── show.html
-│   │           ├── profile.html
+│   │           ├── profile
+│   │           │   ├── profile_edit.html
+│   │           │   └── profile.html
 │   │           └── register.html
 │   └── test
 │       └── java
@@ -1686,6 +1807,7 @@ spring:
 │                   └── service
 ├── target
 │   ├── classes
+│   │   ├── application0.yml
 │   │   ├── application.yml
 │   │   ├── com
 │   │   │   └── planteshop
@@ -1696,8 +1818,9 @@ spring:
 │   │   │       │   ├── api
 │   │   │       │   │   └── ApiPlantController.class
 │   │   │       │   ├── exception
-│   │   │       │   ├── GlobalUserTypeAdvice$1.class
+│   │   │       │   ├── GlobalControllerAdvice.class
 │   │   │       │   ├── GlobalUserTypeAdvice.class
+│   │   │       │   ├── RoleType.class
 │   │   │       │   └── web
 │   │   │       │       ├── CartController.class
 │   │   │       │       ├── LoginController.class
@@ -1748,7 +1871,9 @@ spring:
 │   │       ├── plants
 │   │       │   ├── index.html
 │   │       │   └── show.html
-│   │       ├── profile.html
+│   │       ├── profile
+│   │       │   ├── profile_edit.html
+│   │       │   └── profile.html
 │   │       └── register.html
 │   ├── generated-sources
 │   │   └── annotations
@@ -1776,4 +1901,4 @@ spring:
 ├── tmp.txt
 └── users.txt
 
-86 directories, 87 files
+88 directories, 94 files

@@ -1,4 +1,4 @@
-package com.planteshop.model.enums;
+package com.planteshop.controller;
 
 public enum RoleType {
     VISITOR,
