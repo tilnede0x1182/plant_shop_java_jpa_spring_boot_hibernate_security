@@ -9,6 +9,8 @@ public class OrderItem {
     private Long id;
 
     private Integer quantity;
+		@Column(nullable = false)
+		private double unitPrice;
 
     @ManyToOne
     @JoinColumn(name = "plant_id")
@@ -27,4 +29,6 @@ public class OrderItem {
     public void setPlant(Plant plant) { this.plant = plant; }
     public CustomerOrder getOrder() { return order; }
     public void setOrder(CustomerOrder order) { this.order = order; }
+		public double getUnitPrice() {return unitPrice;}
+		public void setUnitPrice(double unitPrice) {this.unitPrice = unitPrice;}
 }

@@ -1,5 +1,9 @@
+# -----------------------------
+# CONFIGURATION GÉNÉRALE COMMUNE
+# S'applique quel que soit le profil actif (dev, seed, prod)
+# -----------------------------
 server:
-  port: 8080
+  port: 8080 # Port HTTP utilisé par le serveur intégré (Tomcat par défaut)
 
 spring:
   datasource:
@@ -30,8 +34,12 @@ logging:
     org.hibernate.SQL: DEBUG
     org.hibernate.type.descriptor.sql.BasicBinder: TRACE
     org.springframework.security: DEBUG
-
 ---
+
+# -----------------------------
+# PROFIL DEV : Développement local
+# Activation avec --spring.profiles.active=dev
+# -----------------------------
 
 spring:
   config:
@@ -49,6 +57,11 @@ spring:
 
 ---
 
+# -----------------------------
+# PROFIL SEED : Pour initialisation de données (tests, staging)
+# Activation avec --spring.profiles.active=seed
+# -----------------------------
+
 spring:
   config:
     activate:
@@ -62,6 +75,11 @@ spring:
       mode: always
 
 ---
+
+# -----------------------------
+# PROFIL PROD : Production
+# Activation avec --spring.profiles.active=prod
+# -----------------------------
 
 spring:
   config:

@@ -1,66 +1,71 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org"
-      layout:decorate="~{fragments/base}"
-      th:with="title='Panier'">
+<html xmlns:th="http://www.thymeleaf.org" layout:decorate="~{fragments/base}" th:with="title='Panier'">
+
 <head>
-    <title>Panier</title>
+	<title>Panier</title>
 </head>
+
 <body>
-<div layout:fragment="content">
-    <section class="container pt-5 mt-5">
-        <h2 class="mb-4">🛒 Votre panier</h2>
+	<div layout:fragment="content">
+		<section class="container pt-5 mt-5">
+			<h2 class="mb-4">🛒 Votre panier</h2>
 
-        <div class="table-responsive">
-            <table class="table align-middle">
-                <thead>
-                <tr>
-                    <th>Produit</th>
-                    <th>Prix (€)</th>
-                    <th>Quantité</th>
-                    <th>Sous‑total (€)</th>
-                    <th></th>
-                </tr>
-                </thead>
-                <tbody id="cartBody">
-                <tr id="emptyRow">
-                    <td colspan="5" class="text-center">Votre panier est vide.</td>
-                </tr>
-                </tbody>
-                <tfoot class="table-light">
-                <tr>
-                    <th colspan="3" class="text-end">Total&nbsp;:</th>
-                    <th id="cartTotal">0.00</th>
-                    <th></th>
-                </tr>
-                </tfoot>
-            </table>
-        </div>
+			<div id="checkoutMessage" class="alert d-none" role="alert"></div>
 
-				<div class="text-start">
-					<a href="#" class="btn btn-success">Terminer la commande</a>
+			<div class="table-responsive">
+				<table class="table align-middle">
+					<thead>
+						<tr>
+							<th>Produit</th>
+							<th>Prix (€)</th>
+							<th>Quantité</th>
+							<th>Sous‑total (€)</th>
+							<th></th>
+						</tr>
+					</thead>
+					<tbody id="cartBody">
+						<tr id="emptyRow">
+							<td colspan="5" class="text-center">Votre panier est vide.</td>
+						</tr>
+					</tbody>
+					<tfoot class="table-light">
+						<tr>
+							<th colspan="3" class="text-end">Total&nbsp;:</th>
+							<th id="cartTotal">0.00</th>
+							<th></th>
+						</tr>
+					</tfoot>
+				</table>
 			</div>
-    </section>
+
+			<div class="text-start">
+				<form id="checkoutForm">
+					<button type="submit" class="btn btn-success">Terminer la commande</button>
+				</form>
+				<div id="checkoutMessage" class="mt-3"></div>
+			</div>
+		</section>
 		<script>
 			document.addEventListener('DOMContentLoaded', () => {
-					const body   = document.getElementById('cartBody');
-					const totalE = document.getElementById('cartTotal');
-					const countE = document.querySelectorAll('.cart-count');
+				const body = document.getElementById('cartBody');
+				const totalE = document.getElementById('cartTotal');
+				const countE = document.querySelectorAll('.cart-count');
 
-					const load = () => JSON.parse(localStorage.getItem('cart') || '[]');
-					const save = c => localStorage.setItem('cart', JSON.stringify(c));
+				const load = () => JSON.parse(localStorage.getItem('cart') || '[]');
+				const save = c => localStorage.setItem('cart', JSON.stringify(c));
 
-					function render() {
-							const cart = load();
-							body.innerHTML = '';
-							let total = 0;
+				function render() {
+					const cart = load();
+					body.innerHTML = '';
+					let total = 0;
 
-							if (cart.length === 0) {
-									body.innerHTML = '<tr><td colspan="5" class="text-center">Votre panier est vide.</td></tr>';
-							} else {
-								cart.forEach((item, i) => {
-									const sub = item.price * item.qty;
-									total += sub;
-									body.insertAdjacentHTML('beforeend', `
+					if (cart.length === 0) {
+						body.innerHTML = '<tr><td colspan="5" class="text-center">Votre panier est vide.</td></tr>';
+					} else {
+						cart.forEach((item, i) => {
+							const sub = item.price * item.qty;
+							total += sub;
+							body.insertAdjacentHTML('beforeend', `
 											 <tr style="cursor:pointer;" onclick="window.location='/plants/${item.id}'">
 													<td>${item.name}</td>
 													<td>${item.price.toFixed(2)}</td>
@@ -76,45 +81,88 @@
 													<td><button class="btn btn-sm btn-danger" data-i="${i}">✕</button></td>
 											</tr>
 								`	);
-								});
-								body.querySelectorAll('.qty-input').forEach(input => {
-									input.addEventListener('input', updateQty);
-									input.addEventListener('blur', updateQty);
-								});
-							}
-							totalE.textContent = total.toFixed(2);
-							countE.forEach(e => e.textContent = cart.reduce((s, it) => s + it.qty, 0));
-					}
-
-					body.addEventListener('click', e => {
-							if (e.target.matches('button[data-i]')) {
-									const cart = load();
-									cart.splice(e.target.dataset.i, 1);
-									save(cart);
-									render();
-							}
-					});
-
-					function updateQty(e) {
-							const i = e.target.dataset.i;
-							let val = parseInt(e.target.value);
-
-							if (isNaN(val) || val < 1) val = 1;
-							e.target.value = val;
-
-							const cart = load();
-							cart[i].qty = val;
-							save(cart);
-							render();
-					}
-
-					render();
-					body.querySelectorAll('.qty-input').forEach(input => {
+						});
+						body.querySelectorAll('.qty-input').forEach(input => {
 							input.addEventListener('input', updateQty);
 							input.addEventListener('blur', updateQty);
-					});g
+						});
+					}
+					totalE.textContent = total.toFixed(2);
+					countE.forEach(e => e.textContent = cart.reduce((s, it) => s + it.qty, 0));
+				}
+
+				body.addEventListener('click', e => {
+					if (e.target.matches('button[data-i]')) {
+						const cart = load();
+						cart.splice(e.target.dataset.i, 1);
+						save(cart);
+						render();
+					}
+				});
+
+				document.getElementById('checkoutForm')?.addEventListener('submit', async e => {
+					e.preventDefault();
+
+					if ("[[${userRole}]]" === "visitor") {
+						window.location.href = "/login";
+						return;
+					}
+
+					const cart = JSON.parse(localStorage.getItem('cart') || '[]');
+					const msgEl = document.getElementById('checkoutMessage');
+					msgEl.className = 'alert d-none';
+
+					if (cart.length === 0) {
+						msgEl.textContent = "Votre panier est vide.";
+						msgEl.className = "alert alert-danger";
+						return;
+					}
+
+					try {
+						const res = await fetch('/orders/checkout', {
+							method: 'POST',
+							headers: {'Content-Type': 'application/json'},
+							body: JSON.stringify(cart)
+						});
+						const text = await res.text();
+
+						if (res.ok && text === "OK") {
+							localStorage.removeItem('cart');
+							refreshCart();
+							msgEl.textContent = "Commande validée ! Redirection…";
+							msgEl.className = "alert alert-success";
+							setTimeout(() => window.location.href = "/orders", 0);
+						} else {
+							msgEl.textContent = "Erreur lors de la commande : " + text;
+							msgEl.className = "alert alert-danger";
+						}
+					} catch (err) {
+						msgEl.textContent = "Erreur réseau.";
+						msgEl.className = "alert alert-danger";
+					}
+				});
+
+				function updateQty(e) {
+					const i = e.target.dataset.i;
+					let val = parseInt(e.target.value);
+
+					if (isNaN(val) || val < 1) val = 1;
+					e.target.value = val;
+
+					const cart = load();
+					cart[i].qty = val;
+					save(cart);
+					render();
+				}
+
+				render();
+				body.querySelectorAll('.qty-input').forEach(input => {
+					input.addEventListener('input', updateQty);
+					input.addEventListener('blur', updateQty);
+				}); g
 			});
-			</script>
+		</script>
 	</div>
 </body>
+
 </html>
