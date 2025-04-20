@@ -14,33 +14,33 @@
 
 			<div class="row">
 				<div th:each="plant : ${plants}" class="col-md-4 mb-4">
-					<div class="card h-100">
-						<div class="card-body">
-							<a th:href="@{/plants/{id}(id=${plant.id})}" class="stretched-link text-decoration-none text-dark">
-								<h5 class="card-title" th:text="${plant.name}">Nom</h5>
-								<p class="card-text" th:text="${plant.description}">Description</p>
-								<p class="text-muted">Prix : <span th:text="${plant.price}">0.0</span> €</p>
-								<p class="text-muted">Stock : <span th:text="${plant.stock}">0</span></p>
+					<div class="card h-100 plant-card" th:data-id="${plant.id}">
+						<div class="card-body position-relative">
+							<h5 class="card-title" th:text="${plant.name}">Nom</h5>
+							<p class="card-text" th:text="${plant.description}">Description</p>
+							<p class="text-muted">Prix : <span th:text="${plant.price}">0.0</span> €</p>
+							<p class="text-muted">Stock : <span th:text="${plant.stock}">0</span></p>
 
-								<div class="d-flex justify-content-between gap-2">
-									<button type="button" class="btn  flex-grow-1 btn-success add-to-cart" th:data-id="${plant.id}"
-										th:data-name="${plant.name}" th:data-price="${plant.price}">
-										Ajouter au panier
-									</button>
-								</div>
-							</a>
+							<div class="d-flex gap-2">
+								<button type="button" class="btn btn-success flex-grow-1 add-to-cart" th:data-id="${plant.id}" style="z-index: 1; position: relative;"
+									th:data-name="${plant.name}" th:data-price="${plant.price}">
+									Ajouter au panier
+								</button>
+							</div>
 						</div>
 					</div>
 				</div>
-			</div>
 		</section>
 		<script>
 			document.addEventListener('DOMContentLoaded', () => {
 				const load = () => JSON.parse(localStorage.getItem('cart') || '[]');
 				const save = c => localStorage.setItem('cart', JSON.stringify(c));
 
+				// Bouton ajouter au panier
 				document.querySelectorAll('.add-to-cart').forEach(btn => {
 					btn.addEventListener('click', e => {
+						e.stopPropagation();   // bloque la remontée vers l’élément <a>
+						e.preventDefault();    // annule la navigation
 						const id = btn.dataset.id;
 						const name = btn.dataset.name;
 						const price = parseFloat(btn.dataset.price);
@@ -50,6 +50,14 @@
 						item ? item.qty++ : cart.push({id, name, price, qty: 1});
 						save(cart);
 						refreshCart();                 // fonction déjà définie dans base.html
+					});
+				});
+
+				// Navigation vers la fiche plante
+				document.querySelectorAll('.plant-card').forEach(card => {
+					card.addEventListener('click', () => {
+						const id = card.dataset.id;
+						window.location.href = "/plants/" + id;
 					});
 				});
 			});

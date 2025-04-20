@@ -136,7 +136,7 @@
                         </li>
                     </ul>
 
-                    <a href="/plants" class="btn btn-secondary">Retour à la liste</a>
+                    <a href="/plants" class="btn btn-secondary">Retour à la page d'acceuil</a>
                 </div>
             </div>
         </div>
@@ -318,7 +318,7 @@
 									const sub = item.price * item.qty;
 									total += sub;
 									body.insertAdjacentHTML('beforeend', `
-											<tr>
+											 <tr style="cursor:pointer;" onclick="window.location='/plants/${item.id}'">
 													<td>${item.name}</td>
 													<td>${item.price.toFixed(2)}</td>
 													<td>
@@ -757,7 +757,7 @@ version=1.0.0
                         </li>
                     </ul>
 
-                    <a href="/plants" class="btn btn-secondary">Retour à la liste</a>
+                    <a href="/plants" class="btn btn-secondary">Retour à la page d'acceuil</a>
                 </div>
             </div>
         </div>
@@ -939,7 +939,7 @@ version=1.0.0
 									const sub = item.price * item.qty;
 									total += sub;
 									body.insertAdjacentHTML('beforeend', `
-											<tr>
+											 <tr style="cursor:pointer;" onclick="window.location='/plants/${item.id}'">
 													<td>${item.name}</td>
 													<td>${item.price.toFixed(2)}</td>
 													<td>
