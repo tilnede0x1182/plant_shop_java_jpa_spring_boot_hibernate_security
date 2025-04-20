@@ -120,11 +120,17 @@ package com.planteshop.model.entity;
 
 import com.planteshop.model.enums.RoleType;
 import jakarta.persistence.*;
+
+import java.util.Collection;
 import java.util.List;
+
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
 
 @Entity
 @Table(name = "users")
-public class User {
+public class User implements UserDetails {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
@@ -138,6 +144,10 @@ public class User {
     @OneToMany(mappedBy = "user")
     private List<CustomerOrder> orders;
 
+		@Override
+    public Collection<? extends GrantedAuthority> getAuthorities() {
+        return List.of(new SimpleGrantedAuthority("ROLE_" + role.name()));
+    }
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
     public String getName() { return name; }
@@ -150,6 +160,11 @@ public class User {
     public void setRole(RoleType role) { this.role = role; }
     public List<CustomerOrder> getOrders() { return orders; }
     public void setOrders(List<CustomerOrder> orders) { this.orders = orders; }
+    @Override public String getUsername() { return email; }
+    @Override public boolean isAccountNonExpired() { return true; }
+    @Override public boolean isAccountNonLocked() { return true; }
+    @Override public boolean isCredentialsNonExpired() { return true; }
+    @Override public boolean isEnabled() { return true; }
 }
 
 # src/main/java/com/planteshop/model/entity/Plant.java
@@ -203,25 +218,30 @@ public class UserDetailsServiceImpl implements UserDetailsService {
         this.userRepository = userRepository;
     }
 
-    @Override
-    public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
-				System.err.println("⚙️ Méthode loadUserByUsername appelée");
-        System.err.println("🔍 Tentative de connexion avec : " + email);
-        User user = userRepository.findByEmail(email)
-            .orElseThrow(() -> {
-                System.err.println("Email introuvable en base : " + email);
-                return new UsernameNotFoundException("Utilisateur non trouvé");
-            });
+    // @Override
+    // public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
+		// 		System.err.println("⚙️ Méthode loadUserByUsername appelée");
+    //     System.err.println("🔍 Tentative de connexion avec : " + email);
+    //     User user = userRepository.findByEmail(email)
+    //         .orElseThrow(() -> {
+    //             System.err.println("Email introuvable en base : " + email);
+    //             return new UsernameNotFoundException("Utilisateur non trouvé");
+    //         });
 
-				System.err.println("DEBUG : Utilisateur trouvé : " + user.getEmail());
-				System.err.println("DEBUG : Hash stocké : " + user.getPassword());
-				return org.springframework.security.core.userdetails.User
-					.withUsername(user.getEmail())
-					.password(user.getPassword())
-					.roles(user.getRole().name())
-					.build();
+		// 		System.err.println("DEBUG : Utilisateur trouvé : " + user.getEmail());
+		// 		System.err.println("DEBUG : Hash stocké : " + user.getPassword());
+		// 		return org.springframework.security.core.userdetails.User
+		// 			.withUsername(user.getEmail())
+		// 			.password(user.getPassword())
+		// 			.roles(user.getRole().name())
+		// 			.build();
 
-    }
+    // }
+
+		public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
+			return userRepository.findByEmail(email)
+						 .orElseThrow(() -> new UsernameNotFoundException("Utilisateur non trouvé"));
+	}
 }
 
 # src/main/java/com/planteshop/controller/api/ApiPlantController.java
@@ -406,22 +426,33 @@ public class RegistrationController {
 package com.planteshop.controller;
 
 import com.planteshop.model.entity.User;
+import com.planteshop.model.enums.RoleType;
+
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ModelAttribute;
 
 @ControllerAdvice
 public class GlobalUserTypeAdvice {
+	/**
+	 * Expose l’énum directement à la vue.
+	 * - VISITOR si pas connecté
+	 * - USER / ADMIN sinon
+	 */
+	// @ModelAttribute("userRole")
+	// public String userRole(@AuthenticationPrincipal User user) {
+	// 	try {
+	// 		return user.getRole().name().toLowerCase();
+	// 	} catch (Exception exception) {
+	// 		System.err.println("DEBUG : GlobalUserTypeAdvice.serRole - Error : "+exception);
+	// 		return "visitor";
+	// 	}
+	// }
 
-    @ModelAttribute("finalCurrentUserType")
-    public String finalCurrentUserType(@AuthenticationPrincipal User user) {
-        if (user == null) return "visitor";
-        return switch (user.getRole()) {
-            case ADMIN -> "admin";
-            case USER -> "user";
-            default -> "visitor";
-        };
-    }
+	@ModelAttribute("userRole")
+	public String userRole(@AuthenticationPrincipal User user) {
+			return user.getRole().name().toLowerCase();
+	}
 }
 
 # src/main/java/com/planteshop/config/SecurityConfig.java
@@ -431,13 +462,9 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
-
-import com.planteshop.repository.UserRepository;
-import com.planteshop.service.impl.UserDetailsServiceImpl;
 
 @Configuration
 @EnableWebSecurity
@@ -483,12 +510,6 @@ public class SecurityConfig {
 	@Bean
 	public PasswordEncoder passwordEncoder() {
 		return new BCryptPasswordEncoder();
-	}
-
-	@Bean
-	public UserDetailsService userDetailsService(UserRepository userRepository) {
-		System.err.println("Bean UserDetailsServiceImpl créé");
-		return new UserDetailsServiceImpl(userRepository);
 	}
 }
 

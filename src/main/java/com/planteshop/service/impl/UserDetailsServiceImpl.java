@@ -17,23 +17,28 @@ public class UserDetailsServiceImpl implements UserDetailsService {
         this.userRepository = userRepository;
     }
 
-    @Override
-    public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
-				System.err.println("⚙️ Méthode loadUserByUsername appelée");
-        System.err.println("🔍 Tentative de connexion avec : " + email);
-        User user = userRepository.findByEmail(email)
-            .orElseThrow(() -> {
-                System.err.println("Email introuvable en base : " + email);
-                return new UsernameNotFoundException("Utilisateur non trouvé");
-            });
+    // @Override
+    // public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
+		// 		System.err.println("⚙️ Méthode loadUserByUsername appelée");
+    //     System.err.println("🔍 Tentative de connexion avec : " + email);
+    //     User user = userRepository.findByEmail(email)
+    //         .orElseThrow(() -> {
+    //             System.err.println("Email introuvable en base : " + email);
+    //             return new UsernameNotFoundException("Utilisateur non trouvé");
+    //         });
 
-				System.err.println("DEBUG : Utilisateur trouvé : " + user.getEmail());
-				System.err.println("DEBUG : Hash stocké : " + user.getPassword());
-				return org.springframework.security.core.userdetails.User
-					.withUsername(user.getEmail())
-					.password(user.getPassword())
-					.roles(user.getRole().name())
-					.build();
+		// 		System.err.println("DEBUG : Utilisateur trouvé : " + user.getEmail());
+		// 		System.err.println("DEBUG : Hash stocké : " + user.getPassword());
+		// 		return org.springframework.security.core.userdetails.User
+		// 			.withUsername(user.getEmail())
+		// 			.password(user.getPassword())
+		// 			.roles(user.getRole().name())
+		// 			.build();
 
-    }
+    // }
+
+		public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
+			return userRepository.findByEmail(email)
+						 .orElseThrow(() -> new UsernameNotFoundException("Utilisateur non trouvé"));
+	}
 }
