@@ -12,7 +12,7 @@
         <h2 class="mb-4">📦 Mes commandes</h2>
 
         <div th:if="${#lists.isEmpty(orders)}">
-            <p>Aucune commande trouvée.</p>
+            <p>Aucune commande pour le moment.</p>
         </div>
 
         <div th:each="order : ${orders}" class="card mb-3">
@@ -20,7 +20,7 @@
                 <h5 class="card-title">Commande n° <span th:text="${order.id}">0</span></h5>
                 <p class="card-text">
                     Passée le <span th:text="${#dates.format(order.createdAt, 'dd/MM/yyyy HH:mm')}">date</span> –
-                    Total : <strong th:text="${order.totalPrice} + ' €'">0.00 €</strong>
+                    Total : <strong th:text="${#numbers.formatDecimal(order.totalPrice, 1, 'POINT', 2, 'POINT')} + ' €'">0.00 €</strong>
                 </p>
 
                 <ul>

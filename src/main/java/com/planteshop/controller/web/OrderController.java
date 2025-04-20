@@ -29,7 +29,7 @@ public class OrderController {
 
 	@GetMapping("/orders")
 	public String listOrders(@AuthenticationPrincipal User user, Model model) {
-		List<CustomerOrder> orders = orderRepository.findByUserOrderByCreatedAtDesc(user);
+		List<CustomerOrder> orders = orderRepository.findByUserOrderByIdDesc(user);
 		model.addAttribute("orders", orders);
 		return "orders/index";
 	}
