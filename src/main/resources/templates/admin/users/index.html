@@ -11,7 +11,7 @@
         <table class="table table-striped table-hover">
             <thead class="table-dark">
             <tr>
-                <th>ID</th>
+						    <th>Name</th>
                 <th>Email</th>
                 <th>Administrateur</th>
                 <th class="text-center">Actions</th>
@@ -19,7 +19,7 @@
             </thead>
             <tbody>
             <tr th:each="user : ${users}">
-                <td th:text="${user.id}">1</td>
+                <td th:text="${user.name}">name</td>
                 <td th:text="${user.email}">email</td>
                 <td>
 									<span class="badge" th:classappend="${user.role.name() == 'ADMIN'} ? 'bg-success' : 'bg-secondary'"
