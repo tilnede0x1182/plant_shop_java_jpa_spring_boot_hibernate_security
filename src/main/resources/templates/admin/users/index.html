@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org" layout:decorate="~{fragments/base}" th:with="title='Gestion des utilisateurs'">
 <head>
-    <title>PlantShop - Utilisateurs</title>
+    <title>PlantShop | Utilisateurs</title>
 </head>
 <body>
 <div layout:fragment="content">
@@ -22,8 +22,8 @@
                 <td th:text="${user.id}">1</td>
                 <td th:text="${user.email}">email</td>
                 <td>
-                    <span class="badge" th:classappend="${user.admin} ? 'bg-success' : 'bg-secondary'"
-                          th:text="${user.admin} ? 'Oui' : 'Non'">Non</span>
+									<span class="badge" th:classappend="${user.role.name() == 'ADMIN'} ? 'bg-success' : 'bg-secondary'"
+										th:text="${user.role.name() == 'ADMIN'} ? 'Oui' : 'Non'">Non</span>
                 </td>
                 <td class="text-center">
                     <div class="d-flex justify-content-center gap-2">
