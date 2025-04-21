@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" layout:decorate="~{fragments/base}" th:with="title='Modifier plante'">
+<head>
+    <title>Modifier Plante</title>
+</head>
+<body>
+<div layout:fragment="content">
+    <div class="container pt-5 mt-5">
+        <h1>Éditer la Plante</h1>
+        <div th:replace="admin/plants/form :: plantForm(${plant})"></div>
+    </div>
+</div>
+</body>
+</html>

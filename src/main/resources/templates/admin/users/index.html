@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" layout:decorate="~{fragments/base}" th:with="title='Gestion des utilisateurs'">
+<head>
+    <title>PlantShop - Utilisateurs</title>
+</head>
+<body>
+<div layout:fragment="content">
+    <div class="container pt-5 mt-5">
+        <h1 class="mb-4">Gestion des Utilisateurs (Admin)</h1>
+
+        <table class="table table-striped table-hover">
+            <thead class="table-dark">
+            <tr>
+                <th>ID</th>
+                <th>Email</th>
+                <th>Administrateur</th>
+                <th class="text-center">Actions</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="user : ${users}">
+                <td th:text="${user.id}">1</td>
+                <td th:text="${user.email}">email</td>
+                <td>
+                    <span class="badge" th:classappend="${user.admin} ? 'bg-success' : 'bg-secondary'"
+                          th:text="${user.admin} ? 'Oui' : 'Non'">Non</span>
+                </td>
+                <td class="text-center">
+                    <div class="d-flex justify-content-center gap-2">
+                        <a th:href="@{'/admin/users/' + ${user.id} + '/edit'}" class="btn btn-warning btn-sm">✏ Modifier</a>
+                        <form th:if="${#authentication.name != user.email}" th:action="@{'/admin/users/' + ${user.id}}" method="post"
+                              onsubmit="return confirm('Supprimer cet utilisateur ?');">
+                            <input type="hidden" name="_method" value="delete"/>
+                            <button class="btn btn-danger btn-sm">🗑 Supprimer</button>
+                        </form>
+                    </div>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+</body>
+</html>

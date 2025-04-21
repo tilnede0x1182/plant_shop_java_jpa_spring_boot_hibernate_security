@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+<div th:fragment="plantForm(plant)">
+    <form th:object="${plant}" th:action="${plant.id != null} ? @{'/admin/plants/' + ${plant.id}} : @{/admin/plants}" method="post">
+        <input type="hidden" name="_method" th:value="${plant.id != null} ? 'patch' : 'post'"/>
+
+        <div class="mb-3">
+            <label class="form-label">Nom de la plante</label>
+            <input type="text" class="form-control" th:field="*{name}"/>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Prix (€)</label>
+            <input type="number" class="form-control" step="0.01" th:field="*{price}"/>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Description</label>
+            <textarea class="form-control" rows="4" th:field="*{description}"></textarea>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Stock (unités)</label>
+            <input type="number" class="form-control" th:field="*{stock}"/>
+        </div>
+
+        <button class="btn btn-primary" th:text="${plant.id != null} ? 'Mettre à jour' : 'Créer'">Créer</button>
+    </form>
+</div>
+</body>
+</html>
