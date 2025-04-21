@@ -15,9 +15,11 @@
             <p>Aucune commande pour le moment.</p>
         </div>
 
-        <div th:each="order : ${orders}" class="card mb-3">
+        <div th:each="order, iterStat : ${orders}" class="card mb-3">
             <div class="card-body">
-                <h5 class="card-title">Commande n° <span th:text="${order.id}">0</span></h5>
+								<h5 class="card-title">
+									Commande n° <span th:text="${orders.size() - iterStat.index}">1</span>
+								</h5>
                 <p class="card-text">
                     Passée le <span th:text="${#dates.format(order.createdAt, 'dd/MM/yyyy HH:mm')}">date</span> –
                     Total : <strong th:text="${#numbers.formatDecimal(order.totalPrice, 1, 'POINT', 2, 'POINT')} + ' €'">0.00 €</strong>
