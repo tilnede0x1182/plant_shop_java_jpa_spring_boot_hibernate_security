@@ -36,3 +36,14 @@
 .form-label {
 	font-weight: 500;
 }
+
+.product-link {
+  text-decoration: none;
+  color: inherit;
+  transition: all 0.1s ease;
+}
+
+.product-link:hover {
+  /* text-decoration: underline; */
+  text-shadow: 0 0 3px rgba(0, 0, 0, 0.2);
+}

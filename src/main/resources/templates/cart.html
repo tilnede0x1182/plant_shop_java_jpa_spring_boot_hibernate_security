@@ -2,7 +2,7 @@
 <html xmlns:th="http://www.thymeleaf.org" layout:decorate="~{fragments/base}" th:with="title='Panier'">
 
 <head>
-	<title>Panier</title>
+	<title>PlantShop - Panier</title>
 </head>
 
 <body>
@@ -66,21 +66,21 @@
 							const sub = item.price * item.qty;
 							total += sub;
 							body.insertAdjacentHTML('beforeend', `
-											 <tr style="cursor:pointer;" onclick="window.location='/plants/${item.id}'">
-													<td>${item.name}</td>
-													<td>${item.price.toFixed(2)}</td>
-													<td>
-														<input type="number"
-																	min="1"
-																	onkeydown="return event.key !== 'e' && event.key !== '-'"
-																	value="${item.qty}"
-																	class="form-control form-control-sm qty-input"
-																	style="width:80px;" data-i="${i}">
-													</td>
-													<td>${sub.toFixed(2)}</td>
-													<td><button class="btn btn-sm btn-danger" data-i="${i}">✕</button></td>
-											</tr>
-								`	);
+							<tr>
+								<td><a href="/plants/${item.id}" class="product-link">${item.name}</a></td>
+								<td>${item.price.toFixed(2)}</td>
+								<td>
+									<input type="number"
+										min="1"
+										onkeydown="return event.key !== 'e' && event.key !== '-'"
+										value="${item.qty}"
+										class="form-control form-control-sm qty-input"
+										style="width:80px;" data-i="${i}">
+								</td>
+								<td>${sub.toFixed(2)}</td>
+								<td><button class="btn btn-sm btn-danger" data-i="${i}">✕</button></td>
+							</tr>
+						`);
 						});
 						body.querySelectorAll('.qty-input').forEach(input => {
 							input.addEventListener('input', updateQty);
