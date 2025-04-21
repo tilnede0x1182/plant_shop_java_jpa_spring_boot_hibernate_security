@@ -1,39 +1,42 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org"
-      layout:decorate="~{fragments/base}"
-      th:with="title='Mes commandes'">
+<html xmlns:th="http://www.thymeleaf.org" layout:decorate="~{fragments/base}" th:with="title='Mes commandes'">
 
 <head>
-    <title>Mes commandes</title>
+	<title>Mes commandes</title>
 </head>
+
 <body>
-<div layout:fragment="content">
-    <main class="container pt-5 mt-5">
-        <h2 class="mb-4">📦 Mes commandes</h2>
+	<div layout:fragment="content">
+		<main class="container pt-5 mt-5">
+			<h2 class="mb-4">📦 Mes commandes</h2>
 
-        <div th:if="${#lists.isEmpty(orders)}">
-            <p>Aucune commande pour le moment.</p>
-        </div>
+			<div th:if="${#lists.isEmpty(orders)}">
+				<p>Aucune commande pour le moment.</p>
+			</div>
 
-        <div th:each="order, iterStat : ${orders}" class="card mb-3">
-            <div class="card-body">
-								<h5 class="card-title">
-									Commande n° <span th:text="${orders.size() - iterStat.index}">1</span>
-								</h5>
-                <p class="card-text">
-                    Passée le <span th:text="${#dates.format(order.createdAt, 'dd/MM/yyyy HH:mm')}">date</span> –
-                    Total : <strong th:text="${#numbers.formatDecimal(order.totalPrice, 1, 'POINT', 2, 'POINT')} + ' €'">0.00 €</strong>
-                </p>
+			<div th:each="order, iterStat : ${orders}" class="card mb-3">
+				<div class="card-body">
+					<h5 class="card-title">
+						Commande n° <span th:text="${orders.size() - iterStat.index}">1</span>
+					</h5>
+					<p class="card-text">
+						<!-- <span th:text="${order.createdAt}">date</span> -->
+						<!-- <span th:text="${#temporals.format(order.createdAt, 'dd/MM/yyyy à HH:mm')}">date</span> -->
+						Passée le <span th:text="${order.createdAt != null ? #temporals.format(order.createdAt, 'dd/MM/yyyy HH:mm') : 'Date inconnue'}">date</span> –
+						Total : <strong th:text="${#numbers.formatDecimal(order.totalPrice, 1, 'POINT', 2, 'POINT')} + ' €'">0.00
+							€</strong>
+					</p>
 
-                <ul>
-                    <li th:each="item : ${order.items}">
-                        <span th:text="${item.plant.name}">Nom</span> ×
-                        <span th:text="${item.quantity}">1</span>
-                    </li>
-                </ul>
-            </div>
-        </div>
-    </main>
-</div>
+					<ul>
+						<li th:each="item : ${order.items}">
+							<span th:text="${item.plant.name}">Nom</span> ×
+							<span th:text="${item.quantity}">1</span>
+						</li>
+					</ul>
+				</div>
+			</div>
+		</main>
+	</div>
 </body>
+
 </html>
