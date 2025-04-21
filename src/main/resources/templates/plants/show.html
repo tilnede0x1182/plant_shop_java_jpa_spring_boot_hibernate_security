@@ -34,6 +34,9 @@
 						th:data-name="${plant.name}" th:data-price="${plant.price}">
 						Ajouter au panier
 					</button>
+					<div th:if="${userRoleString == 'admin'}">
+						<a href="@{'/admin/plants/' + ${plant.id} + '/edit'}" class="btn btn-warning add-to-cart">Modifier</a>
+					</div>
 				</div>
 			</div>
 		</div>

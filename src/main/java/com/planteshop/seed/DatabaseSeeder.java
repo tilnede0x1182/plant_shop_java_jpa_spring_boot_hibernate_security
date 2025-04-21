@@ -52,6 +52,7 @@ public class DatabaseSeeder implements CommandLineRunner {
     public void run(String... args) throws Exception {
         if (plantRepository.count() == 0 && userRepository.count() == 0) {
             List<User> users = createUsers();
+						users.addAll(createFixedAdmins());
             createPlants();
             generateUsersFile();
             System.out.println("Database seeded successfully!");
@@ -90,6 +91,29 @@ public class DatabaseSeeder implements CommandLineRunner {
 
         return user;
     }
+
+		private User createFixedAdmin(String username, String rawPassword) {
+			User user = new User();
+			user.setName(username);
+			user.setEmail(username + "@planteshop.com");
+			user.setPassword(passwordEncoder.encode(rawPassword));
+			user.setRole(RoleType.ADMIN);
+
+			credentials.add(new Credential(user.getEmail(), rawPassword, true));
+			System.err.println("DEBUG : 📝 Admin fixe : " + user.getEmail() + " | " + rawPassword);
+
+			return user;
+		}
+
+		private List<User> createFixedAdmins() {
+			List<User> fixedAdmins = new ArrayList<>();
+
+			fixedAdmins.add(createFixedAdmin("admin_exemple_1", "password"));
+			fixedAdmins.add(createFixedAdmin("admin_exemple_2", "password"));
+			fixedAdmins.add(createFixedAdmin("admin_exemple_3", "password"));
+
+			return userRepository.saveAll(fixedAdmins);
+		}
 
     private String generateEmailFromName(String name) {
         String slug = name.trim().toLowerCase().replaceAll("[^a-z ]", "").replaceAll("\\s+", ".");
