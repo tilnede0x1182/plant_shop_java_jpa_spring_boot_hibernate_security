@@ -21,7 +21,11 @@ public class AdminUserController {
 
     @GetMapping
     public String index(Model model) {
-        model.addAttribute("users", userRepository.findAll());
+			model.addAttribute("users", userRepository.findAll()
+			.stream()
+			.sorted((u1, u2) -> u1.getRole() == RoleType.ADMIN && u2.getRole() != RoleType.ADMIN ? -1 :
+													 u1.getRole() != RoleType.ADMIN && u2.getRole() == RoleType.ADMIN ? 1 : 0)
+			.toList());
         return "admin/users/index";
     }
 
