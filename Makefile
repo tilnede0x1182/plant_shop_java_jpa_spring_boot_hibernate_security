@@ -23,7 +23,7 @@ help:
 
 # Installaton des dépendances
 install:
-	clear && mvn clean install
+	clear && mvn clean compile
 
 # Lance l'application
 run:

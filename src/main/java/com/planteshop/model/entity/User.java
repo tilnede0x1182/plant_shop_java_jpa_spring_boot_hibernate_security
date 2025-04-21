@@ -6,6 +6,7 @@ import jakarta.persistence.*;
 import java.util.Collection;
 import java.util.List;
 
+import jakarta.validation.constraints.*;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -16,9 +17,16 @@ public class User implements UserDetails {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private String name;
-    private String email;
-    private String password;
+		@NotBlank(message = "Le nom est obligatoire")
+		private String name;
+
+		@NotBlank(message = "L'email est obligatoire")
+		@Email(message = "Email invalide")
+		private String email;
+
+		@NotBlank(message = "Le mot de passe est obligatoire")
+		@Size(min = 6, message = "Le mot de passe doit contenir au moins 6 caractères")
+		private String password;
 
     @Enumerated(EnumType.STRING)
     private RoleType role;
