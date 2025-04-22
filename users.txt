@@ -1,24 +1,24 @@
 === ADMINS ===
-jerrod.waelchi@planteshop.com olivewhale77
-jadwiga.jast@planteshop.com tealplatypus59
-anderson.stoltenberg@planteshop.com whitezebra91
+mr.adan.dare@planteshop.com goldcrab83
+mrs.roger.haag@planteshop.com cyanfrog48
+lorina.farrell@planteshop.com redcamel61
 admin_exemple_1@planteshop.com password
 admin_exemple_2@planteshop.com password
 admin_exemple_3@planteshop.com password
 
 === USERS ===
-carlyn.fahey.dvm@planteshop.com maroonmallard40
-cecil.howe.iv@planteshop.com pinklouse53
-mrs.nickolas.ratke@planteshop.com magentaturtle66
-cleo.vonrueden.sr@planteshop.com skybluedeer25
-abraham.sporer@planteshop.com lavenderprairiedog34
-giuseppe.crona@planteshop.com magentaherring63
-jonas.denesik@planteshop.com skybluecheetah92
-roselyn.greenholt@planteshop.com azuresheep26
-jeanelle.stroman@planteshop.com maroonreindeer11
-omer.orn.iii@planteshop.com fuchsiaalpaca87
-gearldine.kessler@planteshop.com goldape21
-jene.witting@planteshop.com goldcrow72
-anton.bartell@planteshop.com azuregnu63
-winifred.wiegand.phd@planteshop.com silverwildebeest51
-nannie.toy@planteshop.com ivoryserval18
+veronica.huels@planteshop.com pinkplatypus84
+mr.kristyn.welch@planteshop.com skybluecockroach56
+terrance.wilkinson.i@planteshop.com turquoisebear23
+dr.ellis.pagac@planteshop.com purplesnake41
+reyes.bode@planteshop.com magentamammoth46
+dwayne.kassulke@planteshop.com fuchsiapug53
+mariano.heidenreich@planteshop.com salmoneagle91
+mrs.everette.johns@planteshop.com silveralligator30
+mireya.farrell@planteshop.com redporpoise22
+ms.kimiko.mills@planteshop.com blackcicada63
+normand.mayer@planteshop.com maroonhedgehog37
+rochel.kuvalis@planteshop.com orangemosquito65
+sergio.becker@planteshop.com fuchsiabadger29
+dr.steve.hermann@planteshop.com greentiger88
+ronny.keeling@planteshop.com fuchsiallama97

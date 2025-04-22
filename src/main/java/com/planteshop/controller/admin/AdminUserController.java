@@ -37,7 +37,7 @@ public class AdminUserController {
         return "admin/users/edit";
     }
 
-    @PostMapping("/{id}")
+    @PatchMapping("/{id}")
     public String update(@PathVariable Long id, @ModelAttribute User formUser) {
         userRepository.findById(id).ifPresent(user -> {
             user.setEmail(formUser.getEmail());

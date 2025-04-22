@@ -1,31 +1,42 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org" layout:decorate="~{fragments/base}" th:with="title='Modifier utilisateur'">
+<html xmlns:th="http://www.thymeleaf.org"
+      layout:decorate="~{fragments/base}"
+      th:with="title='Modifier utilisateur'">
 <head>
-    <title>PlantShop | Modifier Utilisateur</title>
+    <title>PlantShop | Modifier utilisateur</title>
 </head>
 <body>
 <div layout:fragment="content">
     <div class="container pt-5 mt-5">
         <h1>Modifier l'utilisateur</h1>
 
-        <form th:action="@{'/admin/users/' + ${user.id}}" method="post" th:object="${user}">
+        <form th:action="@{'/admin/users/' + ${user.id}}" th:object="${user}" method="post">
             <input type="hidden" name="_method" value="patch"/>
+
+            <div th:if="${#fields.hasErrors('*')}" class="alert alert-danger">
+                <ul>
+                    <li th:each="err : ${#fields.errors('*')}" th:text="${err}">Erreur</li>
+                </ul>
+            </div>
+
             <div class="mb-3">
                 <label for="email" class="form-label">Email</label>
-                <input th:field="*{email}" class="form-control" type="email" id="email"/>
+                <input id="email" type="email" class="form-control" th:field="*{email}"/>
             </div>
 
             <div class="mb-3">
                 <label for="name" class="form-label">Nom</label>
-                <input th:field="*{name}" class="form-control" type="text" id="name"/>
+                <input id="name" type="text" class="form-control" th:field="*{name}"/>
             </div>
 
-            <div class="form-check mb-3">
-                <input th:field="*{admin}" class="form-check-input" type="checkbox" id="admin"/>
+            <div class="mb-3 form-check">
+                <input id="admin" type="checkbox" class="form-check-input"
+                       th:checked="${user.getRole().name() == 'ADMIN'}"
+                       name="admin"/>
                 <label for="admin" class="form-check-label">Administrateur ?</label>
             </div>
 
-            <button class="btn btn-primary">Enregistrer</button>
+            <button type="submit" class="btn btn-primary">Enregistrer</button>
         </form>
     </div>
 </div>
