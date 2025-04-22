@@ -10,7 +10,8 @@
 			<div class="collapse navbar-collapse" id="navbarNav">
 				<ul class="navbar-nav me-auto"></ul>
 				<ul class="navbar-nav">
-					<li th:if="${loggedUserName}" class="navbar-text text-white me-2" th:text="${loggedUserName}">
+					<li th:if="${loggedUserName}" class="navbar-text text-white me-2"
+							th:text="${userRoleString == 'admin' ? loggedUserName + ' (Administrateur)' : loggedUserName}">
 					</li>
 					<li th:if="${userRoleString == 'visitor' || userRoleString == 'user' || userRoleString == 'admin'}"
 						class="nav-item">
