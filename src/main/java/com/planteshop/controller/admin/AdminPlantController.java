@@ -1,6 +1,7 @@
 package com.planteshop.controller.admin;
 
 import com.planteshop.model.entity.Plant;
+import org.springframework.data.domain.Sort;
 import com.planteshop.repository.PlantRepository;
 import jakarta.validation.Valid;
 import org.springframework.stereotype.Controller;
@@ -20,7 +21,7 @@ public class AdminPlantController {
 
 	@GetMapping
 	public String index(Model model) {
-		model.addAttribute("plants", plantRepository.findAll());
+		model.addAttribute("plants", plantRepository.findAll(Sort.by("name").ascending()));
 		return "admin/plants/index";
 	}
 
