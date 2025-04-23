@@ -4,6 +4,8 @@ import com.planteshop.model.entity.User;
 import com.planteshop.model.enums.RoleType;
 import com.planteshop.repository.UserRepository;
 import jakarta.validation.Valid;
+
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -63,6 +65,7 @@ public class AdminUserController {
 						+ userTmp.getName() + ", email - " + userTmp.getEmail() + ", role - " + userTmp.getRole());
 			}
 		});
+		SecurityContextHolder.clearContext();
 		return "redirect:/admin/users";
 	}
 
