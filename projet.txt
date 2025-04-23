@@ -157,7 +157,7 @@ spring:
       layout:decorate="~{fragments/base}"
       th:with="title='Connexion'">
 <head>
-    <title>Connexion</title>
+    <title>PlantShop | Connexion</title>
 </head>
 <body>
 <div layout:fragment="content">
@@ -199,6 +199,217 @@ spring:
 </body>
 </html>
 
+# target/classes/templates/admin/plants/index.html
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" layout:decorate="~{fragments/base}" th:with="title='Gestion des plantes'">
+<head>
+    <title>PlantShop | Gestion des plantes</title>
+</head>
+<body>
+<div layout:fragment="content">
+    <div class="container pt-5 mt-5">
+        <h1 class="mb-4">Gestion des Plantes</h1>
+
+				<div th:if="${userRoleString == 'admin'}" class="mb-3">
+					<a href="/admin/plants/new" class="btn btn-primary">Ajouter une plante</a>
+				</div>
+
+        <table class="table table-striped table-hover">
+            <thead class="table-dark">
+            <tr>
+                <th>Nom</th>
+                <th>Prix</th>
+                <th>Stock</th>
+                <th class="text-center">Actions</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="plant : ${plants}">
+                <td th:text="${plant.name}">Nom</td>
+                <td th:text="${plant.price} + ' €'">0.00 €</td>
+                <td th:text="${plant.stock}">0</td>
+                <td class="text-center">
+                    <div class="d-flex justify-content-center gap-2">
+                        <a th:href="@{'/admin/plants/' + ${plant.id} + '/edit'}" class="btn btn-warning btn-sm">✏ Modifier</a>
+                        <form th:action="@{'/admin/plants/' + ${plant.id}}" method="post"
+                              onsubmit="return confirm('Supprimer cette plante ?');">
+                            <input type="hidden" name="_method" value="delete"/>
+                            <button class="btn btn-danger btn-sm">🗑 Supprimer</button>
+                        </form>
+                    </div>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+</body>
+</html>
+
+# target/classes/templates/admin/plants/edit.html
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" layout:decorate="~{fragments/base}" th:with="title='Modifier plante'">
+<head>
+    <title>PlantShop | Modifier Plante</title>
+</head>
+<body>
+<div layout:fragment="content">
+    <div class="container pt-5 mt-5">
+        <h1>Éditer la Plante</h1>
+        <div th:replace="admin/plants/form :: plantForm(${plant})"></div>
+    </div>
+</div>
+</body>
+</html>
+
+# target/classes/templates/admin/plants/new.html
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" layout:decorate="~{fragments/base}" th:with="title='Nouvelle plante'">
+<head>
+    <title>PlantShop | Nouvelle Plante</title>
+</head>
+<body>
+<div layout:fragment="content">
+    <div class="container pt-5 mt-5">
+        <h1>PlantShop | Nouvelle Plante (Admin)</h1>
+        <div th:replace="admin/plants/form :: plantForm(${plant})"></div>
+    </div>
+</div>
+</body>
+</html>
+
+# target/classes/templates/admin/plants/form.html
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+<div th:fragment="plantForm(plant)">
+    <form th:object="${plant}" th:action="${plant.id != null} ? @{'/admin/plants/' + ${plant.id}} : @{/admin/plants}" method="post">
+        <input type="hidden" name="_method" th:value="${plant.id != null} ? 'patch' : 'post'"/>
+
+        <div class="mb-3">
+            <label class="form-label">Nom de la plante</label>
+            <input type="text" class="form-control" th:field="*{name}"/>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Prix (€)</label>
+            <input type="number" class="form-control" step="0.01" th:field="*{price}"/>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Description</label>
+            <textarea class="form-control" rows="4" th:field="*{description}"></textarea>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Stock (unités)</label>
+            <input type="number" class="form-control" th:field="*{stock}"/>
+        </div>
+
+        <button class="btn btn-primary" th:text="${plant.id != null} ? 'Mettre à jour' : 'Créer'">Créer</button>
+    </form>
+</div>
+</body>
+</html>
+
+# target/classes/templates/admin/users/index.html
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" layout:decorate="~{fragments/base}"
+	th:with="title='Gestion des utilisateurs'">
+
+<head>
+	<title>PlantShop | Utilisateurs</title>
+</head>
+
+<body>
+	<div layout:fragment="content">
+		<div class="container pt-5 mt-5">
+			<h1 class="mb-4">Gestion des Utilisateurs</h1>
+
+			<table class="table table-striped table-hover">
+				<thead class="table-dark">
+					<tr>
+						<th>Name</th>
+						<th>Email</th>
+						<th>Administrateur</th>
+						<th class="text-center">Actions</th>
+					</tr>
+				</thead>
+				<tbody>
+					<tr th:each="user : ${users}">
+						<td th:text="${user.name}">name</td>
+						<td th:text="${user.email}">email</td>
+						<td>
+							<span th:class="${user.getRole().toString() == 'amdin'} ? 'badge bg-success' : 'badge bg-secondary'"
+							th:text="${user.getRole().toString() == 'admin'} ? 'Oui' : 'Non'">
+							Non
+							</span>
+						</td>
+						<td class="text-center">
+							<div class="d-flex justify-content-center gap-2">
+								<a th:href="@{'/admin/users/' + ${user.id} + '/edit'}" class="btn btn-warning btn-sm">✏ Modifier</a>
+								<form th:if="${#authentication.name != user.email}" th:action="@{'/admin/users/' + ${user.id}}"
+									method="post" onsubmit="return confirm('Supprimer cet utilisateur ?');">
+									<input type="hidden" name="_method" value="delete" />
+									<button class="btn btn-danger btn-sm">🗑 Supprimer</button>
+								</form>
+							</div>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+		</div>
+	</div>
+</body>
+
+</html>
+
+# target/classes/templates/admin/users/edit.html
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      layout:decorate="~{fragments/base}"
+      th:with="title='Modifier utilisateur'">
+<head>
+    <title>PlantShop | Modifier utilisateur</title>
+</head>
+<body>
+<div layout:fragment="content">
+    <div class="container pt-5 mt-5">
+        <h1>Modifier l'utilisateur</h1>
+
+        <form th:action="@{'/admin/users/' + ${user.id}}" th:object="${user}" method="post">
+            <input type="hidden" name="_method" value="patch"/>
+
+            <div th:if="${#fields.hasErrors('*')}" class="alert alert-danger">
+                <ul>
+                    <li th:each="err : ${#fields.errors('*')}" th:text="${err}">Erreur</li>
+                </ul>
+            </div>
+
+            <div class="mb-3">
+                <label for="email" class="form-label">Email</label>
+                <input id="email" type="email" class="form-control" th:field="*{email}"/>
+            </div>
+
+            <div class="mb-3">
+                <label for="name" class="form-label">Nom</label>
+                <input id="name" type="text" class="form-control" th:field="*{name}"/>
+            </div>
+
+            <div class="mb-3 form-check">
+                <input id="admin" type="checkbox" class="form-check-input"
+                       th:checked="${user.getRole().name() == 'ADMIN'}"
+                       name="admin"/>
+                <label for="admin" class="form-check-label">Administrateur ?</label>
+            </div>
+
+            <button type="submit" class="btn btn-primary">Enregistrer</button>
+        </form>
+    </div>
+</div>
+</body>
+</html>
+
 # target/classes/templates/plants/show.html
 <!DOCTYPE html>
 <html layout:decorate="~{fragments/base}" xmlns:th="http://www.thymeleaf.org"
@@ -236,6 +447,14 @@ spring:
 						th:data-name="${plant.name}" th:data-price="${plant.price}">
 						Ajouter au panier
 					</button>
+					<div th:if="${userRoleString == 'admin'}" class="d-flex gap-2">
+						<a th:href="@{'/admin/plants/' + ${plant.id} + '/edit'}" class="btn btn-warning">Modifier</a>
+						<form th:action="@{'/admin/plants/' + ${plant.id} + '/delete'}" method="post"
+									onsubmit="return confirm('Supprimer cette plante ?');">
+							<input type="hidden" name="_method" value="delete"/>
+							<button type="submit" class="btn btn-danger">Supprimer</button>
+						</form>
+					</div>
 				</div>
 			</div>
 		</div>
@@ -272,13 +491,13 @@ spring:
 <html xmlns:th="http://www.thymeleaf.org" layout:decorate="~{fragments/base}" th:with="title='Liste des plantes'">
 
 <head>
-	<title>Plantes</title>
+	<title>PlantShop | Acceuil</title>
 </head>
 
 <body>
 	<div layout:fragment="content">
 		<section class="container pt-5 mt-5">
-			<div th:if="${finalCurrentUserType == 'admin'}" class="mb-3">
+			<div th:if="${userRoleString == 'admin'}" class="mb-3">
 				<a href="/admin/plants/new" class="btn btn-primary">Ajouter une plante</a>
 			</div>
 
@@ -343,7 +562,7 @@ spring:
       layout:decorate="~{fragments/base}"
       th:with="title='Inscription'">
 <head>
-    <title>Inscription</title>
+    <title>PlantShop | Inscription</title>
 </head>
 <body>
     <div layout:fragment="content">
@@ -388,41 +607,46 @@ spring:
 
 # target/classes/templates/orders/index.html
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org"
-      layout:decorate="~{fragments/base}"
-      th:with="title='Mes commandes'">
+<html xmlns:th="http://www.thymeleaf.org" layout:decorate="~{fragments/base}" th:with="title='Mes commandes'">
 
 <head>
-    <title>Mes commandes</title>
+	<title>PlantShop | Mes commandes</title>
 </head>
+
 <body>
-<div layout:fragment="content">
-    <main class="container pt-5 mt-5">
-        <h2 class="mb-4">📦 Mes commandes</h2>
+	<div layout:fragment="content">
+		<main class="container pt-5 mt-5">
+			<h2 class="mb-4">📦 Mes commandes</h2>
 
-        <div th:if="${#lists.isEmpty(orders)}">
-            <p>Aucune commande trouvée.</p>
-        </div>
+			<div th:if="${#lists.isEmpty(orders)}">
+				<p>Aucune commande pour le moment.</p>
+			</div>
 
-        <div th:each="order : ${orders}" class="card mb-3">
-            <div class="card-body">
-                <h5 class="card-title">Commande n° <span th:text="${order.id}">0</span></h5>
-                <p class="card-text">
-                    Passée le <span th:text="${#dates.format(order.createdAt, 'dd/MM/yyyy HH:mm')}">date</span> –
-                    Total : <strong th:text="${order.total} + ' €'">0.00 €</strong>
-                </p>
+			<div th:each="order, iterStat : ${orders}" class="card mb-3">
+				<div class="card-body">
+					<h5 class="card-title">
+						Commande n° <span th:text="${orders.size() - iterStat.index}">1</span>
+					</h5>
+					<p class="card-text">
+						<!-- <span th:text="${order.createdAt}">date</span> -->
+						<!-- <span th:text="${#temporals.format(order.createdAt, 'dd/MM/yyyy à HH:mm')}">date</span> -->
+						Passée le <span th:text="${order.createdAt != null ? #temporals.format(order.createdAt, 'dd/MM/yyyy HH:mm') : 'Date inconnue'}">date</span> –
+						Total : <strong th:text="${#numbers.formatDecimal(order.totalPrice, 1, 'POINT', 2, 'POINT')} + ' €'">0.00
+							€</strong>
+					</p>
 
-                <ul>
-                    <li th:each="item : ${order.items}">
-                        <span th:text="${item.plant.name}">Nom</span> ×
-                        <span th:text="${item.quantity}">1</span>
-                    </li>
-                </ul>
-            </div>
-        </div>
-    </main>
-</div>
+					<ul>
+						<li th:each="item : ${order.items}">
+							<span th:text="${item.plant.name}">Nom</span> ×
+							<span th:text="${item.quantity}">1</span>
+						</li>
+					</ul>
+				</div>
+			</div>
+		</main>
+	</div>
 </body>
+
 </html>
 
 # target/classes/templates/cart.html
@@ -430,7 +654,7 @@ spring:
 <html xmlns:th="http://www.thymeleaf.org" layout:decorate="~{fragments/base}" th:with="title='Panier'">
 
 <head>
-	<title>Panier</title>
+	<title>PlantShop | Panier</title>
 </head>
 
 <body>
@@ -494,21 +718,21 @@ spring:
 							const sub = item.price * item.qty;
 							total += sub;
 							body.insertAdjacentHTML('beforeend', `
-											 <tr style="cursor:pointer;" onclick="window.location='/plants/${item.id}'">
-													<td>${item.name}</td>
-													<td>${item.price.toFixed(2)}</td>
-													<td>
-														<input type="number"
-																	min="1"
-																	onkeydown="return event.key !== 'e' && event.key !== '-'"
-																	value="${item.qty}"
-																	class="form-control form-control-sm qty-input"
-																	style="width:80px;" data-i="${i}">
-													</td>
-													<td>${sub.toFixed(2)}</td>
-													<td><button class="btn btn-sm btn-danger" data-i="${i}">✕</button></td>
-											</tr>
-								`	);
+							<tr>
+								<td><a href="/plants/${item.id}" class="product-link">${item.name}</a></td>
+								<td>${item.price.toFixed(2)}</td>
+								<td>
+									<input type="number"
+										min="1"
+										onkeydown="return event.key !== 'e' && event.key !== '-'"
+										value="${item.qty}"
+										class="form-control form-control-sm qty-input"
+										style="width:80px;" data-i="${i}">
+								</td>
+								<td>${sub.toFixed(2)}</td>
+								<td><button class="btn btn-sm btn-danger" data-i="${i}">✕</button></td>
+							</tr>
+						`);
 						});
 						body.querySelectorAll('.qty-input').forEach(input => {
 							input.addEventListener('input', updateQty);
@@ -530,6 +754,12 @@ spring:
 
 				document.getElementById('checkoutForm')?.addEventListener('submit', async e => {
 					e.preventDefault();
+
+					if ("[[${userRole}]]" === "visitor") {
+						window.location.href = "/login";
+						return;
+					}
+
 					const cart = JSON.parse(localStorage.getItem('cart') || '[]');
 					const msgEl = document.getElementById('checkoutMessage');
 					msgEl.className = 'alert d-none';
@@ -553,7 +783,7 @@ spring:
 							refreshCart();
 							msgEl.textContent = "Commande validée ! Redirection…";
 							msgEl.className = "alert alert-success";
-							setTimeout(() => window.location.href = "/orders", 1500);
+							setTimeout(() => window.location.href = "/orders", 0);
 						} else {
 							msgEl.textContent = "Erreur lors de la commande : " + text;
 							msgEl.className = "alert alert-danger";
@@ -598,7 +828,7 @@ spring:
 
 <head>
   <meta charset="UTF-8">
-  <title>Modifier | PlantShop</title>
+  <title>Modifier | PlantShop</title>
 </head>
 
 <body>
@@ -705,7 +935,10 @@ spring:
 <head>
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
-	<title>PlantShop - [[${title}]]</title>
+	<!-- Icône du site -->
+	<link rel="icon" href="/favicon.ico" type="image/x-icon"/>
+
+	<title>PlantShop | [[${title}]]</title>
 
 	<!-- Bootstrap CSS -->
 	<link rel="stylesheet" href="/webjars/bootstrap/5.3.2/css/bootstrap.min.css">
@@ -758,7 +991,8 @@ spring:
 			<div class="collapse navbar-collapse" id="navbarNav">
 				<ul class="navbar-nav me-auto"></ul>
 				<ul class="navbar-nav">
-					<li th:if="${loggedUserName}" class="navbar-text text-white me-2" th:text="${loggedUserName}">
+					<li th:if="${loggedUserName}" class="navbar-text text-white me-2"
+							th:text="${userRoleString == 'admin' ? loggedUserName + ' (Administrateur)' : loggedUserName}">
 					</li>
 					<li th:if="${userRoleString == 'visitor' || userRoleString == 'user' || userRoleString == 'admin'}"
 						class="nav-item">
@@ -959,7 +1193,7 @@ help:
 
 # Installaton des dépendances
 install:
-	clear && mvn clean install
+	clear && mvn clean compile
 
 # Lance l'application
 run:
@@ -992,8 +1226,8 @@ reset: seed
 
 # Tâche pour seed la base de données (si vous avez un mécanisme de seed)
 seed:
-	# clear && mvn -q spring-boot:run -Dspring-boot.run.profiles=seed | grep -E "WARN|ERROR|DEBUG :"
-	clear && mvn -q spring-boot:run -Dspring-boot.run.profiles=seed | grep -E "WARN|ERROR|DEBUG :|DEBUG"
+	clear && mvn -q spring-boot:run -Dspring-boot.run.profiles=seed | grep -E "WARN|ERROR|DEBUG :"
+	# clear && mvn -q spring-boot:run -Dspring-boot.run.profiles=seed | grep -E "WARN|ERROR|DEBUG :|DEBUG"
 
 .PHONY: test clean db-create db-drop update reset seed
 
@@ -1156,7 +1390,7 @@ spring:
       layout:decorate="~{fragments/base}"
       th:with="title='Connexion'">
 <head>
-    <title>Connexion</title>
+    <title>PlantShop | Connexion</title>
 </head>
 <body>
 <div layout:fragment="content">
@@ -1198,6 +1432,217 @@ spring:
 </body>
 </html>
 
+# src/main/resources/templates/admin/plants/index.html
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" layout:decorate="~{fragments/base}" th:with="title='Gestion des plantes'">
+<head>
+    <title>PlantShop | Gestion des plantes</title>
+</head>
+<body>
+<div layout:fragment="content">
+    <div class="container pt-5 mt-5">
+        <h1 class="mb-4">Gestion des Plantes</h1>
+
+				<div th:if="${userRoleString == 'admin'}" class="mb-3">
+					<a href="/admin/plants/new" class="btn btn-primary">Ajouter une plante</a>
+				</div>
+
+        <table class="table table-striped table-hover">
+            <thead class="table-dark">
+            <tr>
+                <th>Nom</th>
+                <th>Prix</th>
+                <th>Stock</th>
+                <th class="text-center">Actions</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="plant : ${plants}">
+                <td th:text="${plant.name}">Nom</td>
+                <td th:text="${plant.price} + ' €'">0.00 €</td>
+                <td th:text="${plant.stock}">0</td>
+                <td class="text-center">
+                    <div class="d-flex justify-content-center gap-2">
+                        <a th:href="@{'/admin/plants/' + ${plant.id} + '/edit'}" class="btn btn-warning btn-sm">✏ Modifier</a>
+                        <form th:action="@{'/admin/plants/' + ${plant.id}}" method="post"
+                              onsubmit="return confirm('Supprimer cette plante ?');">
+                            <input type="hidden" name="_method" value="delete"/>
+                            <button class="btn btn-danger btn-sm">🗑 Supprimer</button>
+                        </form>
+                    </div>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+</body>
+</html>
+
+# src/main/resources/templates/admin/plants/edit.html
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" layout:decorate="~{fragments/base}" th:with="title='Modifier plante'">
+<head>
+    <title>PlantShop | Modifier Plante</title>
+</head>
+<body>
+<div layout:fragment="content">
+    <div class="container pt-5 mt-5">
+        <h1>Éditer la Plante</h1>
+        <div th:replace="admin/plants/form :: plantForm(${plant})"></div>
+    </div>
+</div>
+</body>
+</html>
+
+# src/main/resources/templates/admin/plants/new.html
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" layout:decorate="~{fragments/base}" th:with="title='Nouvelle plante'">
+<head>
+    <title>PlantShop | Nouvelle Plante</title>
+</head>
+<body>
+<div layout:fragment="content">
+    <div class="container pt-5 mt-5">
+        <h1>PlantShop | Nouvelle Plante (Admin)</h1>
+        <div th:replace="admin/plants/form :: plantForm(${plant})"></div>
+    </div>
+</div>
+</body>
+</html>
+
+# src/main/resources/templates/admin/plants/form.html
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+<div th:fragment="plantForm(plant)">
+    <form th:object="${plant}" th:action="${plant.id != null} ? @{'/admin/plants/' + ${plant.id}} : @{/admin/plants}" method="post">
+        <input type="hidden" name="_method" th:value="${plant.id != null} ? 'patch' : 'post'"/>
+
+        <div class="mb-3">
+            <label class="form-label">Nom de la plante</label>
+            <input type="text" class="form-control" th:field="*{name}"/>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Prix (€)</label>
+            <input type="number" class="form-control" step="0.01" th:field="*{price}"/>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Description</label>
+            <textarea class="form-control" rows="4" th:field="*{description}"></textarea>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Stock (unités)</label>
+            <input type="number" class="form-control" th:field="*{stock}"/>
+        </div>
+
+        <button class="btn btn-primary" th:text="${plant.id != null} ? 'Mettre à jour' : 'Créer'">Créer</button>
+    </form>
+</div>
+</body>
+</html>
+
+# src/main/resources/templates/admin/users/index.html
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" layout:decorate="~{fragments/base}"
+	th:with="title='Gestion des utilisateurs'">
+
+<head>
+	<title>PlantShop | Utilisateurs</title>
+</head>
+
+<body>
+	<div layout:fragment="content">
+		<div class="container pt-5 mt-5">
+			<h1 class="mb-4">Gestion des Utilisateurs</h1>
+
+			<table class="table table-striped table-hover">
+				<thead class="table-dark">
+					<tr>
+						<th>Name</th>
+						<th>Email</th>
+						<th>Administrateur</th>
+						<th class="text-center">Actions</th>
+					</tr>
+				</thead>
+				<tbody>
+					<tr th:each="user : ${users}">
+						<td th:text="${user.name}">name</td>
+						<td th:text="${user.email}">email</td>
+						<td>
+							<span th:class="${user.getRole().toString() == 'amdin'} ? 'badge bg-success' : 'badge bg-secondary'"
+							th:text="${user.getRole().toString() == 'admin'} ? 'Oui' : 'Non'">
+							Non
+							</span>
+						</td>
+						<td class="text-center">
+							<div class="d-flex justify-content-center gap-2">
+								<a th:href="@{'/admin/users/' + ${user.id} + '/edit'}" class="btn btn-warning btn-sm">✏ Modifier</a>
+								<form th:if="${#authentication.name != user.email}" th:action="@{'/admin/users/' + ${user.id}}"
+									method="post" onsubmit="return confirm('Supprimer cet utilisateur ?');">
+									<input type="hidden" name="_method" value="delete" />
+									<button class="btn btn-danger btn-sm">🗑 Supprimer</button>
+								</form>
+							</div>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+		</div>
+	</div>
+</body>
+
+</html>
+
+# src/main/resources/templates/admin/users/edit.html
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      layout:decorate="~{fragments/base}"
+      th:with="title='Modifier utilisateur'">
+<head>
+    <title>PlantShop | Modifier utilisateur</title>
+</head>
+<body>
+<div layout:fragment="content">
+    <div class="container pt-5 mt-5">
+        <h1>Modifier l'utilisateur</h1>
+
+        <form th:action="@{'/admin/users/' + ${user.id}}" th:object="${user}" method="post">
+            <input type="hidden" name="_method" value="patch"/>
+
+            <div th:if="${#fields.hasErrors('*')}" class="alert alert-danger">
+                <ul>
+                    <li th:each="err : ${#fields.errors('*')}" th:text="${err}">Erreur</li>
+                </ul>
+            </div>
+
+            <div class="mb-3">
+                <label for="email" class="form-label">Email</label>
+                <input id="email" type="email" class="form-control" th:field="*{email}"/>
+            </div>
+
+            <div class="mb-3">
+                <label for="name" class="form-label">Nom</label>
+                <input id="name" type="text" class="form-control" th:field="*{name}"/>
+            </div>
+
+            <div class="mb-3 form-check">
+                <input id="admin" type="checkbox" class="form-check-input"
+                       th:checked="${user.getRole().name() == 'ADMIN'}"
+                       name="admin"/>
+                <label for="admin" class="form-check-label">Administrateur ?</label>
+            </div>
+
+            <button type="submit" class="btn btn-primary">Enregistrer</button>
+        </form>
+    </div>
+</div>
+</body>
+</html>
+
 # src/main/resources/templates/plants/show.html
 <!DOCTYPE html>
 <html layout:decorate="~{fragments/base}" xmlns:th="http://www.thymeleaf.org"
@@ -1235,6 +1680,14 @@ spring:
 						th:data-name="${plant.name}" th:data-price="${plant.price}">
 						Ajouter au panier
 					</button>
+					<div th:if="${userRoleString == 'admin'}" class="d-flex gap-2">
+						<a th:href="@{'/admin/plants/' + ${plant.id} + '/edit'}" class="btn btn-warning">Modifier</a>
+						<form th:action="@{'/admin/plants/' + ${plant.id} + '/delete'}" method="post"
+									onsubmit="return confirm('Supprimer cette plante ?');">
+							<input type="hidden" name="_method" value="delete"/>
+							<button type="submit" class="btn btn-danger">Supprimer</button>
+						</form>
+					</div>
 				</div>
 			</div>
 		</div>
@@ -1271,13 +1724,13 @@ spring:
 <html xmlns:th="http://www.thymeleaf.org" layout:decorate="~{fragments/base}" th:with="title='Liste des plantes'">
 
 <head>
-	<title>Plantes</title>
+	<title>PlantShop | Acceuil</title>
 </head>
 
 <body>
 	<div layout:fragment="content">
 		<section class="container pt-5 mt-5">
-			<div th:if="${finalCurrentUserType == 'admin'}" class="mb-3">
+			<div th:if="${userRoleString == 'admin'}" class="mb-3">
 				<a href="/admin/plants/new" class="btn btn-primary">Ajouter une plante</a>
 			</div>
 
@@ -1342,7 +1795,7 @@ spring:
       layout:decorate="~{fragments/base}"
       th:with="title='Inscription'">
 <head>
-    <title>Inscription</title>
+    <title>PlantShop | Inscription</title>
 </head>
 <body>
     <div layout:fragment="content">
@@ -1387,41 +1840,46 @@ spring:
 
 # src/main/resources/templates/orders/index.html
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org"
-      layout:decorate="~{fragments/base}"
-      th:with="title='Mes commandes'">
+<html xmlns:th="http://www.thymeleaf.org" layout:decorate="~{fragments/base}" th:with="title='Mes commandes'">
 
 <head>
-    <title>Mes commandes</title>
+	<title>PlantShop | Mes commandes</title>
 </head>
+
 <body>
-<div layout:fragment="content">
-    <main class="container pt-5 mt-5">
-        <h2 class="mb-4">📦 Mes commandes</h2>
+	<div layout:fragment="content">
+		<main class="container pt-5 mt-5">
+			<h2 class="mb-4">📦 Mes commandes</h2>
 
-        <div th:if="${#lists.isEmpty(orders)}">
-            <p>Aucune commande trouvée.</p>
-        </div>
+			<div th:if="${#lists.isEmpty(orders)}">
+				<p>Aucune commande pour le moment.</p>
+			</div>
 
-        <div th:each="order : ${orders}" class="card mb-3">
-            <div class="card-body">
-                <h5 class="card-title">Commande n° <span th:text="${order.id}">0</span></h5>
-                <p class="card-text">
-                    Passée le <span th:text="${#dates.format(order.createdAt, 'dd/MM/yyyy HH:mm')}">date</span> –
-                    Total : <strong th:text="${order.total} + ' €'">0.00 €</strong>
-                </p>
+			<div th:each="order, iterStat : ${orders}" class="card mb-3">
+				<div class="card-body">
+					<h5 class="card-title">
+						Commande n° <span th:text="${orders.size() - iterStat.index}">1</span>
+					</h5>
+					<p class="card-text">
+						<!-- <span th:text="${order.createdAt}">date</span> -->
+						<!-- <span th:text="${#temporals.format(order.createdAt, 'dd/MM/yyyy à HH:mm')}">date</span> -->
+						Passée le <span th:text="${order.createdAt != null ? #temporals.format(order.createdAt, 'dd/MM/yyyy HH:mm') : 'Date inconnue'}">date</span> –
+						Total : <strong th:text="${#numbers.formatDecimal(order.totalPrice, 1, 'POINT', 2, 'POINT')} + ' €'">0.00
+							€</strong>
+					</p>
 
-                <ul>
-                    <li th:each="item : ${order.items}">
-                        <span th:text="${item.plant.name}">Nom</span> ×
-                        <span th:text="${item.quantity}">1</span>
-                    </li>
-                </ul>
-            </div>
-        </div>
-    </main>
-</div>
+					<ul>
+						<li th:each="item : ${order.items}">
+							<span th:text="${item.plant.name}">Nom</span> ×
+							<span th:text="${item.quantity}">1</span>
+						</li>
+					</ul>
+				</div>
+			</div>
+		</main>
+	</div>
 </body>
+
 </html>
 
 # src/main/resources/templates/cart.html
@@ -1429,7 +1887,7 @@ spring:
 <html xmlns:th="http://www.thymeleaf.org" layout:decorate="~{fragments/base}" th:with="title='Panier'">
 
 <head>
-	<title>Panier</title>
+	<title>PlantShop | Panier</title>
 </head>
 
 <body>
@@ -1493,21 +1951,21 @@ spring:
 							const sub = item.price * item.qty;
 							total += sub;
 							body.insertAdjacentHTML('beforeend', `
-											 <tr style="cursor:pointer;" onclick="window.location='/plants/${item.id}'">
-													<td>${item.name}</td>
-													<td>${item.price.toFixed(2)}</td>
-													<td>
-														<input type="number"
-																	min="1"
-																	onkeydown="return event.key !== 'e' && event.key !== '-'"
-																	value="${item.qty}"
-																	class="form-control form-control-sm qty-input"
-																	style="width:80px;" data-i="${i}">
-													</td>
-													<td>${sub.toFixed(2)}</td>
-													<td><button class="btn btn-sm btn-danger" data-i="${i}">✕</button></td>
-											</tr>
-								`	);
+							<tr>
+								<td><a href="/plants/${item.id}" class="product-link">${item.name}</a></td>
+								<td>${item.price.toFixed(2)}</td>
+								<td>
+									<input type="number"
+										min="1"
+										onkeydown="return event.key !== 'e' && event.key !== '-'"
+										value="${item.qty}"
+										class="form-control form-control-sm qty-input"
+										style="width:80px;" data-i="${i}">
+								</td>
+								<td>${sub.toFixed(2)}</td>
+								<td><button class="btn btn-sm btn-danger" data-i="${i}">✕</button></td>
+							</tr>
+						`);
 						});
 						body.querySelectorAll('.qty-input').forEach(input => {
 							input.addEventListener('input', updateQty);
@@ -1529,6 +1987,12 @@ spring:
 
 				document.getElementById('checkoutForm')?.addEventListener('submit', async e => {
 					e.preventDefault();
+
+					if ("[[${userRole}]]" === "visitor") {
+						window.location.href = "/login";
+						return;
+					}
+
 					const cart = JSON.parse(localStorage.getItem('cart') || '[]');
 					const msgEl = document.getElementById('checkoutMessage');
 					msgEl.className = 'alert d-none';
@@ -1552,7 +2016,7 @@ spring:
 							refreshCart();
 							msgEl.textContent = "Commande validée ! Redirection…";
 							msgEl.className = "alert alert-success";
-							setTimeout(() => window.location.href = "/orders", 1500);
+							setTimeout(() => window.location.href = "/orders", 0);
 						} else {
 							msgEl.textContent = "Erreur lors de la commande : " + text;
 							msgEl.className = "alert alert-danger";
@@ -1597,7 +2061,7 @@ spring:
 
 <head>
   <meta charset="UTF-8">
-  <title>Modifier | PlantShop</title>
+  <title>Modifier | PlantShop</title>
 </head>
 
 <body>
@@ -1704,7 +2168,10 @@ spring:
 <head>
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
-	<title>PlantShop - [[${title}]]</title>
+	<!-- Icône du site -->
+	<link rel="icon" href="/favicon.ico" type="image/x-icon"/>
+
+	<title>PlantShop | [[${title}]]</title>
 
 	<!-- Bootstrap CSS -->
 	<link rel="stylesheet" href="/webjars/bootstrap/5.3.2/css/bootstrap.min.css">
@@ -1757,7 +2224,8 @@ spring:
 			<div class="collapse navbar-collapse" id="navbarNav">
 				<ul class="navbar-nav me-auto"></ul>
 				<ul class="navbar-nav">
-					<li th:if="${loggedUserName}" class="navbar-text text-white me-2" th:text="${loggedUserName}">
+					<li th:if="${loggedUserName}" class="navbar-text text-white me-2"
+							th:text="${userRoleString == 'admin' ? loggedUserName + ' (Administrateur)' : loggedUserName}">
 					</li>
 					<li th:if="${userRoleString == 'visitor' || userRoleString == 'user' || userRoleString == 'admin'}"
 						class="nav-item">
@@ -1941,6 +2409,10 @@ spring:
             <artifactId>thymeleaf-layout-dialect</artifactId>
             <version>3.0.0</version>
         </dependency>
+				<dependency>
+    		<groupId>org.thymeleaf.extras</groupId>
+						<artifactId>thymeleaf-extras-springsecurity6</artifactId>
+				</dependency>
 
         <!-- JPA + Hibernate -->
         <dependency>
@@ -1965,12 +2437,35 @@ spring:
             <artifactId>webjars-locator</artifactId>
             <version>0.46</version>
         </dependency>
+
         <!-- Rechargement automatique -->
         <!-- <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-devtools</artifactId>
             <optional>true</optional>
         </dependency> -->
+
+        <!-- Bean Validation API -->
+        <dependency>
+            <groupId>jakarta.validation</groupId>
+            <artifactId>jakarta.validation-api</artifactId>
+            <version>3.0.2</version>
+        </dependency>
+
+        <!-- Hibernate Validator (implémentation) -->
+        <dependency>
+            <groupId>org.hibernate.validator</groupId>
+            <artifactId>hibernate-validator</artifactId>
+            <version>8.0.1.Final</version>
+        </dependency>
+
+        <!-- Lombok -->
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <version>1.18.30</version>
+            <scope>provided</scope>
+        </dependency>
     </dependencies>
 
     <build>
@@ -2002,6 +2497,8 @@ spring:
 │   │   │           │   └── SecurityConfig.java
 │   │   │           ├── controller
 │   │   │           │   ├── admin
+│   │   │           │   │   ├── AdminPlantController.java
+│   │   │           │   │   └── AdminUserController.java
 │   │   │           │   ├── api
 │   │   │           │   │   └── ApiPlantController.java
 │   │   │           │   ├── exception
@@ -2046,14 +2543,24 @@ spring:
 │   │       │   └── migration
 │   │       │       └── V1__init_schema.sql
 │   │       ├── static
+│   │       │   ├── archives
+│   │       │   │   └── favicon.svg
 │   │       │   ├── css
 │   │       │   │   └── style.css
-│   │       │   ├── favicon.svg
+│   │       │   ├── favicon.ico
 │   │       │   ├── index.html
 │   │       │   └── js
 │   │       │       └── app.js
 │   │       └── templates
 │   │           ├── admin
+│   │           │   ├── plants
+│   │           │   │   ├── edit.html
+│   │           │   │   ├── form.html
+│   │           │   │   ├── index.html
+│   │           │   │   └── new.html
+│   │           │   └── users
+│   │           │       ├── edit.html
+│   │           │       └── index.html
 │   │           ├── cart.html
 │   │           ├── fragments
 │   │           │   ├── base.html
@@ -2083,6 +2590,9 @@ spring:
 │   │   │       ├── config
 │   │   │       │   └── SecurityConfig.class
 │   │   │       ├── controller
+│   │   │       │   ├── admin
+│   │   │       │   │   ├── AdminPlantController.class
+│   │   │       │   │   └── AdminUserController.class
 │   │   │       │   ├── api
 │   │   │       │   │   └── ApiPlantController.class
 │   │   │       │   ├── GlobalControllerAdvice.class
@@ -2122,13 +2632,24 @@ spring:
 │   │   │   └── migration
 │   │   │       └── V1__init_schema.sql
 │   │   ├── static
+│   │   │   ├── archives
+│   │   │   │   └── favicon.svg
 │   │   │   ├── css
 │   │   │   │   └── style.css
-│   │   │   ├── favicon.svg
+│   │   │   ├── favicon.ico
 │   │   │   ├── index.html
 │   │   │   └── js
 │   │   │       └── app.js
 │   │   └── templates
+│   │       ├── admin
+│   │       │   ├── plants
+│   │       │   │   ├── edit.html
+│   │       │   │   ├── form.html
+│   │       │   │   ├── index.html
+│   │       │   │   └── new.html
+│   │       │   └── users
+│   │       │       ├── edit.html
+│   │       │       └── index.html
 │   │       ├── cart.html
 │   │       ├── fragments
 │   │       │   ├── base.html
@@ -2155,10 +2676,9 @@ spring:
 │   │       │       └── inputFiles.lst
 │   │       └── testCompile
 │   │           └── default-testCompile
-│   │               ├── createdFiles.lst
 │   │               └── inputFiles.lst
 │   └── test-classes
 ├── tmp.txt
 └── users.txt
 
-79 directories, 96 files
+87 directories, 113 files
