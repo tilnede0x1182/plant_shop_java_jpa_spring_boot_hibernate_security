@@ -3,7 +3,6 @@
 <body>
 <div th:fragment="plantForm(plant)">
     <form th:object="${plant}" th:action="${plant.id != null} ? @{'/admin/plants/' + ${plant.id}} : @{/admin/plants}" method="post">
-        <input type="hidden" name="_method" th:value="${plant.id != null} ? 'patch' : 'post'"/>
 
         <div class="mb-3">
             <label class="form-label">Nom de la plante</label>
