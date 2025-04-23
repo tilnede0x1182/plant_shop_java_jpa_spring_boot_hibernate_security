@@ -8,6 +8,7 @@ import jakarta.validation.Valid;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import java.util.Comparator;
 import org.springframework.web.bind.annotation.*;
 import java.util.Optional;
 
@@ -25,8 +26,8 @@ public class AdminUserController {
 	public String index(Model model) {
 		model.addAttribute("users", userRepository.findAll()
 				.stream()
-				.sorted((u1, u2) -> u1.getRole() == RoleType.ADMIN && u2.getRole() != RoleType.ADMIN ? -1
-						: u1.getRole() != RoleType.ADMIN && u2.getRole() == RoleType.ADMIN ? 1 : 0)
+				.sorted(Comparator.comparing(User::getRole, Comparator.comparing(role -> role != RoleType.ADMIN))
+						.thenComparing(User::getName, String.CASE_INSENSITIVE_ORDER))
 				.toList());
 		return "admin/users/index";
 	}
