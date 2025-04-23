@@ -1,24 +1,24 @@
 === ADMINS ===
-tijuana.olson@planteshop.com bluechimpanzee44
-shannon.bailey@planteshop.com plumimpala32
-minh.murphy@planteshop.com lavenderwasp53
+mitch.nicolas@planteshop.com whitefrog90
+zita.metz@planteshop.com silverdolphin43
+shaniqua.hamill@planteshop.com tealhamster68
 admin_exemple_1@planteshop.com password
 admin_exemple_2@planteshop.com password
 admin_exemple_3@planteshop.com password
 
 === USERS ===
-jackson.torp.jr@planteshop.com orangewallaby65
-grayce.mraz@planteshop.com silvergoldfish97
-enoch.cole@planteshop.com cyancat57
-enoch.jacobi@planteshop.com lavendercaribou27
-denny.herman.md@planteshop.com silversnake40
-marlys.vonrueden@planteshop.com cyantortoise62
-ms.darell.murphy@planteshop.com magentawildebeest26
-natalia.padberg@planteshop.com magentaserval17
-dalia.keebler.md@planteshop.com purplejellyfish63
-inez.lehner@planteshop.com magentapanda45
-carlo.senger@planteshop.com greenminnow43
-james.heidenreich@planteshop.com goldoyster44
-mr.sylvester.jast@planteshop.com turquoisebeetle60
-israel.moen@planteshop.com pinkgorilla59
-miss.claude.johns@planteshop.com orchidtiger40
+shelton.lesch@planteshop.com fuchsiaant50
+dr.bobbye.boyle@planteshop.com turquoisedinosaur81
+mrs.cole.bergstrom@planteshop.com cyanguineapig65
+celeste.mosciski@planteshop.com ivoryhound47
+joi.champlin@planteshop.com goldhornet82
+marquerite.bednar@planteshop.com olivehamster57
+mr.phil.tromp@planteshop.com turquoisehamster53
+hugo.thiel@planteshop.com limebeaver18
+latina.hills@planteshop.com salmongoldfish11
+ms.alexander.kub@planteshop.com tanwombat38
+boris.carter.v@planteshop.com ivoryskunk12
+alfredo.ebert@planteshop.com silverherring38
+chet.roob@planteshop.com mintgreenbutterfly52
+keven.kovacek@planteshop.com turquoisemouse34
+grover.kshlerin@planteshop.com redspider10
