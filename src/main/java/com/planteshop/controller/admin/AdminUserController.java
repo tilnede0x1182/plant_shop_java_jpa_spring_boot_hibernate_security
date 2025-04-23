@@ -50,17 +50,23 @@ public class AdminUserController {
 			if (formUser.getRole() != null) {
 				user.setRole(formUser.getRole());
 			}
-			System.err.println("DEBUG : AdminUserController, @PatchMapping(\"/{id}\"), user : name - "+user.getName()+", email - "+user.getEmail()+", role - "+user.getRole());
+			// Récupéreration de l'ancien mot de passe depuis la base de données
+			// et réattribution pour empêcher Hibernate de le mettre à NULL
+			User existingUser = userRepository.findById(id).orElseThrow();
+			user.setPassword(existingUser.getPassword());
+			System.err.println("DEBUG : AdminUserController, @PatchMapping(\"/{id}\"), user : name - " + user.getName()
+					+ ", email - " + user.getEmail() + ", role - " + user.getRole());
 			userRepository.save(user);
 			User userTmp = userRepository.findById(id).orElse(null);
 			if (userTmp != null) {
-				System.err.println("DEBUG : AdminUserController, @PatchMapping(\"/{id}\"), userTmp : name - " + userTmp.getName() + ", email - " + userTmp.getEmail() + ", role - " + userTmp.getRole());
+				System.err.println("DEBUG : AdminUserController, @PatchMapping(\"/{id}\"), userTmp : name - "
+						+ userTmp.getName() + ", email - " + userTmp.getEmail() + ", role - " + userTmp.getRole());
 			}
 		});
 		return "redirect:/admin/users";
 	}
 
-	@PostMapping("/{id}/delete")
+	@DeleteMapping("/{id}")
 	public String delete(@PathVariable Long id) {
 		userRepository.deleteById(id);
 		return "redirect:/admin/users";
