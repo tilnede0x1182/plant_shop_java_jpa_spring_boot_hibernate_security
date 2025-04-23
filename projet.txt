@@ -340,10 +340,10 @@ spring:
 						<td th:text="${user.name}">name</td>
 						<td th:text="${user.email}">email</td>
 						<td>
-							<span th:class="${user.getRole().toString() == 'amdin'} ? 'badge bg-success' : 'badge bg-secondary'"
-							th:text="${user.getRole().toString() == 'admin'} ? 'Oui' : 'Non'">
+							<!-- <span th:class="${user.getRole().toString().toLowerCase() == 'admin'} ? 'badge bg-success' : 'badge bg-secondary'"
+							th:text="${user.getRole().toString().toLowerCase() == 'admin'} ? 'Oui' : 'Non'">
 							Non
-							</span>
+							</span> -->
 						</td>
 						<td class="text-center">
 							<div class="d-flex justify-content-center gap-2">
@@ -1226,8 +1226,8 @@ reset: seed
 
 # Tâche pour seed la base de données (si vous avez un mécanisme de seed)
 seed:
-	clear && mvn -q spring-boot:run -Dspring-boot.run.profiles=seed | grep -E "WARN|ERROR|DEBUG :"
-	# clear && mvn -q spring-boot:run -Dspring-boot.run.profiles=seed | grep -E "WARN|ERROR|DEBUG :|DEBUG"
+	# clear && mvn -q spring-boot:run -Dspring-boot.run.profiles=seed | grep -E "WARN|ERROR|DEBUG :"
+	clear && mvn -q spring-boot:run -Dspring-boot.run.profiles=seed | grep -E "WARN|ERROR|DEBUG :|DEBUG"
 
 .PHONY: test clean db-create db-drop update reset seed
 
@@ -1573,10 +1573,10 @@ spring:
 						<td th:text="${user.name}">name</td>
 						<td th:text="${user.email}">email</td>
 						<td>
-							<span th:class="${user.getRole().toString() == 'amdin'} ? 'badge bg-success' : 'badge bg-secondary'"
-							th:text="${user.getRole().toString() == 'admin'} ? 'Oui' : 'Non'">
+							<!-- <span th:class="${user.getRole().toString().toLowerCase() == 'admin'} ? 'badge bg-success' : 'badge bg-secondary'"
+							th:text="${user.getRole().toString().toLowerCase() == 'admin'} ? 'Oui' : 'Non'">
 							Non
-							</span>
+							</span> -->
 						</td>
 						<td class="text-center">
 							<div class="d-flex justify-content-center gap-2">
