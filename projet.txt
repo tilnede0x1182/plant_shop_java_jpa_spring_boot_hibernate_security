@@ -979,9 +979,9 @@ spring:
 </html>
 
 # target/classes/templates/fragments/navbar.html
-<nav th:fragment="navbar" class="navbar navbar-expand-lg navbar-dark bg-dark mb-4 fixed-top">
+<nav th:fragment="navbar" class="navbar navbar-expand-lg navbar fixed-top">
 	<!-- Navbar -->
-	<nav class="navbar navbar-expand-lg navbar-dark bg-dark mb-4 fixed-top">
+	<nav class="navbar navbar-expand-lg mb-4 fixed-top">
 		<div class="container">
 			<a class="navbar-brand" href="/">🌿 PlantShop</a>
 			<button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
@@ -991,7 +991,7 @@ spring:
 			<div class="collapse navbar-collapse" id="navbarNav">
 				<ul class="navbar-nav me-auto"></ul>
 				<ul class="navbar-nav">
-					<li th:if="${loggedUserName}" class="navbar-text text-white me-2"
+					<li th:if="${loggedUserName}" class="navbar-text me-2"
 							th:text="${userRoleString == 'admin' ? loggedUserName + ' (Administrateur)' : loggedUserName}">
 					</li>
 					<li th:if="${userRoleString == 'visitor' || userRoleString == 'user' || userRoleString == 'admin'}"
@@ -2212,9 +2212,9 @@ spring:
 </html>
 
 # src/main/resources/templates/fragments/navbar.html
-<nav th:fragment="navbar" class="navbar navbar-expand-lg navbar-dark bg-dark mb-4 fixed-top">
+<nav th:fragment="navbar" class="navbar navbar-expand-lg navbar fixed-top">
 	<!-- Navbar -->
-	<nav class="navbar navbar-expand-lg navbar-dark bg-dark mb-4 fixed-top">
+	<nav class="navbar navbar-expand-lg mb-4 fixed-top">
 		<div class="container">
 			<a class="navbar-brand" href="/">🌿 PlantShop</a>
 			<button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
@@ -2224,7 +2224,7 @@ spring:
 			<div class="collapse navbar-collapse" id="navbarNav">
 				<ul class="navbar-nav me-auto"></ul>
 				<ul class="navbar-nav">
-					<li th:if="${loggedUserName}" class="navbar-text text-white me-2"
+					<li th:if="${loggedUserName}" class="navbar-text me-2"
 							th:text="${userRoleString == 'admin' ? loggedUserName + ' (Administrateur)' : loggedUserName}">
 					</li>
 					<li th:if="${userRoleString == 'visitor' || userRoleString == 'user' || userRoleString == 'admin'}"
