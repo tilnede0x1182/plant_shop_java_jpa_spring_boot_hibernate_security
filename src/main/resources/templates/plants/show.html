@@ -36,9 +36,9 @@
 					</button>
 					<div th:if="${userRoleString == 'admin'}" class="d-flex gap-2">
 						<a th:href="@{'/admin/plants/' + ${plant.id} + '/edit'}" class="btn btn-warning">Modifier</a>
-						<form th:action="@{'/admin/plants/' + ${plant.id} + '/delete'}" method="post"
-									onsubmit="return confirm('Supprimer cette plante ?');">
-							<input type="hidden" name="_method" value="delete"/>
+						<form th:action="@{'/admin/plants/' + ${plant.id}}" method="post"
+							onsubmit="return confirm('Supprimer cette plante ?');">
+							<input type="hidden" name="_method" value="delete" />
 							<button type="submit" class="btn btn-danger">Supprimer</button>
 						</form>
 					</div>

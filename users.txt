@@ -1,24 +1,24 @@
 === ADMINS ===
-pamala.denesik@planteshop.com salmonlouse84
-keila.fadel@planteshop.com tealshark21
-leon.conroy.jr@planteshop.com yellowhound13
+jami.kautzer@planteshop.com goldswan27
+georgann.crist.dvm@planteshop.com mintgreenspider74
+dr.kurt.breitenberg@planteshop.com pinkhippopotamus10
 admin_exemple_1@planteshop.com password
 admin_exemple_2@planteshop.com password
 admin_exemple_3@planteshop.com password
 
 === USERS ===
-mrs.jewell.brekke@planteshop.com silverpig62
-emeline.wintheiser@planteshop.com skybluemacaw96
-virgilio.macgyver@planteshop.com plumherring51
-nidia.braun@planteshop.com skybluewalrus56
-howard.schmeler@planteshop.com greyrabbit72
-mickey.pollich@planteshop.com fuchsiaporcupine17
-guy.hegmann@planteshop.com orchidrat31
-dr.twanda.franecki@planteshop.com silverelk93
-mrs.carroll.satterfield@planteshop.com blackoyster75
-laquita.wolff.i@planteshop.com lavenderantelope57
-luanne.corkery@planteshop.com skybluesardine57
-geralyn.kreiger.phd@planteshop.com plumcicada56
-salvador.howell@planteshop.com olivetiger27
-weston.bayer@planteshop.com limelocust96
-isiah.haag@planteshop.com goldgoose38
+ezra.runolfsdottir@planteshop.com indigoplatypus18
+crista.stroman@planteshop.com orangemacaw94
+bart.keebler@planteshop.com violetswan33
+juan.emard.iii@planteshop.com orangebear31
+rico.little@planteshop.com fuchsialeopard32
+dorcas.metz@planteshop.com blackgoose81
+dagmar.kovacek.md@planteshop.com yellowotter20
+ethan.abbott@planteshop.com limefox14
+teddy.sipes@planteshop.com skybluemole42
+dexter.batz.jr@planteshop.com pinkmoose14
+buster.hammes@planteshop.com plumlion77
+tristan.mraz@planteshop.com cyanspider82
+marisol.adams@planteshop.com azureskunk35
+shayne.bauch@planteshop.com redcrow44
+dr.emelda.farrell@planteshop.com salmonmule33

@@ -340,10 +340,10 @@ spring:
 						<td th:text="${user.name}">name</td>
 						<td th:text="${user.email}">email</td>
 						<td>
-							<!-- <span th:class="${user.getRole().toString().toLowerCase() == 'admin'} ? 'badge bg-success' : 'badge bg-secondary'"
+							<span th:class="${user.getRole().toString().toLowerCase() == 'admin'} ? 'badge bg-success' : 'badge bg-secondary'"
 							th:text="${user.getRole().toString().toLowerCase() == 'admin'} ? 'Oui' : 'Non'">
 							Non
-							</span> -->
+							</span>
 						</td>
 						<td class="text-center">
 							<div class="d-flex justify-content-center gap-2">
@@ -366,48 +366,50 @@ spring:
 
 # target/classes/templates/admin/users/edit.html
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org"
-      layout:decorate="~{fragments/base}"
-      th:with="title='Modifier utilisateur'">
+<html xmlns:th="http://www.thymeleaf.org" layout:decorate="~{fragments/base}" th:with="title='Modifier utilisateur'">
+
 <head>
-    <title>PlantShop | Modifier utilisateur</title>
+	<title>PlantShop | Modifier utilisateur</title>
 </head>
+
 <body>
-<div layout:fragment="content">
-    <div class="container pt-5 mt-5">
-        <h1>Modifier l'utilisateur</h1>
+	<div layout:fragment="content">
+		<div class="container pt-5 mt-5">
+			<h1>Modifier l'utilisateur</h1>
 
-        <form th:action="@{'/admin/users/' + ${user.id}}" th:object="${user}" method="post">
-            <input type="hidden" name="_method" value="patch"/>
+			<form th:action="@{'/admin/users/' + ${user.id}}" th:object="${user}" method="post">
+				<input type="hidden" name="_method" value="patch" />
 
-            <div th:if="${#fields.hasErrors('*')}" class="alert alert-danger">
-                <ul>
-                    <li th:each="err : ${#fields.errors('*')}" th:text="${err}">Erreur</li>
-                </ul>
-            </div>
+				<div th:if="${#fields.hasErrors('*')}" class="alert alert-danger">
+					<ul>
+						<li th:each="err : ${#fields.errors('*')}" th:text="${err}">Erreur</li>
+					</ul>
+				</div>
 
-            <div class="mb-3">
-                <label for="email" class="form-label">Email</label>
-                <input id="email" type="email" class="form-control" th:field="*{email}"/>
-            </div>
+				<div class="mb-3">
+					<label for="email" class="form-label">Email</label>
+					<input id="email" type="email" class="form-control" th:field="*{email}" />
+				</div>
 
-            <div class="mb-3">
-                <label for="name" class="form-label">Nom</label>
-                <input id="name" type="text" class="form-control" th:field="*{name}"/>
-            </div>
+				<div class="mb-3">
+					<label for="name" class="form-label">Nom</label>
+					<input id="name" type="text" class="form-control" th:field="*{name}" />
+				</div>
 
-            <div class="mb-3 form-check">
-                <input id="admin" type="checkbox" class="form-check-input"
-                       th:checked="${user.getRole().name() == 'ADMIN'}"
-                       name="admin"/>
-                <label for="admin" class="form-check-label">Administrateur ?</label>
-            </div>
+				<div class="mb-3 form-check">
+					<input type="hidden" id="roleInput" name="role" th:value="${user.getRole().name()}" />
+					<input id="admin" type="checkbox" class="form-check-input" th:checked="${user.getRole().name() == 'ADMIN'}"
+						onchange="document.getElementById('roleInput').value = this.checked ? 'ADMIN' : 'USER'" />
+					<label for="admin" class="form-check-label">Administrateur ?</label>
+				</div>
 
-            <button type="submit" class="btn btn-primary">Enregistrer</button>
-        </form>
-    </div>
-</div>
+
+				<button type="submit" class="btn btn-primary">Enregistrer</button>
+			</form>
+		</div>
+	</div>
 </body>
+
 </html>
 
 # target/classes/templates/plants/show.html
@@ -1226,8 +1228,9 @@ reset: seed
 
 # Tâche pour seed la base de données (si vous avez un mécanisme de seed)
 seed:
+	clear && mvn -q spring-boot:run -Dspring-boot.run.profiles=seed
 	# clear && mvn -q spring-boot:run -Dspring-boot.run.profiles=seed | grep -E "WARN|ERROR|DEBUG :"
-	clear && mvn -q spring-boot:run -Dspring-boot.run.profiles=seed | grep -E "WARN|ERROR|DEBUG :|DEBUG"
+	# clear && mvn -q spring-boot:run -Dspring-boot.run.profiles=seed | grep -E "WARN|ERROR|DEBUG :|DEBUG"
 
 .PHONY: test clean db-create db-drop update reset seed
 
@@ -1573,10 +1576,10 @@ spring:
 						<td th:text="${user.name}">name</td>
 						<td th:text="${user.email}">email</td>
 						<td>
-							<!-- <span th:class="${user.getRole().toString().toLowerCase() == 'admin'} ? 'badge bg-success' : 'badge bg-secondary'"
+							<span th:class="${user.getRole().toString().toLowerCase() == 'admin'} ? 'badge bg-success' : 'badge bg-secondary'"
 							th:text="${user.getRole().toString().toLowerCase() == 'admin'} ? 'Oui' : 'Non'">
 							Non
-							</span> -->
+							</span>
 						</td>
 						<td class="text-center">
 							<div class="d-flex justify-content-center gap-2">
@@ -1599,48 +1602,50 @@ spring:
 
 # src/main/resources/templates/admin/users/edit.html
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org"
-      layout:decorate="~{fragments/base}"
-      th:with="title='Modifier utilisateur'">
+<html xmlns:th="http://www.thymeleaf.org" layout:decorate="~{fragments/base}" th:with="title='Modifier utilisateur'">
+
 <head>
-    <title>PlantShop | Modifier utilisateur</title>
+	<title>PlantShop | Modifier utilisateur</title>
 </head>
+
 <body>
-<div layout:fragment="content">
-    <div class="container pt-5 mt-5">
-        <h1>Modifier l'utilisateur</h1>
+	<div layout:fragment="content">
+		<div class="container pt-5 mt-5">
+			<h1>Modifier l'utilisateur</h1>
 
-        <form th:action="@{'/admin/users/' + ${user.id}}" th:object="${user}" method="post">
-            <input type="hidden" name="_method" value="patch"/>
+			<form th:action="@{'/admin/users/' + ${user.id}}" th:object="${user}" method="post">
+				<input type="hidden" name="_method" value="patch" />
 
-            <div th:if="${#fields.hasErrors('*')}" class="alert alert-danger">
-                <ul>
-                    <li th:each="err : ${#fields.errors('*')}" th:text="${err}">Erreur</li>
-                </ul>
-            </div>
+				<div th:if="${#fields.hasErrors('*')}" class="alert alert-danger">
+					<ul>
+						<li th:each="err : ${#fields.errors('*')}" th:text="${err}">Erreur</li>
+					</ul>
+				</div>
 
-            <div class="mb-3">
-                <label for="email" class="form-label">Email</label>
-                <input id="email" type="email" class="form-control" th:field="*{email}"/>
-            </div>
+				<div class="mb-3">
+					<label for="email" class="form-label">Email</label>
+					<input id="email" type="email" class="form-control" th:field="*{email}" />
+				</div>
 
-            <div class="mb-3">
-                <label for="name" class="form-label">Nom</label>
-                <input id="name" type="text" class="form-control" th:field="*{name}"/>
-            </div>
+				<div class="mb-3">
+					<label for="name" class="form-label">Nom</label>
+					<input id="name" type="text" class="form-control" th:field="*{name}" />
+				</div>
 
-            <div class="mb-3 form-check">
-                <input id="admin" type="checkbox" class="form-check-input"
-                       th:checked="${user.getRole().name() == 'ADMIN'}"
-                       name="admin"/>
-                <label for="admin" class="form-check-label">Administrateur ?</label>
-            </div>
+				<div class="mb-3 form-check">
+					<input type="hidden" id="roleInput" name="role" th:value="${user.getRole().name()}" />
+					<input id="admin" type="checkbox" class="form-check-input" th:checked="${user.getRole().name() == 'ADMIN'}"
+						onchange="document.getElementById('roleInput').value = this.checked ? 'ADMIN' : 'USER'" />
+					<label for="admin" class="form-check-label">Administrateur ?</label>
+				</div>
 
-            <button type="submit" class="btn btn-primary">Enregistrer</button>
-        </form>
-    </div>
-</div>
+
+				<button type="submit" class="btn btn-primary">Enregistrer</button>
+			</form>
+		</div>
+	</div>
 </body>
+
 </html>
 
 # src/main/resources/templates/plants/show.html
