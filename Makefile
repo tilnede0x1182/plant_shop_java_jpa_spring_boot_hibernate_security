@@ -56,8 +56,8 @@ reset: seed
 
 # Tâche pour seed la base de données (si vous avez un mécanisme de seed)
 seed:
-	clear && mvn -q spring-boot:run -Dspring-boot.run.profiles=seed
-	# clear && mvn -q spring-boot:run -Dspring-boot.run.profiles=seed | grep -E "WARN|ERROR|DEBUG :"
+	# clear && mvn -q spring-boot:run -Dspring-boot.run.profiles=seed
+	clear && mvn -q spring-boot:run -Dspring-boot.run.profiles=seed | grep -E "WARN|ERROR|DEBUG :"
 	# clear && mvn -q spring-boot:run -Dspring-boot.run.profiles=seed | grep -E "WARN|ERROR|DEBUG :|DEBUG"
 
 .PHONY: test clean db-create db-drop update reset seed
