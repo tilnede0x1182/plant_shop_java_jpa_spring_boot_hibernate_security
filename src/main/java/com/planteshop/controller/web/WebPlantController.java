@@ -1,6 +1,8 @@
 package com.planteshop.controller.web;
 
 import com.planteshop.repository.PlantRepository;
+
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -21,7 +23,7 @@ public class WebPlantController {
 
     @GetMapping("/plants")
     public String index(Model model) {
-        model.addAttribute("plants", plantRepository.findAll());
+				model.addAttribute("plants", plantRepository.findAll(Sort.by("name").ascending()));
         return "plants/index";
     }
 
