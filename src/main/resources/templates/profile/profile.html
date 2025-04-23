@@ -1,52 +1,50 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org"
-      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
-      layout:decorate="~{fragments/base}"
-      th:with="title='Mon Profil'"
-      lang="fr">
+<html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+	layout:decorate="~{fragments/base}" th:with="title='Mon Profil'" lang="fr">
 
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Mon Profil | PlantShop</title>
-  <link rel="stylesheet" href="/webjars/bootstrap/5.3.2/css/bootstrap.min.css">
-  <link rel="stylesheet" href="/css/style.css">
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>Mon Profil | PlantShop</title>
+	<link rel="stylesheet" href="/webjars/bootstrap/5.3.2/css/bootstrap.min.css">
+	<link rel="stylesheet" href="/css/style.css">
 </head>
 
 <body>
-  <div layout:fragment="content">
-    <main class="container pt-5 mt-5">
-      <div class="row justify-content-center">
-        <div class="col-md-8">
-          <div class="card shadow">
-            <div class="card-header bg-success text-white">
-              <h2 class="h4 mb-0">Mon Profil</h2>
-            </div>
-            <div class="card-body">
-              <dl class="row">
-                <dt class="col-sm-4">Nom complet</dt>
-                <dd class="col-sm-8" th:text="${user.name}">-</dd>
+	<div layout:fragment="content">
+		<main class="container pt-5 mt-5">
+			<div class="row justify-content-center">
+				<div class="col-md-8">
+					<div class="card shadow">
+						<div class="card-header bg-success text-white">
+							<h2 class="h4 mb-0">Mon Profil</h2>
+						</div>
+						<div class="card-body">
+							<dl class="row">
+								<dt class="col-sm-4">Nom complet</dt>
+								<dd class="col-sm-8" th:text="${user.name}">-</dd>
 
-                <dt class="col-sm-4">Email</dt>
-                <dd class="col-sm-8" th:text="${user.email}">-</dd>
-
-                <dt class="col-sm-4">Administrateur</dt>
-                <dd class="col-sm-8">
-                  <span th:text="${userRoleString == 'admin'} ? 'Oui' : 'Non'">-</span>
-                </dd>
+								<dt class="col-sm-4">Email</dt>
+								<dd class="col-sm-8" th:text="${user.email}">-</dd>
+								<div th:if="${userRoleString == 'admin'}" class="d-flex gap-2">
+									<dt class="col-sm-4">Administrateur</dt>
+									<dd class="col-sm-8">
+										<span th:text="${userRoleString == 'admin'} ? 'Oui' : 'Non'">-</span>
+									</dd>
+								</div>
 								<div class="mt-4 text-start">
 									<a href="/my_profile/edit" class="btn btn-primary px-5">Modifier</a>
 								</div>
-              </dl>
-            </div>
-          </div>
-        </div>
-      </div>
-    </main>
-  </div>
+							</dl>
+						</div>
+					</div>
+				</div>
+			</div>
+		</main>
+	</div>
 
-  <script src="/webjars/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
-  <script src="https://kit.fontawesome.com/a14342fe13.js" crossorigin="anonymous"></script>
+	<script src="/webjars/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
+	<script src="https://kit.fontawesome.com/a14342fe13.js" crossorigin="anonymous"></script>
 </body>
 
 </html>
