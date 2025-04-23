@@ -34,8 +34,13 @@
 						th:data-name="${plant.name}" th:data-price="${plant.price}">
 						Ajouter au panier
 					</button>
-					<div th:if="${userRoleString == 'admin'}">
-						<a href="@{'/admin/plants/' + ${plant.id} + '/edit'}" class="btn btn-warning add-to-cart">Modifier</a>
+					<div th:if="${userRoleString == 'admin'}" class="d-flex gap-2">
+						<a th:href="@{'/admin/plants/' + ${plant.id} + '/edit'}" class="btn btn-warning">Modifier</a>
+						<form th:action="@{'/admin/plants/' + ${plant.id} + '/delete'}" method="post"
+									onsubmit="return confirm('Supprimer cette plante ?');">
+							<input type="hidden" name="_method" value="delete"/>
+							<button type="submit" class="btn btn-danger">Supprimer</button>
+						</form>
 					</div>
 				</div>
 			</div>
