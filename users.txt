@@ -1,24 +1,24 @@
 === ADMINS ===
-eduardo.jakubowski@planteshop.com lavendermink67
-malvina.stroman@planteshop.com pinkwildebeest51
-monte.fay@planteshop.com olivedog28
+mrs.jeremy.brakus@planteshop.com orchidcaribou34
+len.schiller@planteshop.com magentabat35
+florentina.pagac@planteshop.com bluemacaw58
 admin_exemple_1@planteshop.com password
 admin_exemple_2@planteshop.com password
 admin_exemple_3@planteshop.com password
 
 === USERS ===
-malvina.goldner@planteshop.com greenjellyfish58
-richelle.kessler@planteshop.com orangecricket11
-torri.rolfson@planteshop.com yellowbadger97
-ned.fritsch@planteshop.com mintgreenturtle48
-jody.kihn@planteshop.com fuchsiababoon16
-zenobia.keebler@planteshop.com salmonworm67
-joan.lakin@planteshop.com goldbear45
-dominick.morar@planteshop.com fuchsiaantelope48
-lucy.jacobson@planteshop.com turquoisehyena78
-brain.hauck@planteshop.com greencamel51
-wilhemina.stanton@planteshop.com plumhippopotamus88
-dr.rana.hodkiewicz@planteshop.com tealtermite60
-norris.schroeder@planteshop.com oliveeel39
-jermaine.bechtelar@planteshop.com olivemule83
-morton.gerhold@planteshop.com greycrocodile65
+taneka.bailey@planteshop.com maroonrat84
+clora.carroll@planteshop.com plumhare53
+mr.adolfo.nikolaus@planteshop.com whiteoyster52
+dale.padberg.v@planteshop.com blackmink12
+shalon.ferry@planteshop.com bluecicada69
+lucas.schiller@planteshop.com redbeetle51
+maryann.vonrueden@planteshop.com plumzebra96
+estella.schaefer.dds@planteshop.com salmontoad80
+lowell.beahan@planteshop.com blackkoala98
+dong.auer@planteshop.com goldgoat56
+clarita.cartwright@planteshop.com cyanwombat73
+angeline.becker@planteshop.com goldpanda15
+sandee.mcclure@planteshop.com lavendergoldfish74
+casey.king@planteshop.com magentagoose55
+hans.dibbert@planteshop.com salmonlizard76
