@@ -19,7 +19,9 @@
 							<h5 class="card-title" th:text="${plant.name}">Nom</h5>
 							<p class="card-text" th:text="${plant.description}">Description</p>
 							<p class="text-muted">Prix : <span th:text="${plant.price}">0.0</span> €</p>
-							<p class="text-muted">Stock : <span th:text="${plant.stock}">0</span></p>
+							<p class="text-muted" th:if="${userRoleString == 'admin'}">
+								Stock : <span th:text="${plant.stock}">0</span>
+							</p>
 
 							<div class="d-flex gap-2">
 								<button type="button" class="btn btn-success flex-grow-1 add-to-cart" th:data-id="${plant.id}" style="z-index: 1; position: relative;"

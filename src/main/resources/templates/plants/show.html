@@ -23,7 +23,7 @@
 					<li class="list-group-item">
 						<strong>Prix :</strong> <span th:text="${plant.price}">0.00</span> €
 					</li>
-					<li class="list-group-item">
+					<li class="list-group-item" th:if="${userRoleString == 'admin'}">
 						<strong>Stock disponible :</strong> <span th:text="${plant.stock}">0</span>
 					</li>
 				</ul>
