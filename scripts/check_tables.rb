@@ -20,9 +20,8 @@ puts "\n#{tables.sort}\n\n"
 table_map = {
   "Plant" => "plant",
   "User" => "users",               # Attention : table explicitement nommée "users"
-  "CustomerOrder" => "orders"      # Table nommée "orders"
-  "orders" => "Commandes",
-  "order_items" => "Détails commandes"
+  "CustomerOrder" => "orders",      # Table nommée "orders"
+  "Order_Item" => "order_items"
 }
 
 table_map.each do |entity, table|
