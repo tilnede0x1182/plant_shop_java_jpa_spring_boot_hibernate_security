@@ -1,24 +1,24 @@
 === ADMINS ===
-francoise.stiedemann@planteshop.com lavenderhound30
-miss.shelly.fay@planteshop.com maroonmoose71
-clyde.weissnat@planteshop.com cyanwolf66
+valrie.block@planteshop.com azurecheetah32
+margo.steuber@planteshop.com yellowrat68
+miss.jimmie.oberbrunner@planteshop.com tealwombat45
 admin_exemple_1@planteshop.com password
 admin_exemple_2@planteshop.com password
 admin_exemple_3@planteshop.com password
 
 === USERS ===
-chang.mclaughlin@planteshop.com silverfish19
-miss.elza.boyle@planteshop.com maroonmosquito73
-jeanne.trantow.md@planteshop.com goldmouse23
-cherise.bernhard@planteshop.com orangeox65
-maia.lesch.phd@planteshop.com greengoat30
-roselia.cassin@planteshop.com greenkoala31
-ozell.pouros@planteshop.com maroongnu15
-joline.olson@planteshop.com orchideagle90
-apolonia.connelly@planteshop.com orangemouse42
-brittni.jacobs@planteshop.com whitefox29
-estela.ernser@planteshop.com cyanbee92
-dr.joann.barrows@planteshop.com plummammoth10
-derrick.torphy@planteshop.com silveryellowjacket97
-galina.kilback@planteshop.com tealleopard73
-meaghan.graham@planteshop.com skybluegorilla88
+quincy.wehner.md@planteshop.com violetbat24
+max.howell@planteshop.com tanbutterfly17
+shela.hane@planteshop.com orangebee60
+lloyd.ritchie@planteshop.com cyanchinchilla98
+betsey.heaney@planteshop.com indigoarmadillo14
+leontine.crona@planteshop.com lavendercat71
+cara.gleason@planteshop.com mintgreenseal13
+barry.hoppe@planteshop.com tanbaboon17
+ron.lind@planteshop.com ivoryporcupine25
+julieta.dicki@planteshop.com pinkhedgehog41
+junior.zboncak.iii@planteshop.com pinkdinosaur42
+dr.jayna.langosh@planteshop.com skybluemallard22
+terrance.sanford.v@planteshop.com limealligator41
+vanda.wolff.sr@planteshop.com blackgorilla47
+isaiah.bode@planteshop.com indigoprairiedog37
