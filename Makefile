@@ -32,6 +32,9 @@ run:
 prod: clean
 	clear && mvn -q spring-boot:run -Dspring-boot.run.profiles=prod | grep -E "WARN|ERROR"
 
+init:
+	clear && mvn spring-boot:run -Dspring-boot.run.profiles=init | grep -E "WARN|ERROR|DEBUG :"
+
 # Exécute les tests
 test:
 	clear && mvn -q test
@@ -52,12 +55,9 @@ db-drop:
 update: reset
 
 # Réinitialise la base de données
-reset: seed
+reset: init
 
 # Tâche pour seed la base de données (si vous avez un mécanisme de seed)
-seed:
-	# clear && mvn -q spring-boot:run -Dspring-boot.run.profiles=seed
-	clear && mvn -q spring-boot:run -Dspring-boot.run.profiles=seed | grep -E "WARN|ERROR|DEBUG :"
-	# clear && mvn -q spring-boot:run -Dspring-boot.run.profiles=seed | grep -E "WARN|ERROR|DEBUG :|DEBUG"
+seed: init
 
 .PHONY: test clean db-create db-drop update reset seed
