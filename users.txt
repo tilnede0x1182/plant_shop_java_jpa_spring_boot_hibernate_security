@@ -1,24 +1,24 @@
 === ADMINS ===
-marlene.abernathy@planteshop.com olivedog50
-miss.monica.zemlak@planteshop.com maroonraven39
-alla.bernhard@planteshop.com lavendercheetah75
+janelle.rice@planteshop.com lavendermanatee67
+markus.torp@planteshop.com pinkplatypus36
+zonia.hettinger@planteshop.com greenbadger33
 admin_exemple_1@planteshop.com password
 admin_exemple_2@planteshop.com password
 admin_exemple_3@planteshop.com password
 
 === USERS ===
-ruben.crona@planteshop.com turquoisefish61
-miss.moshe.wolf@planteshop.com bluedolphin64
-kristie.volkman.dvm@planteshop.com orchidwallaby32
-arturo.reynolds@planteshop.com mintgreengiraffe66
-armando.kihn@planteshop.com indigoporcupine84
-clint.walsh@planteshop.com tealcod56
-ms.alva.johnson@planteshop.com turquoiseseal89
-teresita.hahn@planteshop.com goldworm61
-edith.becker@planteshop.com lavenderduck59
-roosevelt.okon@planteshop.com azurebeaver78
-mr.frank.williamson@planteshop.com redreindeer63
-arnulfo.swaniawski@planteshop.com mintgreentortoise78
-mrs.candi.lynch@planteshop.com tealpug28
-buford.jenkins@planteshop.com silvergrasshopper19
-jimmie.murray.v@planteshop.com yellowimpala59
+janise.harris.jr@planteshop.com tealraven22
+mohamed.roberts.dds@planteshop.com olivegrasshopper26
+dr.gilbert.marks@planteshop.com salmoneel14
+dannie.schmitt@planteshop.com turquoiseant27
+paris.barton.iii@planteshop.com pinkwildebeest85
+dr.lizabeth.zemlak@planteshop.com turquoiselocust12
+hollis.hirthe.sr@planteshop.com skyblueserval22
+harris.tromp@planteshop.com orchidbeaver16
+ellena.fadel@planteshop.com tealreindeer95
+russell.bernier.iii@planteshop.com purplekoala17
+burl.bartoletti@planteshop.com blackgnu67
+tracy.langosh@planteshop.com silverguineapig76
+erlene.keebler@planteshop.com skybluehamster37
+rogelio.sanford.md@planteshop.com redalpaca37
+mr.jordan.rice@planteshop.com purplehare78
