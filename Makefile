@@ -1,39 +1,57 @@
 # Définition des variables
-APP_NAME = plant-shop-jpa-spring-boot-hibernate-security
-DB_NAME = plant_shop
-DB_USER = tilnede0x1182
-DB_PASSWORD = tilnede0x1182
-DB_HOST = localhost
-DB_PORT = 5432
 PROFILE = dev
+PORT = 8080
 
 # Tâches par défaut
 default: help
 
 # Affiche l'aide
 help:
-	@echo "Usage:"
-	@echo "  make help         Affiche cette aide"
-	@echo "  make run          Lance l'application"
-	@echo "  make test         Exécute les tests"
-	@echo "  make db-create    Crée la base de données"
-	@echo "  make db-drop      Supprime la base de données"
-	@echo "  make db-migrate   Applique les migrations de base de données"
-	@echo "  make clean        Nettoie les fichiers générés"
+	@echo "Commandes disponibles :"
+	@echo "  make help          Affiche cette aide"
+	@echo "  make run           Lance l'application (profil dev)"
+	@echo "  make prod          Lance l'application (profil prod)"
+	@echo "  make init          Lance l'application (profil init)"
+	@echo "  make install       Compile le projet"
+	@echo "  make test          Exécute les tests"
+	@echo "  make clean         Supprime les fichiers générés"
+	@echo "  make db-create     Crée la base de données"
+	@echo "  make db-drop       Supprime la base de données"
+	@echo "  make update        Met à jour le projet (alias reset)"
+	@echo "  make reset         Réinitialise la base (alias init)"
+	@echo "  make seed          Alias vers init"
+	@echo "  make print_port    Affiche le port de l'application"
+
+# Affichage du port
+print_port:
+	@echo "Port configuré : $(PORT)"
 
 # Installaton des dépendances
 install:
-	clear && mvn clean compile
+	clear
+	@echo "Installation en cours..."
+	mvn clean compile
 
 # Lance l'application
 run:
-	clear && mvn -q spring-boot:run -Dspring-boot.run.profiles=$(PROFILE) | grep -E "WARN|ERROR|DEBUG :"
+	clear
+	@echo "Lancement en cours..."
+	@$(MAKE) print_port
+	# mvn -q spring-boot:run -Dspring-boot.run.profiles=$(PROFILE) | grep -E "WARN|ERROR|DEBUG :"
+	mvn -q spring-boot:run -Dspring-boot.run.profiles=$(PROFILE)
 
 prod: clean
-	clear && mvn -q spring-boot:run -Dspring-boot.run.profiles=prod | grep -E "WARN|ERROR"
+	clear
+	@echo "Lancement en cours..."
+	@$(MAKE) print_port
+	mvn -q spring-boot:run -Dspring-boot.run.profiles=prod | grep -E "WARN|ERROR"
 
-init:
-	clear && mvn spring-boot:run -Dspring-boot.run.profiles=init | grep -E "WARN|ERROR|DEBUG :"
+init: print_port
+	clear
+	@echo "Lancement en cours..."
+	@$(MAKE) print_port
+	# mvn spring-boot:run -Dspring-boot.run.profiles=init | grep -E "WARN|ERROR|DEBUG :"
+	mvn spring-boot:run -Dspring-boot.run.profiles=init
 
 # Exécute les tests
 test:
