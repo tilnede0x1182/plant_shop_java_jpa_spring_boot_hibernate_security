@@ -1,21 +1,26 @@
-// Gestion du panier
-document.addEventListener('DOMContentLoaded', function() {
-    // Initialisation des tooltips Bootstrap
-    const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
-    tooltipTriggerList.map(function (tooltipTriggerEl) {
-        return new bootstrap.Tooltip(tooltipTriggerEl)
-    });
+class CartManager {
+  static load() {
+    return JSON.parse(localStorage.getItem('cart') || '[]');
+  }
 
-    // Gestion du compteur du panier
-    updateCartCount();
-});
+  static save(cart) {
+    localStorage.setItem('cart', JSON.stringify(cart));
+  }
 
-function updateCartCount() {
-    const cart = JSON.parse(localStorage.getItem('cart') || {});
-    const count = Object.values(cart).reduce((sum, item) => sum + item.quantity, 0);
-    const cartLink = document.getElementById('cart-link');
+  static countItems() {
+    return this.load().reduce((sum, item) => sum + item.qty, 0);
+  }
 
-    if (cartLink) {
-        cartLink.textContent = `Panier (${count})`;
-    }
+  static refreshUI() {
+    const count = this.countItems();
+    document.querySelectorAll('.cart-count, #cart-link')
+      .forEach(el => el.textContent = `Panier (${count})`);
+  }
 }
+
+document.addEventListener('DOMContentLoaded', () => {
+  [...document.querySelectorAll('[data-bs-toggle="tooltip"]')]
+    .forEach(el => new bootstrap.Tooltip(el));
+  CartManager.refreshUI();
+  window.addEventListener('storage', e => e.key === 'cart' && CartManager.refreshUI());
+});
