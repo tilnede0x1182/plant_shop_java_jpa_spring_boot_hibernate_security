@@ -1,3 +1,4086 @@
+# target/classes/static/js/app.js
+
+/**
+ * Gère le panier via le localStorage
+ * @class CartManager
+ */
+class CartManager {
+	/**
+	 * Charge le panier depuis le localStorage
+	 * @returns {Array<Object>} liste des articles dans le panier
+	 */
+	static load() {
+		return JSON.parse(localStorage.getItem("cart") || "[]");
+	}
+
+	/**
+	 * Sauvegarde le panier dans le localStorage
+	 * @param {Array<Object>} cart liste des articles à sauvegarder
+	 */
+	static save(cart) {
+		localStorage.setItem("cart", JSON.stringify(cart));
+	}
+
+	/**
+	 * Calcule le nombre total d'articles dans le panier
+	 * @returns {number} total des quantités
+	 */
+	static countItems() {
+		return this.load().reduce((sum, item) => sum + item.qty, 0);
+	}
+
+	/**
+	 * Met à jour les éléments de l’interface liés au panier
+	 */
+	static refreshUI() {
+		const count = this.countItems();
+		document
+			.querySelectorAll(".cart-count")
+			.forEach((el) => (el.textContent = count));
+		const link = document.getElementById("cart-link");
+		if (link) link.textContent = `Panier (${count})`;
+	}
+}
+
+/**
+ * Initialise les tooltips Bootstrap et l’UI du panier à chargement de page
+ */
+document.addEventListener("DOMContentLoaded", () => {
+	[...document.querySelectorAll('[data-bs-toggle="tooltip"]')].forEach(
+		(el) => new bootstrap.Tooltip(el)
+	);
+	CartManager.refreshUI();
+	window.addEventListener(
+		"storage",
+		(e) => e.key === "cart" && CartManager.refreshUI()
+	);
+});
+
+/**
+ * @function window.refreshCart
+ * @description Alias global pour rafraîchir l’UI du panier
+ */
+window.refreshCart = () => CartManager.refreshUI();
+
+/**
+ * @function window.refreshUI
+ * @description Autre alias global pour rafraîchir l’UI du panier
+ */
+window.refreshUI = () => CartManager.refreshUI();
+
+# target/classes/static/js/plants.js
+
+/**
+ * Catalogue des plantes affichées, gestion de l’ajout au panier.
+ * @class PlantCatalog
+ */
+class PlantCatalog {
+	/**
+	 * Initialise les boutons d’ajout au panier sur chaque fiche plante.
+	 * Bloque la navigation via <a>, puis ajoute la plante au panier.
+	 */
+	static init() {
+		document.querySelectorAll(".add-to-cart").forEach((btn) => {
+			btn.addEventListener("click", (e) => {
+				e.stopPropagation(); // empêche la propagation vers le lien parent
+				e.preventDefault(); // empêche la navigation
+
+				const id = btn.dataset.id;
+				const name = btn.dataset.name;
+				const price = parseFloat(btn.dataset.price);
+				const stock = parseInt(btn.dataset.stock);
+
+				CartManager.add(id, name, price, stock);
+			});
+		});
+	}
+
+	/**
+	 * Ajoute une plante au panier via bouton personnalisé.
+	 * @param {Event} event événement déclenché par le bouton
+	 */
+	static addToCart(event) {
+		const btn = event.currentTarget;
+
+		/** @type {{id: string, name: string, price: number, qty: number}} */
+		const plant = {
+			id: btn.dataset.id,
+			name: btn.dataset.name,
+			price: parseFloat(btn.dataset.price),
+			qty: 1,
+		};
+
+		let cart = CartManager.load();
+		const existing = cart.find((item) => item.id === plant.id);
+
+		if (existing) {
+			existing.qty += 1;
+		} else {
+			cart.push(plant);
+		}
+
+		CartManager.save(cart);
+		CartManager.refreshUI();
+	}
+}
+
+/**
+ * Initialise le catalogue à chargement de la page.
+ */
+document.addEventListener("DOMContentLoaded", () => {
+	PlantCatalog.init();
+});
+
+# target/classes/static/js/cart.js
+
+/**
+ * Gère l'affichage, la mise à jour, et la validation du panier côté page.
+ * @class CartPage
+ */
+class CartPage {
+	/**
+	 * Initialise les éléments du DOM, les événements et le rendu initial.
+	 */
+	static init() {
+		/** @member {HTMLElement} this.body - Corps du tableau du panier */
+		this.body = document.getElementById("cartBody");
+
+		/** @member {HTMLElement} this.totalE - Élément affichant le total */
+		this.totalE = document.getElementById("cartTotal");
+
+		/** @member {HTMLElement} this.msgEl - Élément pour les messages */
+		this.msgEl = document.getElementById("checkoutMessage");
+
+		// Événement de soumission du formulaire
+		document
+			.getElementById("checkoutForm")
+			?.addEventListener("submit", (e) => this.handleCheckout(e));
+
+		// Bouton pour vider le panier
+		document
+			.getElementById("clearCart")
+			?.addEventListener("click", () => this.clearCart());
+
+		// Événement pour suppression d'article
+		this.body.addEventListener("click", (e) => this.handleRemove(e));
+
+		this.render();
+	}
+
+	/**
+	 * Ajoute une plante au panier, avec gestion du stock initial.
+	 * @param {string|number} id identifiant unique de la plante
+	 * @param {string} name nom de la plante
+	 * @param {number} price prix unitaire
+	 * @param {number} stock quantité disponible en stock
+	 */
+	static add(id, name, price, stock) {
+		const cart = this.get();
+		if (cart[id]) {
+			cart[id].qty += 1;
+		} else {
+			cart[id] = { id, name, price, qty: 1, stock };
+		}
+		this.save(cart);
+		this.refreshUI();
+	}
+
+	/**
+	 * Affiche dynamiquement le contenu du panier et le total.
+	 */
+	static render() {
+		const cart = CartManager.load();
+		this.body.innerHTML = "";
+		let total = 0;
+
+		if (cart.length === 0) {
+			// Affiche un message si le panier est vide
+			const row = document.createElement("tr");
+			const cell = document.createElement("td");
+			cell.colSpan = 5;
+			cell.className = "text-center";
+			cell.textContent = "Votre panier est vide.";
+			row.appendChild(cell);
+			this.body.appendChild(row);
+		} else {
+			// Affiche chaque article dans le panier
+			cart.forEach((item, i) => {
+				const row = document.createElement("tr");
+
+				// Nom + lien
+				const colName = document.createElement("td");
+				const link = document.createElement("a");
+				link.href = `/plants/${item.id}`;
+				link.className = "product-link";
+				link.textContent = item.name;
+				colName.appendChild(link);
+
+				// Prix unitaire
+				const colPrice = document.createElement("td");
+				colPrice.textContent = item.price.toFixed(2);
+
+				// Quantité modifiable
+				const colQty = document.createElement("td");
+				const input = document.createElement("input");
+				input.type = "number";
+				input.min = "1";
+				input.value = item.qty;
+				input.className = "form-control form-control-sm qty-input";
+				input.style.width = "80px";
+				input.dataset.cartId = item.id;
+				input.dataset.stock = item.stock;
+				input.onkeydown = (e) => e.key !== "e" && e.key !== "-";
+				this.attachQtyListener(input);
+				colQty.appendChild(input);
+
+				// Sous-total
+				const colSub = document.createElement("td");
+				colSub.textContent = (item.qty * item.price).toFixed(2);
+
+				// Bouton supprimer
+				const colDel = document.createElement("td");
+				const btn = document.createElement("button");
+				btn.className = "btn btn-sm btn-danger";
+				btn.textContent = "✕";
+				btn.dataset.i = i;
+				colDel.appendChild(btn);
+
+				[colName, colPrice, colQty, colSub, colDel].forEach((el) =>
+					row.appendChild(el)
+				);
+				this.body.appendChild(row);
+
+				total += item.qty * item.price;
+			});
+		}
+
+		this.totalE.textContent = total.toFixed(2);
+	}
+
+	/**
+	 * Attache les événements à un champ de quantité pour mettre à jour l’article.
+	 * @param {HTMLInputElement} input champ de saisie de la quantité
+	 */
+	static attachQtyListener(input) {
+		let timer;
+		const handler = () => {
+			clearTimeout(timer);
+			timer = setTimeout(() => {
+				const cart = CartManager.load();
+				const id = input.dataset.cartId;
+				const stock = parseInt(input.dataset.stock) || 1;
+				console.log("stock = " + stock);
+				let val = parseInt(input.value);
+				if (isNaN(val)) console.log("val is NaN, val = " + val);
+				if (isNaN(val) || val < 1) val = 1;
+				console.log("Val = " + val);
+				if (val > stock) val = stock;
+				input.value = val;
+				const item = cart.find((p) => p.id == id);
+				if (item) item.qty = val;
+				CartManager.save(cart);
+				CartPage.render();
+				refreshCart();
+			}, 300);
+		};
+		input.addEventListener("input", handler);
+		input.addEventListener("blur", handler);
+	}
+
+	/**
+	 * Gère la suppression d’un article via le bouton.
+	 * @param {MouseEvent} e événement de clic
+	 */
+	static handleRemove(e) {
+		if (e.target.matches("button[data-i]")) {
+			const cart = CartManager.load();
+			cart.splice(e.target.dataset.i, 1);
+			CartManager.save(cart);
+			this.render();
+			refreshCart();
+		}
+	}
+
+	/**
+	 * Gère la soumission du panier (checkout).
+	 * @param {SubmitEvent} e événement de soumission
+	 */
+	static handleCheckout(e) {
+		e.preventDefault();
+
+		if (window.userRole === "visitor") {
+			window.location.href = "/login";
+			return;
+		}
+
+		const cart = CartManager.load();
+		if (cart.length === 0) {
+			this.showMsg("Votre panier est vide.", "danger");
+			return;
+		}
+
+		fetch("/orders/checkout", {
+			method: "POST",
+			headers: { "Content-Type": "application/json" },
+			body: JSON.stringify(cart),
+		})
+			.then((res) => res.text().then((text) => ({ ok: res.ok, text })))
+			.then(({ ok, text }) => {
+				if (ok && text === "OK") {
+					localStorage.removeItem("cart");
+					refreshCart();
+					this.showMsg("Commande validée ! Redirection…", "success");
+					setTimeout(() => (window.location.href = "/orders"), 0);
+				} else {
+					this.showMsg(
+						"Erreur lors de la commande : " + text,
+						"danger"
+					);
+				}
+			})
+			.catch(() => {
+				this.showMsg("Erreur réseau.", "danger");
+			});
+	}
+
+	/**
+	 * Vide le panier et met à jour l'interface.
+	 */
+	static clearCart() {
+		localStorage.removeItem("cart");
+		this.render();
+		refreshCart();
+	}
+
+	/**
+	 * Affiche un message utilisateur (erreur, succès…).
+	 * @param {string} text contenu du message
+	 * @param {string} type type Bootstrap (`success`, `danger`, etc.)
+	 */
+	static showMsg(text, type) {
+		this.msgEl.className = `alert alert-${type}`;
+		this.msgEl.textContent = text;
+	}
+}
+
+/**
+ * Initialise la page du panier à chargement.
+ */
+document.addEventListener("DOMContentLoaded", () => {
+	CartPage.init();
+});
+
+# target/classes/static/css/style.css
+
+.card {
+    transition: transform 0.2s;
+}
+
+.card:hover {
+    box-shadow: 0 3px 3px rgba(0,0,0,.1);
+}
+
+.plant-card {
+	cursor: pointer;
+}
+
+.navbar {
+    box-shadow: 0 2px 4px rgba(0,0,0,.1);
+		background-color: #165437;
+}
+
+.navbar .navbar-brand,
+.navbar .nav-link,
+.navbar .navbar-text {
+  color: white !important;
+}
+
+/* Profile Page Styles */
+.card.profile-card {
+	border-radius: 10px;
+	overflow: hidden;
+}
+
+.profile-icon {
+	font-size: 5rem;
+	color: #28a745;
+}
+
+.profile-badge {
+	font-size: 0.9rem;
+	padding: 0.35em 0.65em;
+}
+
+.card-shadow {
+	box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+}
+
+.form-label {
+	font-weight: 500;
+}
+
+.product-link {
+  text-decoration: none;
+  color: inherit;
+  transition: all 0.1s ease;
+}
+
+.product-link:hover {
+  /* text-decoration: underline; */
+  text-shadow: 0 0 3px rgba(0, 0, 0, 0.2);
+}
+
+# target/classes/static/index.html
+
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>OrganisationSim - Accueil</title>
+	<link rel="icon" type="image/x-icon" href="favicon/organisation-sim.svg">
+  <link rel="stylesheet" href="style/main.css">
+</head>
+<body>
+
+<!-- 🔗 Barre de navigation globale -->
+<nav class="navbar">
+  <a href="index.html" class="logo">OrganisationSim</a>
+  <a href="constraints.html">Créer un projet</a>
+  <a href="projects.html">Liste des projets</a>
+</nav>
+
+<header>
+  <h1>Bienvenue sur OrganisationSim</h1>
+</header>
+
+<div class="container">
+  <h2>Tableau récapitulatif (Diagramme de Pert simplifié)</h2>
+
+  <table class="pert-table">
+    <thead>
+      <tr>
+        <th>Étape</th>
+        <th>Responsable</th>
+        <th>Durée estimée</th>
+        <th>Prérequis</th>
+      </tr>
+    </thead>
+    <tbody id="pertTableBody">
+      <tr>
+        <td>Analyse</td>
+        <td>Chef de projet</td>
+        <td>3 jours</td>
+        <td>-</td>
+      </tr>
+      <tr>
+        <td>Conception</td>
+        <td>Architecte</td>
+        <td>5 jours</td>
+        <td>Analyse</td>
+      </tr>
+      <tr>
+        <td>Développement</td>
+        <td>Équipe Dev</td>
+        <td>10 jours</td>
+        <td>Conception</td>
+      </tr>
+      <tr>
+        <td>Recette</td>
+        <td>QA</td>
+        <td>4 jours</td>
+        <td>Développement</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+</body>
+</html>
+
+# target/classes/templates/login.html
+
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      layout:decorate="~{fragments/base}"
+      th:with="title='Connexion'">
+<head>
+    <title>PlantShop | Connexion</title>
+</head>
+<body>
+<div layout:fragment="content">
+    <section class="container pt-5 mt-5">
+        <div class="row justify-content-center">
+            <div class="col-md-6 col-lg-4">
+                <div class="card shadow">
+                    <div class="card-header bg-success text-white">
+                        <h4 class="mb-0 text-center">Connexion</h4>
+                    </div>
+                    <div class="card-body p-4">
+
+                        <div th:if="${param.error}" class="alert alert-danger">
+                            Identifiants invalides
+                        </div>
+
+                        <form th:action="@{/login}" method="post">
+                            <div class="mb-3">
+                                <label for="username" class="form-label">Email</label>
+                                <input type="text" class="form-control" id="username" name="email" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="password" class="form-label">Mot de passe</label>
+                                <input type="password" class="form-control" id="password" name="password" required>
+                            </div>
+                            <button type="submit" class="btn btn-success w-100">Se connecter</button>
+                        </form>
+
+												<div class="mt-3 text-center">
+													<span>Pas encore de compte ?&nbsp;</span>
+													<a th:href="@{/register}" class="text-success text-decoration-none">Inscrivez-vous !</a>
+											</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+</div>
+</body>
+</html>
+
+# target/classes/templates/admin/plants/index.html
+
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" layout:decorate="~{fragments/base}" th:with="title='Gestion des plantes'">
+
+<head>
+	<title>PlantShop | Gestion des plantes</title>
+</head>
+
+<body>
+	<div layout:fragment="content">
+		<div class="container pt-5 mt-5">
+			<h1 class="mb-4">Gestion des Plantes</h1>
+
+			<div th:if="${userRoleString == 'admin'}" class="mb-3">
+				<a href="/admin/plants/new" class="btn btn-primary">Ajouter une plante</a>
+			</div>
+
+			<table class="table table-striped table-hover">
+				<thead class="table-dark">
+					<tr>
+						<th>Nom</th>
+						<th>Prix</th>
+						<th>Stock</th>
+						<th class="text-center">Actions</th>
+					</tr>
+				</thead>
+				<tbody>
+					<tr th:each="plant : ${plants}">
+						<td><a  class="product-link" th:href="@{'/plants/' + ${plant.id}}" th:text="${plant.name}">Nom</a></td>
+						<td th:text="${plant.price} + ' €'">0.00 €</td>
+						<td th:text="${plant.stock}">0</td>
+						<td class="text-center">
+							<div class="d-flex justify-content-center gap-2">
+								<a th:href="@{'/admin/plants/' + ${plant.id} + '/edit'}" class="btn btn-warning btn-sm">✏ Modifier</a>
+								<form th:action="@{'/admin/plants/' + ${plant.id}}" method="post"
+									onsubmit="return confirm('Supprimer cette plante ?');">
+									<input type="hidden" name="_method" value="delete" />
+									<button class="btn btn-danger btn-sm">🗑 Supprimer</button>
+								</form>
+							</div>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+		</div>
+	</div>
+</body>
+
+</html>
+
+# target/classes/templates/admin/plants/edit.html
+
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" layout:decorate="~{fragments/base}" th:with="title='Modifier plante'">
+<head>
+    <title>PlantShop | Modifier Plante</title>
+</head>
+<body>
+<div layout:fragment="content">
+    <div class="container pt-5 mt-5">
+        <h1>Éditer la Plante</h1>
+        <div th:replace="admin/plants/form :: plantForm(${plant})"></div>
+    </div>
+</div>
+</body>
+</html>
+
+# target/classes/templates/admin/plants/new.html
+
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" layout:decorate="~{fragments/base}" th:with="title='Nouvelle plante'">
+<head>
+    <title>PlantShop | Nouvelle Plante</title>
+</head>
+<body>
+<div layout:fragment="content">
+    <div class="container pt-5 mt-5">
+        <h1>Nouvelle Plante</h1>
+        <div th:replace="admin/plants/form :: plantForm(${plant})"></div>
+    </div>
+</div>
+</body>
+</html>
+
+# target/classes/templates/admin/plants/form.html
+
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+<div th:fragment="plantForm(plant)">
+    <form th:object="${plant}" th:action="${plant.id != null} ? @{'/admin/plants/' + ${plant.id}} : @{/admin/plants}" method="post">
+
+        <div class="mb-3">
+            <label class="form-label">Nom de la plante</label>
+            <input type="text" class="form-control" th:field="*{name}"/>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Prix (€)</label>
+            <input type="number" class="form-control" step="0.01" th:field="*{price}"/>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Description</label>
+            <textarea class="form-control" rows="4" th:field="*{description}"></textarea>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Stock (unités)</label>
+            <input type="number" class="form-control" th:field="*{stock}"/>
+        </div>
+
+        <button class="btn btn-primary" th:text="${plant.id != null} ? 'Mettre à jour' : 'Créer'">Créer</button>
+    </form>
+</div>
+</body>
+</html>
+
+# target/classes/templates/admin/users/index.html
+
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" layout:decorate="~{fragments/base}"
+	th:with="title='Gestion des utilisateurs'">
+
+<head>
+	<title>PlantShop | Utilisateurs</title>
+</head>
+
+<body>
+	<div layout:fragment="content">
+		<div class="container pt-5 mt-5">
+			<h1 class="mb-4">Gestion des Utilisateurs</h1>
+
+			<table class="table table-striped table-hover">
+				<thead class="table-dark">
+					<tr>
+						<th>Name</th>
+						<th>Email</th>
+						<th>Administrateur</th>
+						<th class="text-center">Actions</th>
+					</tr>
+				</thead>
+				<tbody>
+					<tr th:each="user : ${users}">
+						<td th:text="${user.name}">name</td>
+						<td th:text="${user.email}">email</td>
+						<td>
+							<span th:class="${user.getRole().toString().toLowerCase() == 'admin'} ? 'badge bg-success' : 'badge bg-secondary'"
+							th:text="${user.getRole().toString().toLowerCase() == 'admin'} ? 'Oui' : 'Non'">
+							Non
+							</span>
+						</td>
+						<td class="text-center">
+							<div class="d-flex justify-content-center gap-2">
+								<a th:href="@{'/admin/users/' + ${user.id} + '/edit'}" class="btn btn-warning btn-sm">✏ Modifier</a>
+								<form th:if="${#authentication.name != user.email}" th:action="@{'/admin/users/' + ${user.id}}"
+									method="post" onsubmit="return confirm('Supprimer cet utilisateur ?');">
+									<input type="hidden" name="_method" value="delete" />
+									<button class="btn btn-danger btn-sm">🗑 Supprimer</button>
+								</form>
+							</div>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+		</div>
+	</div>
+</body>
+
+</html>
+
+# target/classes/templates/admin/users/edit.html
+
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" layout:decorate="~{fragments/base}" th:with="title='Modifier utilisateur'">
+
+<head>
+	<title>PlantShop | Modifier utilisateur</title>
+</head>
+
+<body>
+	<div layout:fragment="content">
+		<div class="container pt-5 mt-5">
+			<h1>Modifier l'utilisateur</h1>
+
+			<form th:action="@{'/admin/users/' + ${user.id}}" th:object="${user}" method="post">
+				<input type="hidden" name="_method" value="patch" />
+
+				<div th:if="${#fields.hasErrors('*')}" class="alert alert-danger">
+					<ul>
+						<li th:each="err : ${#fields.errors('*')}" th:text="${err}">Erreur</li>
+					</ul>
+				</div>
+
+				<div class="mb-3">
+					<label for="email" class="form-label">Email</label>
+					<input id="email" type="email" class="form-control" th:field="*{email}" />
+				</div>
+
+				<div class="mb-3">
+					<label for="name" class="form-label">Nom</label>
+					<input id="name" type="text" class="form-control" th:field="*{name}" />
+				</div>
+
+				<div class="mb-3 form-check">
+					<input type="hidden" id="roleInput" name="role" th:value="${user.getRole().name()}" />
+					<input id="admin" type="checkbox" class="form-check-input" th:checked="${user.getRole().name() == 'ADMIN'}"
+						onchange="document.getElementById('roleInput').value = this.checked ? 'ADMIN' : 'USER'" />
+					<label for="admin" class="form-check-label">Administrateur ?</label>
+				</div>
+
+
+				<button type="submit" class="btn btn-primary">Enregistrer</button>
+			</form>
+		</div>
+	</div>
+</body>
+
+</html>
+
+# target/classes/templates/plants/show.html
+
+<!DOCTYPE html>
+<html layout:decorate="~{fragments/base}" xmlns:th="http://www.thymeleaf.org"
+	th:with="title='PlantShop | ' + ${plant.name}">
+
+<head>
+	<meta charset="UTF-8">
+	<title th:text="'PlantShop | ' + ${plant.name}">PlantShop</title>
+</head>
+
+<div layout:fragment="content">
+	<div class="container">
+		<h1 class="mb-4">🌱 Détail de la plante</h1>
+
+		<div class="card mb-4 shadow-sm">
+			<div class="card-body">
+				<h2 class="card-title" th:text="${plant.name}">Nom de la plante</h2>
+				<p class="card-text" th:text="${plant.description}">Description</p>
+
+				<ul class="list-group list-group-flush mb-3">
+					<li class="list-group-item">
+						<strong>Catégorie :</strong> <span th:text="${plant.category}">Catégorie</span>
+					</li>
+					<li class="list-group-item">
+						<strong>Prix :</strong> <span th:text="${plant.price}">0.00</span> €
+					</li>
+					<li class="list-group-item" th:if="${userRoleString == 'admin'}">
+						<strong>Stock disponible :</strong> <span th:text="${plant.stock}">0</span>
+					</li>
+				</ul>
+
+				<div class="d-flex flex-wrap gap-2">
+					<a href="/plants" class="btn btn-secondary">Retour à la page d'acceuil</a>
+					<button type="button" class="btn btn-success add-to-cart" th:data-id="${plant.id}"
+						th:data-name="${plant.name}" th:data-price="${plant.price}">
+						Ajouter au panier
+					</button>
+					<div th:if="${userRoleString == 'admin'}" class="d-flex gap-2">
+						<a th:href="@{'/admin/plants/' + ${plant.id} + '/edit'}" class="btn btn-warning">Modifier</a>
+						<form th:action="@{'/admin/plants/' + ${plant.id}}" method="post"
+							onsubmit="return confirm('Supprimer cette plante ?');">
+							<input type="hidden" name="_method" value="delete" />
+							<button type="submit" class="btn btn-danger">Supprimer</button>
+						</form>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	<script th:src="@{/js/plants.js}"></script>
+</div>
+
+</html>
+
+# target/classes/templates/plants/index.html
+
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" layout:decorate="~{fragments/base}" th:with="title='Liste des plantes'">
+
+<head>
+	<title>PlantShop | Acceuil</title>
+</head>
+
+<body>
+	<div layout:fragment="content">
+		<section class="container pt-5 mt-5">
+			<div th:if="${userRoleString == 'admin'}" class="mb-3">
+				<a href="/admin/plants/new" class="btn btn-primary">Ajouter une plante</a>
+			</div>
+
+			<div class="row">
+				<div th:each="plant : ${plants}" class="col-md-4 mb-4">
+					<div class="card h-100 plant-card" th:data-id="${plant.id}">
+						<div class="card-body position-relative">
+							<h5 class="card-title" th:text="${plant.name}">Nom</h5>
+							<p class="card-text" th:text="${plant.description}">Description</p>
+							<p class="text-muted">Prix : <span th:text="${plant.price}">0.0</span> €</p>
+							<p class="text-muted" th:if="${userRoleString == 'admin'}">
+								Stock : <span th:text="${plant.stock}">0</span>
+							</p>
+
+							<div class="d-flex gap-2">
+								<button type="button" class="btn btn-success flex-grow-1 add-to-cart" th:data-id="${plant.id}" style="z-index: 1; position: relative;"
+									th:data-name="${plant.name}" th:data-price="${plant.price}">
+									Ajouter au panier
+								</button>
+							</div>
+						</div>
+					</div>
+				</div>
+		</section>
+		<script>
+			document.addEventListener('DOMContentLoaded', () => {
+				// Navigation vers la fiche plante
+				document.querySelectorAll('.plant-card').forEach(card => {
+					card.addEventListener('click', () => {
+						const id = card.dataset.id;
+						window.location.href = "/plants/" + id;
+					});
+				});
+			});
+		</script>
+		<script th:src="@{/js/plants.js}"></script>
+	</div>
+</body>
+
+</html>
+
+# target/classes/templates/register.html
+
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      layout:decorate="~{fragments/base}"
+      th:with="title='Inscription'">
+<head>
+    <title>PlantShop | Inscription</title>
+</head>
+<body>
+    <div layout:fragment="content">
+        <section class="container pt-5 mt-5">
+            <div class="row justify-content-center">
+                <div class="col-md-6">
+                    <div class="card shadow">
+                        <div class="card-header bg-success text-white">
+                            <h4 class="mb-0">Créer un compte</h4>
+                        </div>
+                        <div class="card-body">
+                            <form th:action="@{/register}" th:object="${user}" method="post">
+                                <div class="mb-3">
+                                    <label class="form-label">Nom complet</label>
+                                    <input type="text" class="form-control" th:field="*{name}" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Adresse email</label>
+                                    <input type="email" class="form-control" th:field="*{email}" required>
+                                    <small class="text-danger" th:if="${#fields.hasErrors('email')}" th:errors="*{email}"></small>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Mot de passe</label>
+                                    <input type="password" class="form-control" th:field="*{password}" required>
+                                </div>
+                                <button type="submit" class="btn btn-success w-100">S'inscrire</button>
+                            </form>
+                            <hr>
+                            <p class="text-center mb-0">
+                                Déjà un compte ?
+																&nbsp;
+                                <a th:href="@{/login}" class="text-success">Se connecter</a>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+</body>
+</html>
+
+# target/classes/templates/orders/index.html
+
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" layout:decorate="~{fragments/base}" th:with="title='Mes commandes'">
+
+<head>
+	<title>PlantShop | Mes commandes</title>
+</head>
+
+<body>
+	<div layout:fragment="content">
+		<main class="container pt-5 mt-5">
+			<h2 class="mb-4">📦 Mes commandes</h2>
+
+			<div th:if="${#lists.isEmpty(orders)}">
+				<p>Aucune commande pour le moment.</p>
+			</div>
+
+			<div th:each="order, iterStat : ${orders}" class="card mb-3">
+				<div class="card-body">
+					<h5 class="card-title">
+						Commande n° <span th:text="${orders.size() - iterStat.index}">1</span>
+					</h5>
+					<p class="card-text">
+						<!-- <span th:text="${order.createdAt}">date</span> -->
+						<!-- <span th:text="${#temporals.format(order.createdAt, 'dd/MM/yyyy à HH:mm')}">date</span> -->
+						Passée le <span
+							th:text="${order.createdAt != null ? #temporals.format(order.createdAt, 'dd/MM/yyyy HH:mm') : 'Date inconnue'}">date</span>
+						–
+						Total : <strong th:text="${#numbers.formatDecimal(order.totalPrice, 1, 'POINT', 2, 'POINT')} + ' €'">0.00
+							€</strong>
+					</p>
+
+					<ul>
+						<li th:each="item : ${order.items}">
+							<a th:href="@{'/plants/' + ${item.plant.id}}" th:text="${item.plant.name}">Plante</a>
+							× <span th:text="${item.quantity}">1</span>
+						</li>
+					</ul>
+
+				</div>
+			</div>
+		</main>
+	</div>
+</body>
+
+</html>
+
+# target/classes/templates/cart.html
+
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" layout:decorate="~{fragments/base}" th:with="title='Panier'">
+
+<head>
+	<title>PlantShop | Panier</title>
+</head>
+
+<body>
+	<div layout:fragment="content">
+		<section class="container pt-5 mt-5">
+			<h2 class="mb-4">🛒 Votre panier</h2>
+
+			<div id="checkoutMessage" class="alert d-none" role="alert"></div>
+
+			<div class="table-responsive">
+				<table class="table align-middle">
+					<thead>
+						<tr>
+							<th>Produit</th>
+							<th>Prix (€)</th>
+							<th>Quantité</th>
+							<th>Sous‑total (€)</th>
+							<th></th>
+						</tr>
+					</thead>
+					<tbody id="cartBody">
+						<tr id="emptyRow">
+							<td colspan="5" class="text-center">Votre panier est vide.</td>
+						</tr>
+					</tbody>
+					<tfoot class="table-light">
+						<tr>
+							<th colspan="3" class="text-end">Total&nbsp;:</th>
+							<th id="cartTotal">0.00</th>
+							<th></th>
+						</tr>
+					</tfoot>
+				</table>
+			</div>
+
+			<div class="d-flex justify-content-between align-items-center mt-4">
+				<button type="button" class="btn btn-outline-secondary" id="clearCart">Vider le panier</button>
+				<form id="checkoutForm" class="mb-0">
+					<button type="submit" class="btn btn-success">Terminer la commande</button>
+				</form>
+			</div>
+			<div id="checkoutMessage" class="mt-3"></div>
+
+		</section>
+		<script th:src="@{/js/cart.js}"></script>
+	</div>
+</body>
+
+</html>
+
+# target/classes/templates/profile/profile_edit.html
+
+<!DOCTYPE html>
+<html  lang="fr"
+       xmlns:th="http://www.thymeleaf.org"
+       layout:decorate="~{fragments/base}"
+       th:with="title='Modifier mon profil'">
+
+<head>
+  <meta charset="UTF-8">
+  <title>Modifier | PlantShop</title>
+</head>
+
+<body>
+<div layout:fragment="content">
+  <main class="container pt-5 mt-5">
+    <div class="row justify-content-center">
+      <div class="col-md-8">
+        <div class="card shadow">
+          <div class="card-header bg-success text-white">
+            <h2 class="h5 mb-0">Modifier mon profil</h2>
+          </div>
+
+          <form th:action="@{/my_profile/edit}" th:object="${user}" method="post"
+                class="card-body needs-validation" novalidate>
+
+            <div class="mb-3">
+              <label class="form-label">Nom complet</label>
+              <input type="text" class="form-control" th:field="*{name}" required>
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label">Email</label>
+              <input type="email" class="form-control" th:field="*{email}" required>
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label">Nouveau mot de passe
+                     <small class="text-muted">(laissez vide pour ne pas changer)</small>
+              </label>
+              <input type="password" class="form-control" th:field="*{password}">
+            </div>
+
+            <div class="d-flex gap-2">
+              <button type="submit" class="btn btn-success flex-grow-1">Enregistrer</button>
+              <a href="/my_profile" class="btn btn-outline-secondary flex-grow-1">Annuler</a>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+</body>
+</html>
+
+# target/classes/templates/profile/profile.html
+
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+	layout:decorate="~{fragments/base}" th:with="title='Mon Profil'" lang="fr">
+
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>Mon Profil | PlantShop</title>
+	<link rel="stylesheet" href="/webjars/bootstrap/5.3.2/css/bootstrap.min.css">
+	<link rel="stylesheet" href="/css/style.css">
+</head>
+
+<body>
+	<div layout:fragment="content">
+		<main class="container pt-5 mt-5">
+			<div class="row justify-content-center">
+				<div class="col-md-8">
+					<div class="card shadow">
+						<div class="card-header bg-success text-white">
+							<h2 class="h4 mb-0">Mon Profil</h2>
+						</div>
+						<div class="card-body">
+							<dl class="row">
+								<dt class="col-sm-4">Nom complet</dt>
+								<dd class="col-sm-8" th:text="${user.name}">-</dd>
+
+								<dt class="col-sm-4">Email</dt>
+								<dd class="col-sm-8" th:text="${user.email}">-</dd>
+								<div th:if="${userRoleString == 'admin'}" class="d-flex gap-2">
+									<dt class="col-sm-4">Administrateur</dt>
+									<dd class="col-sm-8">
+										<span th:text="${userRoleString == 'admin'} ? 'Oui' : 'Non'">-</span>
+									</dd>
+								</div>
+								<div class="mt-4 text-start">
+									<a href="/my_profile/edit" class="btn btn-primary px-5">Modifier</a>
+								</div>
+							</dl>
+						</div>
+					</div>
+				</div>
+			</div>
+		</main>
+	</div>
+
+	<script src="/webjars/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
+	<script src="https://kit.fontawesome.com/a14342fe13.js" crossorigin="anonymous"></script>
+</body>
+
+</html>
+
+# target/classes/templates/fragments/base.html
+
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<!-- Icône du site -->
+	<link rel="icon" href="/favicon.ico" type="image/x-icon"/>
+
+	<title>PlantShop | [[${title}]]</title>
+
+	<!-- Bootstrap CSS -->
+	<link rel="stylesheet" href="/webjars/bootstrap/5.3.2/css/bootstrap.min.css">
+
+	<!-- Custom CSS -->
+	<link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+
+<body>
+	<th:block th:with="userRoleString=${userRole}">
+		<!-- Navbar -->
+		<div th:replace="~{fragments/navbar :: navbar}"></div>
+		<div class="container">
+			<!-- Messages flash -->
+			<div th:if="${message}" class="alert alert-success" th:text="${message}"></div>
+			<div th:if="${error}" class="alert alert-danger" th:text="${error}"></div>
+
+			<!-- Contenu principal -->
+			<div layout:fragment="content"></div>
+		</div>
+
+		<!-- Bootstrap JS -->
+		<script src="/webjars/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
+		<script th:src="@{/js/app.js}"></script>
+	</th:block>
+
+	</body>
+
+</html>
+
+# target/classes/templates/fragments/navbar.html
+
+<nav th:fragment="navbar" class="navbar navbar-expand-lg navbar fixed-top">
+	<!-- Navbar -->
+	<nav class="navbar navbar-expand-lg mb-4 fixed-top">
+		<div class="container">
+			<a class="navbar-brand" href="/">🌿 PlantShop</a>
+			<button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+				<span class="navbar-toggler-icon"></span>
+			</button>
+
+			<div class="collapse navbar-collapse" id="navbarNav">
+				<ul class="navbar-nav me-auto"></ul>
+				<ul class="navbar-nav">
+					<li th:if="${loggedUserName}" class="navbar-text me-2"
+							th:text="${userRoleString == 'admin' ? loggedUserName + ' (Administrateur)' : loggedUserName}">
+					</li>
+					<li th:if="${userRoleString == 'visitor' || userRoleString == 'user' || userRoleString == 'admin'}"
+						class="nav-item">
+						<a class="nav-link" href="/cart">Panier (<span class="cart-count">0</span>)</a>
+					</li>
+					<li th:if="${userRoleString == 'visitor'}" class="nav-item">
+						<a class="nav-link" href="/login">Connexion</a>
+					</li>
+					<li th:if="${userRoleString == 'visitor'}" class="nav-item">
+						<a class="nav-link" href="/register">Inscription</a>
+					</li>
+					<li th:if="${userRoleString == 'user' || userRoleString == 'admin'}" class="nav-item">
+						<a class="nav-link" href="/my_profile">Mon Profil</a>
+					</li>
+					<li th:if="${userRoleString == 'user' || userRoleString == 'admin'}" class="nav-item">
+						<a class="nav-link" href="/orders">Mes Commandes</a>
+					</li>
+
+					<li th:if="${userRoleString == 'admin'}" class="nav-item dropdown">
+						<a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+							Admin
+						</a>
+						<ul class="dropdown-menu">
+							<li><a class="dropdown-item" href="/admin/plants">Gestion Plantes</a></li>
+							<li><a class="dropdown-item" href="/admin/users">Gestion Utilisateurs</a></li>
+						</ul>
+					</li>
+
+					<li th:if="${userRoleString == 'user' or userRoleString == 'admin'}" class="nav-item">
+						<form th:action="@{/logout}" method="post">
+							<button type="submit" class="nav-link btn btn-link">Déconnexion</button>
+						</form>
+					</li>
+				</ul>
+			</div>
+		</div>
+	</nav>
+</nav>
+
+# target/classes/application.yml
+
+# -----------------------------
+# CONFIGURATION GÉNÉRALE COMMUNE
+# S'applique quel que soit le profil actif (dev, seed, prod)
+# -----------------------------
+server:
+  port: 8080 # Port HTTP utilisé par le serveur intégré (Tomcat par défaut)
+
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/plant_shop_jpa
+    username: tilnede0x1182
+    password: tilnede0x1182
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    show-sql: true
+    open-in-view: false
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        format_sql: true
+        default_schema: public
+  thymeleaf:
+    prefix: classpath:/templates/
+    suffix: .html
+    mode: HTML
+    encoding: UTF-8
+    cache: false
+  sql:
+    init:
+      mode: never
+
+logging:
+  level:
+    org.hibernate.SQL: DEBUG
+    org.hibernate.type.descriptor.sql.BasicBinder: TRACE
+    org.springframework.security: DEBUG
+---
+
+# -----------------------------
+# PROFIL DEV : Développement local
+# Activation avec --spring.profiles.active=dev
+# -----------------------------
+
+spring:
+  config:
+    activate:
+      on-profile: dev
+  thymeleaf:
+    cache: false
+  jpa:
+    hibernate:
+      ddl-auto: update
+    defer-datasource-initialization: false
+  sql:
+    init:
+      mode: never
+
+---
+
+# -----------------------------
+# PROFIL INIT : Initialisation sans suppression des données
+# Activation avec --spring.profiles.active=init
+# -----------------------------
+
+spring:
+  config:
+    activate:
+      on-profile: init
+  devtools:
+    enabled: false
+    restart:
+      enabled: false
+  thymeleaf:
+    cache: false
+  jpa:
+    hibernate:
+      ddl-auto: update
+    defer-datasource-initialization: false
+  sql:
+    init:
+      mode: never
+
+---
+
+# -----------------------------
+# PROFIL PROD : Production
+# Activation avec --spring.profiles.active=prod
+# -----------------------------
+
+spring:
+  config:
+    activate:
+      on-profile: prod
+  devtools:
+    enabled: false
+    restart:
+      enabled: false
+  thymeleaf:
+    cache: true
+  jpa:
+    hibernate:
+      ddl-auto: validate
+  sql:
+    init:
+      mode: never
+
+# README.md
+
+# Plant Shop - E-commerce Botanique (Spring Boot/Thymeleaf)
+
+Application complète de vente de plantes développée avec Spring Boot et Thymeleaf :
+- **Backend** : API REST avec Spring Boot et persistance JPA/Hibernate
+- **Frontend** : Interface utilisateur avec Thymeleaf et Bootstrap
+
+## 🛠 Stack Technique
+
+### Backend
+- **Langage**: Java 17
+- **Framework**: Spring Boot 3.1.5
+- **Persistence**:
+  - Spring Data JPA
+  - Hibernate (inclus dans Spring Boot)
+  - PostgreSQL 42.7.3
+- **Sécurité**:
+  - Spring Security 6 (inclus dans Spring Boot 3.1.5)
+  - Authentification par session
+- **Validation**:
+  - Jakarta Validation API 3.0.2
+  - Hibernate Validator 8.0.1.Final
+- **Utilitaires**:
+  - Lombok 1.18.30
+  - DataFaker 2.0.2 (pour les données de test)
+- **Build**: Maven
+
+### Frontend
+- **Templates**:
+  - Thymeleaf (via Spring Boot starter)
+  - Thymeleaf Layout Dialect 3.0.0
+  - Thymeleaf Spring Security 6 Extras
+- **UI/UX**:
+  - Bootstrap 5.3.2 (via WebJars)
+  - WebJars Locator 0.46
+  - JavaScript vanilla pour la gestion du panier
+
+## Fonctionnalités
+
+### Client
+- Catalogue de plantes
+- Panier d'achat (stockage côté client avec localStorage)
+- Système de commande
+- Profil utilisateur
+- Historique des commandes
+
+### Administrateur
+- Gestion des plantes (CRUD)
+- Gestion des utilisateurs
+- Interface d'administration dédiée
+
+### Sécurité
+- Authentification via formulaire
+- Roles utilisateur (USER/ADMIN)
+- Protection CSRF
+- Validation des données
+
+## Installation et lancement
+
+### Prérequis
+- Java 17+
+- PostgreSQL
+- Maven
+
+### Configuration
+1. Créer une base de données PostgreSQL nommée `plant_shop`
+2. Modifier les identifiants dans `application.yml` si nécessaire
+
+### Démarrage
+```bash
+# Installation des dépendances
+mvn clean compile
+
+# Lancement avec données de test
+mvn spring-boot:run -Dspring-boot.run.profiles=seed
+
+# Lancement en mode développement
+mvn spring-boot:run -Dspring-boot.run.profiles=dev
+
+# Lancement en production
+mvn spring-boot:run -Dspring-boot.run.profiles=prod
+```
+
+## Structure du projet
+Architecture MVC classique avec séparation des couches controller, service, repository et entity.
+
+# Makefile
+
+# Définition des variables
+PROFILE = dev
+PORT = 8080
+
+# Tâches par défaut
+default: help
+
+# Affiche l'aide
+help:
+	@echo "Commandes disponibles :"
+	@echo "  make help          Affiche cette aide"
+	@echo "  make run           Lance l'application (profil dev)"
+	@echo "  make prod          Lance l'application (profil prod)"
+	@echo "  make init          Lance l'application (profil init)"
+	@echo "  make install       Compile le projet"
+	@echo "  make test          Exécute les tests"
+	@echo "  make clean         Supprime les fichiers générés"
+	@echo "  make db-create     Crée la base de données"
+	@echo "  make db-drop       Supprime la base de données"
+	@echo "  make update        Met à jour le projet (alias reset)"
+	@echo "  make reset         Réinitialise la base (alias init)"
+	@echo "  make seed          Alias vers init"
+	@echo "  make print_port    Affiche le port de l'application"
+
+# Affichage du port
+print_port:
+	@echo "Port configuré : $(PORT)"
+
+# Installaton des dépendances
+install:
+	clear
+	@echo "Installation en cours..."
+	mvn clean compile
+
+# Lance l'application
+run:
+	clear
+	@echo "Lancement en cours..."
+	@$(MAKE) print_port
+	# mvn -q spring-boot:run -Dspring-boot.run.profiles=$(PROFILE) | grep -E "WARN|ERROR|DEBUG :"
+	mvn -q spring-boot:run -Dspring-boot.run.profiles=$(PROFILE)
+
+prod: clean
+	clear
+	@echo "Lancement en cours..."
+	@$(MAKE) print_port
+	mvn -q spring-boot:run -Dspring-boot.run.profiles=prod | grep -E "WARN|ERROR"
+
+init: print_port
+	clear
+	@echo "Lancement en cours..."
+	@$(MAKE) print_port
+	# mvn spring-boot:run -Dspring-boot.run.profiles=init | grep -E "WARN|ERROR|DEBUG :"
+	mvn spring-boot:run -Dspring-boot.run.profiles=init
+
+# Exécute les tests
+test:
+	clear && mvn -q test
+
+# Nettoie les fichiers générés
+clean:
+	clear && mvn -q clean
+
+# Crée les tables de la base de données
+db-create: seed
+
+# Supprime les tables de la base de données
+db-drop:
+	sudo -u postgres psql -d $(DB_NAME) -c "DROP SCHEMA public CASCADE;"
+	sudo -u postgres psql -d $(DB_NAME) -c "CREATE SCHEMA public;"
+
+# Met à jour les dépendances et reconstruit le projet
+update: reset
+
+# Réinitialise la base de données
+reset: init
+
+# Tâche pour seed la base de données (si vous avez un mécanisme de seed)
+seed: init
+
+.PHONY: test clean db-create db-drop update reset seed
+
+# src/main/resources/static/js/app.js
+
+/**
+ * Gère le panier via le localStorage
+ * @class CartManager
+ */
+class CartManager {
+	/**
+	 * Charge le panier depuis le localStorage
+	 * @returns {Array<Object>} liste des articles dans le panier
+	 */
+	static load() {
+		return JSON.parse(localStorage.getItem("cart") || "[]");
+	}
+
+	/**
+	 * Sauvegarde le panier dans le localStorage
+	 * @param {Array<Object>} cart liste des articles à sauvegarder
+	 */
+	static save(cart) {
+		localStorage.setItem("cart", JSON.stringify(cart));
+	}
+
+	/**
+	 * Calcule le nombre total d'articles dans le panier
+	 * @returns {number} total des quantités
+	 */
+	static countItems() {
+		return this.load().reduce((sum, item) => sum + item.qty, 0);
+	}
+
+	/**
+	 * Met à jour les éléments de l’interface liés au panier
+	 */
+	static refreshUI() {
+		const count = this.countItems();
+		document
+			.querySelectorAll(".cart-count")
+			.forEach((el) => (el.textContent = count));
+		const link = document.getElementById("cart-link");
+		if (link) link.textContent = `Panier (${count})`;
+	}
+}
+
+/**
+ * Initialise les tooltips Bootstrap et l’UI du panier à chargement de page
+ */
+document.addEventListener("DOMContentLoaded", () => {
+	[...document.querySelectorAll('[data-bs-toggle="tooltip"]')].forEach(
+		(el) => new bootstrap.Tooltip(el)
+	);
+	CartManager.refreshUI();
+	window.addEventListener(
+		"storage",
+		(e) => e.key === "cart" && CartManager.refreshUI()
+	);
+});
+
+/**
+ * @function window.refreshCart
+ * @description Alias global pour rafraîchir l’UI du panier
+ */
+window.refreshCart = () => CartManager.refreshUI();
+
+/**
+ * @function window.refreshUI
+ * @description Autre alias global pour rafraîchir l’UI du panier
+ */
+window.refreshUI = () => CartManager.refreshUI();
+
+# src/main/resources/static/js/plants.js
+
+/**
+ * Catalogue des plantes affichées, gestion de l’ajout au panier.
+ * @class PlantCatalog
+ */
+class PlantCatalog {
+	/**
+	 * Initialise les boutons d’ajout au panier sur chaque fiche plante.
+	 * Bloque la navigation via <a>, puis ajoute la plante au panier.
+	 */
+	static init() {
+		document.querySelectorAll(".add-to-cart").forEach((btn) => {
+			btn.addEventListener("click", (e) => {
+				e.stopPropagation(); // empêche la propagation vers le lien parent
+				e.preventDefault(); // empêche la navigation
+
+				const id = btn.dataset.id;
+				const name = btn.dataset.name;
+				const price = parseFloat(btn.dataset.price);
+				const stock = parseInt(btn.dataset.stock);
+
+				CartManager.add(id, name, price, stock);
+			});
+		});
+	}
+
+	/**
+	 * Ajoute une plante au panier via bouton personnalisé.
+	 * @param {Event} event événement déclenché par le bouton
+	 */
+	static addToCart(event) {
+		const btn = event.currentTarget;
+
+		/** @type {{id: string, name: string, price: number, qty: number}} */
+		const plant = {
+			id: btn.dataset.id,
+			name: btn.dataset.name,
+			price: parseFloat(btn.dataset.price),
+			qty: 1,
+		};
+
+		let cart = CartManager.load();
+		const existing = cart.find((item) => item.id === plant.id);
+
+		if (existing) {
+			existing.qty += 1;
+		} else {
+			cart.push(plant);
+		}
+
+		CartManager.save(cart);
+		CartManager.refreshUI();
+	}
+}
+
+/**
+ * Initialise le catalogue à chargement de la page.
+ */
+document.addEventListener("DOMContentLoaded", () => {
+	PlantCatalog.init();
+});
+
+# src/main/resources/static/js/cart.js
+
+/**
+ * Gère l'affichage, la mise à jour, et la validation du panier côté page.
+ * @class CartPage
+ */
+class CartPage {
+	/**
+	 * Initialise les éléments du DOM, les événements et le rendu initial.
+	 */
+	static init() {
+		/** @member {HTMLElement} this.body - Corps du tableau du panier */
+		this.body = document.getElementById("cartBody");
+
+		/** @member {HTMLElement} this.totalE - Élément affichant le total */
+		this.totalE = document.getElementById("cartTotal");
+
+		/** @member {HTMLElement} this.msgEl - Élément pour les messages */
+		this.msgEl = document.getElementById("checkoutMessage");
+
+		// Événement de soumission du formulaire
+		document
+			.getElementById("checkoutForm")
+			?.addEventListener("submit", (e) => this.handleCheckout(e));
+
+		// Bouton pour vider le panier
+		document
+			.getElementById("clearCart")
+			?.addEventListener("click", () => this.clearCart());
+
+		// Événement pour suppression d'article
+		this.body.addEventListener("click", (e) => this.handleRemove(e));
+
+		this.render();
+	}
+
+	/**
+	 * Ajoute une plante au panier, avec gestion du stock initial.
+	 * @param {string|number} id identifiant unique de la plante
+	 * @param {string} name nom de la plante
+	 * @param {number} price prix unitaire
+	 * @param {number} stock quantité disponible en stock
+	 */
+	static add(id, name, price, stock) {
+		const cart = this.get();
+		if (cart[id]) {
+			cart[id].qty += 1;
+		} else {
+			cart[id] = { id, name, price, qty: 1, stock };
+		}
+		this.save(cart);
+		this.refreshUI();
+	}
+
+	/**
+	 * Affiche dynamiquement le contenu du panier et le total.
+	 */
+	static render() {
+		const cart = CartManager.load();
+		this.body.innerHTML = "";
+		let total = 0;
+
+		if (cart.length === 0) {
+			// Affiche un message si le panier est vide
+			const row = document.createElement("tr");
+			const cell = document.createElement("td");
+			cell.colSpan = 5;
+			cell.className = "text-center";
+			cell.textContent = "Votre panier est vide.";
+			row.appendChild(cell);
+			this.body.appendChild(row);
+		} else {
+			// Affiche chaque article dans le panier
+			cart.forEach((item, i) => {
+				const row = document.createElement("tr");
+
+				// Nom + lien
+				const colName = document.createElement("td");
+				const link = document.createElement("a");
+				link.href = `/plants/${item.id}`;
+				link.className = "product-link";
+				link.textContent = item.name;
+				colName.appendChild(link);
+
+				// Prix unitaire
+				const colPrice = document.createElement("td");
+				colPrice.textContent = item.price.toFixed(2);
+
+				// Quantité modifiable
+				const colQty = document.createElement("td");
+				const input = document.createElement("input");
+				input.type = "number";
+				input.min = "1";
+				input.value = item.qty;
+				input.className = "form-control form-control-sm qty-input";
+				input.style.width = "80px";
+				input.dataset.cartId = item.id;
+				input.dataset.stock = item.stock;
+				input.onkeydown = (e) => e.key !== "e" && e.key !== "-";
+				this.attachQtyListener(input);
+				colQty.appendChild(input);
+
+				// Sous-total
+				const colSub = document.createElement("td");
+				colSub.textContent = (item.qty * item.price).toFixed(2);
+
+				// Bouton supprimer
+				const colDel = document.createElement("td");
+				const btn = document.createElement("button");
+				btn.className = "btn btn-sm btn-danger";
+				btn.textContent = "✕";
+				btn.dataset.i = i;
+				colDel.appendChild(btn);
+
+				[colName, colPrice, colQty, colSub, colDel].forEach((el) =>
+					row.appendChild(el)
+				);
+				this.body.appendChild(row);
+
+				total += item.qty * item.price;
+			});
+		}
+
+		this.totalE.textContent = total.toFixed(2);
+	}
+
+	/**
+	 * Attache les événements à un champ de quantité pour mettre à jour l’article.
+	 * @param {HTMLInputElement} input champ de saisie de la quantité
+	 */
+	static attachQtyListener(input) {
+		let timer;
+		const handler = () => {
+			clearTimeout(timer);
+			timer = setTimeout(() => {
+				const cart = CartManager.load();
+				const id = input.dataset.cartId;
+				const stock = parseInt(input.dataset.stock) || 1;
+				console.log("stock = " + stock);
+				let val = parseInt(input.value);
+				if (isNaN(val)) console.log("val is NaN, val = " + val);
+				if (isNaN(val) || val < 1) val = 1;
+				console.log("Val = " + val);
+				if (val > stock) val = stock;
+				input.value = val;
+				const item = cart.find((p) => p.id == id);
+				if (item) item.qty = val;
+				CartManager.save(cart);
+				CartPage.render();
+				refreshCart();
+			}, 300);
+		};
+		input.addEventListener("input", handler);
+		input.addEventListener("blur", handler);
+	}
+
+	/**
+	 * Gère la suppression d’un article via le bouton.
+	 * @param {MouseEvent} e événement de clic
+	 */
+	static handleRemove(e) {
+		if (e.target.matches("button[data-i]")) {
+			const cart = CartManager.load();
+			cart.splice(e.target.dataset.i, 1);
+			CartManager.save(cart);
+			this.render();
+			refreshCart();
+		}
+	}
+
+	/**
+	 * Gère la soumission du panier (checkout).
+	 * @param {SubmitEvent} e événement de soumission
+	 */
+	static handleCheckout(e) {
+		e.preventDefault();
+
+		if (window.userRole === "visitor") {
+			window.location.href = "/login";
+			return;
+		}
+
+		const cart = CartManager.load();
+		if (cart.length === 0) {
+			this.showMsg("Votre panier est vide.", "danger");
+			return;
+		}
+
+		fetch("/orders/checkout", {
+			method: "POST",
+			headers: { "Content-Type": "application/json" },
+			body: JSON.stringify(cart),
+		})
+			.then((res) => res.text().then((text) => ({ ok: res.ok, text })))
+			.then(({ ok, text }) => {
+				if (ok && text === "OK") {
+					localStorage.removeItem("cart");
+					refreshCart();
+					this.showMsg("Commande validée ! Redirection…", "success");
+					setTimeout(() => (window.location.href = "/orders"), 0);
+				} else {
+					this.showMsg(
+						"Erreur lors de la commande : " + text,
+						"danger"
+					);
+				}
+			})
+			.catch(() => {
+				this.showMsg("Erreur réseau.", "danger");
+			});
+	}
+
+	/**
+	 * Vide le panier et met à jour l'interface.
+	 */
+	static clearCart() {
+		localStorage.removeItem("cart");
+		this.render();
+		refreshCart();
+	}
+
+	/**
+	 * Affiche un message utilisateur (erreur, succès…).
+	 * @param {string} text contenu du message
+	 * @param {string} type type Bootstrap (`success`, `danger`, etc.)
+	 */
+	static showMsg(text, type) {
+		this.msgEl.className = `alert alert-${type}`;
+		this.msgEl.textContent = text;
+	}
+}
+
+/**
+ * Initialise la page du panier à chargement.
+ */
+document.addEventListener("DOMContentLoaded", () => {
+	CartPage.init();
+});
+
+# src/main/resources/static/css/style.css
+
+.card {
+    transition: transform 0.2s;
+}
+
+.card:hover {
+    box-shadow: 0 3px 3px rgba(0,0,0,.1);
+}
+
+.plant-card {
+	cursor: pointer;
+}
+
+.navbar {
+    box-shadow: 0 2px 4px rgba(0,0,0,.1);
+		background-color: #165437;
+}
+
+.navbar .navbar-brand,
+.navbar .nav-link,
+.navbar .navbar-text {
+  color: white !important;
+}
+
+/* Profile Page Styles */
+.card.profile-card {
+	border-radius: 10px;
+	overflow: hidden;
+}
+
+.profile-icon {
+	font-size: 5rem;
+	color: #28a745;
+}
+
+.profile-badge {
+	font-size: 0.9rem;
+	padding: 0.35em 0.65em;
+}
+
+.card-shadow {
+	box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+}
+
+.form-label {
+	font-weight: 500;
+}
+
+.product-link {
+  text-decoration: none;
+  color: inherit;
+  transition: all 0.1s ease;
+}
+
+.product-link:hover {
+  /* text-decoration: underline; */
+  text-shadow: 0 0 3px rgba(0, 0, 0, 0.2);
+}
+
+# src/main/resources/static/index.html
+
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>OrganisationSim - Accueil</title>
+	<link rel="icon" type="image/x-icon" href="favicon/organisation-sim.svg">
+  <link rel="stylesheet" href="style/main.css">
+</head>
+<body>
+
+<!-- 🔗 Barre de navigation globale -->
+<nav class="navbar">
+  <a href="index.html" class="logo">OrganisationSim</a>
+  <a href="constraints.html">Créer un projet</a>
+  <a href="projects.html">Liste des projets</a>
+</nav>
+
+<header>
+  <h1>Bienvenue sur OrganisationSim</h1>
+</header>
+
+<div class="container">
+  <h2>Tableau récapitulatif (Diagramme de Pert simplifié)</h2>
+
+  <table class="pert-table">
+    <thead>
+      <tr>
+        <th>Étape</th>
+        <th>Responsable</th>
+        <th>Durée estimée</th>
+        <th>Prérequis</th>
+      </tr>
+    </thead>
+    <tbody id="pertTableBody">
+      <tr>
+        <td>Analyse</td>
+        <td>Chef de projet</td>
+        <td>3 jours</td>
+        <td>-</td>
+      </tr>
+      <tr>
+        <td>Conception</td>
+        <td>Architecte</td>
+        <td>5 jours</td>
+        <td>Analyse</td>
+      </tr>
+      <tr>
+        <td>Développement</td>
+        <td>Équipe Dev</td>
+        <td>10 jours</td>
+        <td>Conception</td>
+      </tr>
+      <tr>
+        <td>Recette</td>
+        <td>QA</td>
+        <td>4 jours</td>
+        <td>Développement</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+</body>
+</html>
+
+# src/main/resources/templates/login.html
+
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      layout:decorate="~{fragments/base}"
+      th:with="title='Connexion'">
+<head>
+    <title>PlantShop | Connexion</title>
+</head>
+<body>
+<div layout:fragment="content">
+    <section class="container pt-5 mt-5">
+        <div class="row justify-content-center">
+            <div class="col-md-6 col-lg-4">
+                <div class="card shadow">
+                    <div class="card-header bg-success text-white">
+                        <h4 class="mb-0 text-center">Connexion</h4>
+                    </div>
+                    <div class="card-body p-4">
+
+                        <div th:if="${param.error}" class="alert alert-danger">
+                            Identifiants invalides
+                        </div>
+
+                        <form th:action="@{/login}" method="post">
+                            <div class="mb-3">
+                                <label for="username" class="form-label">Email</label>
+                                <input type="text" class="form-control" id="username" name="email" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="password" class="form-label">Mot de passe</label>
+                                <input type="password" class="form-control" id="password" name="password" required>
+                            </div>
+                            <button type="submit" class="btn btn-success w-100">Se connecter</button>
+                        </form>
+
+												<div class="mt-3 text-center">
+													<span>Pas encore de compte ?&nbsp;</span>
+													<a th:href="@{/register}" class="text-success text-decoration-none">Inscrivez-vous !</a>
+											</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+</div>
+</body>
+</html>
+
+# src/main/resources/templates/admin/plants/index.html
+
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" layout:decorate="~{fragments/base}" th:with="title='Gestion des plantes'">
+
+<head>
+	<title>PlantShop | Gestion des plantes</title>
+</head>
+
+<body>
+	<div layout:fragment="content">
+		<div class="container pt-5 mt-5">
+			<h1 class="mb-4">Gestion des Plantes</h1>
+
+			<div th:if="${userRoleString == 'admin'}" class="mb-3">
+				<a href="/admin/plants/new" class="btn btn-primary">Ajouter une plante</a>
+			</div>
+
+			<table class="table table-striped table-hover">
+				<thead class="table-dark">
+					<tr>
+						<th>Nom</th>
+						<th>Prix</th>
+						<th>Stock</th>
+						<th class="text-center">Actions</th>
+					</tr>
+				</thead>
+				<tbody>
+					<tr th:each="plant : ${plants}">
+						<td><a  class="product-link" th:href="@{'/plants/' + ${plant.id}}" th:text="${plant.name}">Nom</a></td>
+						<td th:text="${plant.price} + ' €'">0.00 €</td>
+						<td th:text="${plant.stock}">0</td>
+						<td class="text-center">
+							<div class="d-flex justify-content-center gap-2">
+								<a th:href="@{'/admin/plants/' + ${plant.id} + '/edit'}" class="btn btn-warning btn-sm">✏ Modifier</a>
+								<form th:action="@{'/admin/plants/' + ${plant.id}}" method="post"
+									onsubmit="return confirm('Supprimer cette plante ?');">
+									<input type="hidden" name="_method" value="delete" />
+									<button class="btn btn-danger btn-sm">🗑 Supprimer</button>
+								</form>
+							</div>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+		</div>
+	</div>
+</body>
+
+</html>
+
+# src/main/resources/templates/admin/plants/edit.html
+
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" layout:decorate="~{fragments/base}" th:with="title='Modifier plante'">
+<head>
+    <title>PlantShop | Modifier Plante</title>
+</head>
+<body>
+<div layout:fragment="content">
+    <div class="container pt-5 mt-5">
+        <h1>Éditer la Plante</h1>
+        <div th:replace="admin/plants/form :: plantForm(${plant})"></div>
+    </div>
+</div>
+</body>
+</html>
+
+# src/main/resources/templates/admin/plants/new.html
+
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" layout:decorate="~{fragments/base}" th:with="title='Nouvelle plante'">
+<head>
+    <title>PlantShop | Nouvelle Plante</title>
+</head>
+<body>
+<div layout:fragment="content">
+    <div class="container pt-5 mt-5">
+        <h1>Nouvelle Plante</h1>
+        <div th:replace="admin/plants/form :: plantForm(${plant})"></div>
+    </div>
+</div>
+</body>
+</html>
+
+# src/main/resources/templates/admin/plants/form.html
+
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+<div th:fragment="plantForm(plant)">
+    <form th:object="${plant}" th:action="${plant.id != null} ? @{'/admin/plants/' + ${plant.id}} : @{/admin/plants}" method="post">
+
+        <div class="mb-3">
+            <label class="form-label">Nom de la plante</label>
+            <input type="text" class="form-control" th:field="*{name}"/>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Prix (€)</label>
+            <input type="number" class="form-control" step="0.01" th:field="*{price}"/>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Description</label>
+            <textarea class="form-control" rows="4" th:field="*{description}"></textarea>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Stock (unités)</label>
+            <input type="number" class="form-control" th:field="*{stock}"/>
+        </div>
+
+        <button class="btn btn-primary" th:text="${plant.id != null} ? 'Mettre à jour' : 'Créer'">Créer</button>
+    </form>
+</div>
+</body>
+</html>
+
+# src/main/resources/templates/admin/users/index.html
+
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" layout:decorate="~{fragments/base}"
+	th:with="title='Gestion des utilisateurs'">
+
+<head>
+	<title>PlantShop | Utilisateurs</title>
+</head>
+
+<body>
+	<div layout:fragment="content">
+		<div class="container pt-5 mt-5">
+			<h1 class="mb-4">Gestion des Utilisateurs</h1>
+
+			<table class="table table-striped table-hover">
+				<thead class="table-dark">
+					<tr>
+						<th>Name</th>
+						<th>Email</th>
+						<th>Administrateur</th>
+						<th class="text-center">Actions</th>
+					</tr>
+				</thead>
+				<tbody>
+					<tr th:each="user : ${users}">
+						<td th:text="${user.name}">name</td>
+						<td th:text="${user.email}">email</td>
+						<td>
+							<span th:class="${user.getRole().toString().toLowerCase() == 'admin'} ? 'badge bg-success' : 'badge bg-secondary'"
+							th:text="${user.getRole().toString().toLowerCase() == 'admin'} ? 'Oui' : 'Non'">
+							Non
+							</span>
+						</td>
+						<td class="text-center">
+							<div class="d-flex justify-content-center gap-2">
+								<a th:href="@{'/admin/users/' + ${user.id} + '/edit'}" class="btn btn-warning btn-sm">✏ Modifier</a>
+								<form th:if="${#authentication.name != user.email}" th:action="@{'/admin/users/' + ${user.id}}"
+									method="post" onsubmit="return confirm('Supprimer cet utilisateur ?');">
+									<input type="hidden" name="_method" value="delete" />
+									<button class="btn btn-danger btn-sm">🗑 Supprimer</button>
+								</form>
+							</div>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+		</div>
+	</div>
+</body>
+
+</html>
+
+# src/main/resources/templates/admin/users/edit.html
+
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" layout:decorate="~{fragments/base}" th:with="title='Modifier utilisateur'">
+
+<head>
+	<title>PlantShop | Modifier utilisateur</title>
+</head>
+
+<body>
+	<div layout:fragment="content">
+		<div class="container pt-5 mt-5">
+			<h1>Modifier l'utilisateur</h1>
+
+			<form th:action="@{'/admin/users/' + ${user.id}}" th:object="${user}" method="post">
+				<input type="hidden" name="_method" value="patch" />
+
+				<div th:if="${#fields.hasErrors('*')}" class="alert alert-danger">
+					<ul>
+						<li th:each="err : ${#fields.errors('*')}" th:text="${err}">Erreur</li>
+					</ul>
+				</div>
+
+				<div class="mb-3">
+					<label for="email" class="form-label">Email</label>
+					<input id="email" type="email" class="form-control" th:field="*{email}" />
+				</div>
+
+				<div class="mb-3">
+					<label for="name" class="form-label">Nom</label>
+					<input id="name" type="text" class="form-control" th:field="*{name}" />
+				</div>
+
+				<div class="mb-3 form-check">
+					<input type="hidden" id="roleInput" name="role" th:value="${user.getRole().name()}" />
+					<input id="admin" type="checkbox" class="form-check-input" th:checked="${user.getRole().name() == 'ADMIN'}"
+						onchange="document.getElementById('roleInput').value = this.checked ? 'ADMIN' : 'USER'" />
+					<label for="admin" class="form-check-label">Administrateur ?</label>
+				</div>
+
+
+				<button type="submit" class="btn btn-primary">Enregistrer</button>
+			</form>
+		</div>
+	</div>
+</body>
+
+</html>
+
+# src/main/resources/templates/plants/show.html
+
+<!DOCTYPE html>
+<html layout:decorate="~{fragments/base}" xmlns:th="http://www.thymeleaf.org"
+	th:with="title='PlantShop | ' + ${plant.name}">
+
+<head>
+	<meta charset="UTF-8">
+	<title th:text="'PlantShop | ' + ${plant.name}">PlantShop</title>
+</head>
+
+<div layout:fragment="content">
+	<div class="container">
+		<h1 class="mb-4">🌱 Détail de la plante</h1>
+
+		<div class="card mb-4 shadow-sm">
+			<div class="card-body">
+				<h2 class="card-title" th:text="${plant.name}">Nom de la plante</h2>
+				<p class="card-text" th:text="${plant.description}">Description</p>
+
+				<ul class="list-group list-group-flush mb-3">
+					<li class="list-group-item">
+						<strong>Catégorie :</strong> <span th:text="${plant.category}">Catégorie</span>
+					</li>
+					<li class="list-group-item">
+						<strong>Prix :</strong> <span th:text="${plant.price}">0.00</span> €
+					</li>
+					<li class="list-group-item" th:if="${userRoleString == 'admin'}">
+						<strong>Stock disponible :</strong> <span th:text="${plant.stock}">0</span>
+					</li>
+				</ul>
+
+				<div class="d-flex flex-wrap gap-2">
+					<a href="/plants" class="btn btn-secondary">Retour à la page d'acceuil</a>
+					<button type="button" class="btn btn-success add-to-cart" th:data-id="${plant.id}"
+						th:data-name="${plant.name}" th:data-price="${plant.price}">
+						Ajouter au panier
+					</button>
+					<div th:if="${userRoleString == 'admin'}" class="d-flex gap-2">
+						<a th:href="@{'/admin/plants/' + ${plant.id} + '/edit'}" class="btn btn-warning">Modifier</a>
+						<form th:action="@{'/admin/plants/' + ${plant.id}}" method="post"
+							onsubmit="return confirm('Supprimer cette plante ?');">
+							<input type="hidden" name="_method" value="delete" />
+							<button type="submit" class="btn btn-danger">Supprimer</button>
+						</form>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	<script th:src="@{/js/plants.js}"></script>
+</div>
+
+</html>
+
+# src/main/resources/templates/plants/index.html
+
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" layout:decorate="~{fragments/base}" th:with="title='Liste des plantes'">
+
+<head>
+	<title>PlantShop | Acceuil</title>
+</head>
+
+<body>
+	<div layout:fragment="content">
+		<section class="container pt-5 mt-5">
+			<div th:if="${userRoleString == 'admin'}" class="mb-3">
+				<a href="/admin/plants/new" class="btn btn-primary">Ajouter une plante</a>
+			</div>
+
+			<div class="row">
+				<div th:each="plant : ${plants}" class="col-md-4 mb-4">
+					<div class="card h-100 plant-card" th:data-id="${plant.id}">
+						<div class="card-body position-relative">
+							<h5 class="card-title" th:text="${plant.name}">Nom</h5>
+							<p class="card-text" th:text="${plant.description}">Description</p>
+							<p class="text-muted">Prix : <span th:text="${plant.price}">0.0</span> €</p>
+							<p class="text-muted" th:if="${userRoleString == 'admin'}">
+								Stock : <span th:text="${plant.stock}">0</span>
+							</p>
+
+							<div class="d-flex gap-2">
+								<button type="button" class="btn btn-success flex-grow-1 add-to-cart" th:data-id="${plant.id}" style="z-index: 1; position: relative;"
+									th:data-name="${plant.name}" th:data-price="${plant.price}">
+									Ajouter au panier
+								</button>
+							</div>
+						</div>
+					</div>
+				</div>
+		</section>
+		<script>
+			document.addEventListener('DOMContentLoaded', () => {
+				// Navigation vers la fiche plante
+				document.querySelectorAll('.plant-card').forEach(card => {
+					card.addEventListener('click', () => {
+						const id = card.dataset.id;
+						window.location.href = "/plants/" + id;
+					});
+				});
+			});
+		</script>
+		<script th:src="@{/js/plants.js}"></script>
+	</div>
+</body>
+
+</html>
+
+# src/main/resources/templates/register.html
+
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      layout:decorate="~{fragments/base}"
+      th:with="title='Inscription'">
+<head>
+    <title>PlantShop | Inscription</title>
+</head>
+<body>
+    <div layout:fragment="content">
+        <section class="container pt-5 mt-5">
+            <div class="row justify-content-center">
+                <div class="col-md-6">
+                    <div class="card shadow">
+                        <div class="card-header bg-success text-white">
+                            <h4 class="mb-0">Créer un compte</h4>
+                        </div>
+                        <div class="card-body">
+                            <form th:action="@{/register}" th:object="${user}" method="post">
+                                <div class="mb-3">
+                                    <label class="form-label">Nom complet</label>
+                                    <input type="text" class="form-control" th:field="*{name}" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Adresse email</label>
+                                    <input type="email" class="form-control" th:field="*{email}" required>
+                                    <small class="text-danger" th:if="${#fields.hasErrors('email')}" th:errors="*{email}"></small>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Mot de passe</label>
+                                    <input type="password" class="form-control" th:field="*{password}" required>
+                                </div>
+                                <button type="submit" class="btn btn-success w-100">S'inscrire</button>
+                            </form>
+                            <hr>
+                            <p class="text-center mb-0">
+                                Déjà un compte ?
+																&nbsp;
+                                <a th:href="@{/login}" class="text-success">Se connecter</a>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+</body>
+</html>
+
+# src/main/resources/templates/orders/index.html
+
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" layout:decorate="~{fragments/base}" th:with="title='Mes commandes'">
+
+<head>
+	<title>PlantShop | Mes commandes</title>
+</head>
+
+<body>
+	<div layout:fragment="content">
+		<main class="container pt-5 mt-5">
+			<h2 class="mb-4">📦 Mes commandes</h2>
+
+			<div th:if="${#lists.isEmpty(orders)}">
+				<p>Aucune commande pour le moment.</p>
+			</div>
+
+			<div th:each="order, iterStat : ${orders}" class="card mb-3">
+				<div class="card-body">
+					<h5 class="card-title">
+						Commande n° <span th:text="${orders.size() - iterStat.index}">1</span>
+					</h5>
+					<p class="card-text">
+						<!-- <span th:text="${order.createdAt}">date</span> -->
+						<!-- <span th:text="${#temporals.format(order.createdAt, 'dd/MM/yyyy à HH:mm')}">date</span> -->
+						Passée le <span
+							th:text="${order.createdAt != null ? #temporals.format(order.createdAt, 'dd/MM/yyyy HH:mm') : 'Date inconnue'}">date</span>
+						–
+						Total : <strong th:text="${#numbers.formatDecimal(order.totalPrice, 1, 'POINT', 2, 'POINT')} + ' €'">0.00
+							€</strong>
+					</p>
+
+					<ul>
+						<li th:each="item : ${order.items}">
+							<a th:href="@{'/plants/' + ${item.plant.id}}" th:text="${item.plant.name}">Plante</a>
+							× <span th:text="${item.quantity}">1</span>
+						</li>
+					</ul>
+
+				</div>
+			</div>
+		</main>
+	</div>
+</body>
+
+</html>
+
+# src/main/resources/templates/cart.html
+
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" layout:decorate="~{fragments/base}" th:with="title='Panier'">
+
+<head>
+	<title>PlantShop | Panier</title>
+</head>
+
+<body>
+	<div layout:fragment="content">
+		<section class="container pt-5 mt-5">
+			<h2 class="mb-4">🛒 Votre panier</h2>
+
+			<div id="checkoutMessage" class="alert d-none" role="alert"></div>
+
+			<div class="table-responsive">
+				<table class="table align-middle">
+					<thead>
+						<tr>
+							<th>Produit</th>
+							<th>Prix (€)</th>
+							<th>Quantité</th>
+							<th>Sous‑total (€)</th>
+							<th></th>
+						</tr>
+					</thead>
+					<tbody id="cartBody">
+						<tr id="emptyRow">
+							<td colspan="5" class="text-center">Votre panier est vide.</td>
+						</tr>
+					</tbody>
+					<tfoot class="table-light">
+						<tr>
+							<th colspan="3" class="text-end">Total&nbsp;:</th>
+							<th id="cartTotal">0.00</th>
+							<th></th>
+						</tr>
+					</tfoot>
+				</table>
+			</div>
+
+			<div class="d-flex justify-content-between align-items-center mt-4">
+				<button type="button" class="btn btn-outline-secondary" id="clearCart">Vider le panier</button>
+				<form id="checkoutForm" class="mb-0">
+					<button type="submit" class="btn btn-success">Terminer la commande</button>
+				</form>
+			</div>
+			<div id="checkoutMessage" class="mt-3"></div>
+
+		</section>
+		<script th:src="@{/js/cart.js}"></script>
+	</div>
+</body>
+
+</html>
+
+# src/main/resources/templates/profile/profile_edit.html
+
+<!DOCTYPE html>
+<html  lang="fr"
+       xmlns:th="http://www.thymeleaf.org"
+       layout:decorate="~{fragments/base}"
+       th:with="title='Modifier mon profil'">
+
+<head>
+  <meta charset="UTF-8">
+  <title>Modifier | PlantShop</title>
+</head>
+
+<body>
+<div layout:fragment="content">
+  <main class="container pt-5 mt-5">
+    <div class="row justify-content-center">
+      <div class="col-md-8">
+        <div class="card shadow">
+          <div class="card-header bg-success text-white">
+            <h2 class="h5 mb-0">Modifier mon profil</h2>
+          </div>
+
+          <form th:action="@{/my_profile/edit}" th:object="${user}" method="post"
+                class="card-body needs-validation" novalidate>
+
+            <div class="mb-3">
+              <label class="form-label">Nom complet</label>
+              <input type="text" class="form-control" th:field="*{name}" required>
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label">Email</label>
+              <input type="email" class="form-control" th:field="*{email}" required>
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label">Nouveau mot de passe
+                     <small class="text-muted">(laissez vide pour ne pas changer)</small>
+              </label>
+              <input type="password" class="form-control" th:field="*{password}">
+            </div>
+
+            <div class="d-flex gap-2">
+              <button type="submit" class="btn btn-success flex-grow-1">Enregistrer</button>
+              <a href="/my_profile" class="btn btn-outline-secondary flex-grow-1">Annuler</a>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+</body>
+</html>
+
+# src/main/resources/templates/profile/profile.html
+
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+	layout:decorate="~{fragments/base}" th:with="title='Mon Profil'" lang="fr">
+
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>Mon Profil | PlantShop</title>
+	<link rel="stylesheet" href="/webjars/bootstrap/5.3.2/css/bootstrap.min.css">
+	<link rel="stylesheet" href="/css/style.css">
+</head>
+
+<body>
+	<div layout:fragment="content">
+		<main class="container pt-5 mt-5">
+			<div class="row justify-content-center">
+				<div class="col-md-8">
+					<div class="card shadow">
+						<div class="card-header bg-success text-white">
+							<h2 class="h4 mb-0">Mon Profil</h2>
+						</div>
+						<div class="card-body">
+							<dl class="row">
+								<dt class="col-sm-4">Nom complet</dt>
+								<dd class="col-sm-8" th:text="${user.name}">-</dd>
+
+								<dt class="col-sm-4">Email</dt>
+								<dd class="col-sm-8" th:text="${user.email}">-</dd>
+								<div th:if="${userRoleString == 'admin'}" class="d-flex gap-2">
+									<dt class="col-sm-4">Administrateur</dt>
+									<dd class="col-sm-8">
+										<span th:text="${userRoleString == 'admin'} ? 'Oui' : 'Non'">-</span>
+									</dd>
+								</div>
+								<div class="mt-4 text-start">
+									<a href="/my_profile/edit" class="btn btn-primary px-5">Modifier</a>
+								</div>
+							</dl>
+						</div>
+					</div>
+				</div>
+			</div>
+		</main>
+	</div>
+
+	<script src="/webjars/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
+	<script src="https://kit.fontawesome.com/a14342fe13.js" crossorigin="anonymous"></script>
+</body>
+
+</html>
+
+# src/main/resources/templates/fragments/base.html
+
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<!-- Icône du site -->
+	<link rel="icon" href="/favicon.ico" type="image/x-icon"/>
+
+	<title>PlantShop | [[${title}]]</title>
+
+	<!-- Bootstrap CSS -->
+	<link rel="stylesheet" href="/webjars/bootstrap/5.3.2/css/bootstrap.min.css">
+
+	<!-- Custom CSS -->
+	<link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+
+<body>
+	<th:block th:with="userRoleString=${userRole}">
+		<!-- Navbar -->
+		<div th:replace="~{fragments/navbar :: navbar}"></div>
+		<div class="container">
+			<!-- Messages flash -->
+			<div th:if="${message}" class="alert alert-success" th:text="${message}"></div>
+			<div th:if="${error}" class="alert alert-danger" th:text="${error}"></div>
+
+			<!-- Contenu principal -->
+			<div layout:fragment="content"></div>
+		</div>
+
+		<!-- Bootstrap JS -->
+		<script src="/webjars/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
+		<script th:src="@{/js/app.js}"></script>
+	</th:block>
+
+	</body>
+
+</html>
+
+# src/main/resources/templates/fragments/navbar.html
+
+<nav th:fragment="navbar" class="navbar navbar-expand-lg navbar fixed-top">
+	<!-- Navbar -->
+	<nav class="navbar navbar-expand-lg mb-4 fixed-top">
+		<div class="container">
+			<a class="navbar-brand" href="/">🌿 PlantShop</a>
+			<button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+				<span class="navbar-toggler-icon"></span>
+			</button>
+
+			<div class="collapse navbar-collapse" id="navbarNav">
+				<ul class="navbar-nav me-auto"></ul>
+				<ul class="navbar-nav">
+					<li th:if="${loggedUserName}" class="navbar-text me-2"
+							th:text="${userRoleString == 'admin' ? loggedUserName + ' (Administrateur)' : loggedUserName}">
+					</li>
+					<li th:if="${userRoleString == 'visitor' || userRoleString == 'user' || userRoleString == 'admin'}"
+						class="nav-item">
+						<a class="nav-link" href="/cart">Panier (<span class="cart-count">0</span>)</a>
+					</li>
+					<li th:if="${userRoleString == 'visitor'}" class="nav-item">
+						<a class="nav-link" href="/login">Connexion</a>
+					</li>
+					<li th:if="${userRoleString == 'visitor'}" class="nav-item">
+						<a class="nav-link" href="/register">Inscription</a>
+					</li>
+					<li th:if="${userRoleString == 'user' || userRoleString == 'admin'}" class="nav-item">
+						<a class="nav-link" href="/my_profile">Mon Profil</a>
+					</li>
+					<li th:if="${userRoleString == 'user' || userRoleString == 'admin'}" class="nav-item">
+						<a class="nav-link" href="/orders">Mes Commandes</a>
+					</li>
+
+					<li th:if="${userRoleString == 'admin'}" class="nav-item dropdown">
+						<a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+							Admin
+						</a>
+						<ul class="dropdown-menu">
+							<li><a class="dropdown-item" href="/admin/plants">Gestion Plantes</a></li>
+							<li><a class="dropdown-item" href="/admin/users">Gestion Utilisateurs</a></li>
+						</ul>
+					</li>
+
+					<li th:if="${userRoleString == 'user' or userRoleString == 'admin'}" class="nav-item">
+						<form th:action="@{/logout}" method="post">
+							<button type="submit" class="nav-link btn btn-link">Déconnexion</button>
+						</form>
+					</li>
+				</ul>
+			</div>
+		</div>
+	</nav>
+</nav>
+
+# src/main/resources/application.yml
+
+# -----------------------------
+# CONFIGURATION GÉNÉRALE COMMUNE
+# S'applique quel que soit le profil actif (dev, seed, prod)
+# -----------------------------
+server:
+  port: 8080 # Port HTTP utilisé par le serveur intégré (Tomcat par défaut)
+
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/plant_shop_jpa
+    username: tilnede0x1182
+    password: tilnede0x1182
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    show-sql: true
+    open-in-view: false
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        format_sql: true
+        default_schema: public
+  thymeleaf:
+    prefix: classpath:/templates/
+    suffix: .html
+    mode: HTML
+    encoding: UTF-8
+    cache: false
+  sql:
+    init:
+      mode: never
+
+logging:
+  level:
+    org.hibernate.SQL: DEBUG
+    org.hibernate.type.descriptor.sql.BasicBinder: TRACE
+    org.springframework.security: DEBUG
+---
+
+# -----------------------------
+# PROFIL DEV : Développement local
+# Activation avec --spring.profiles.active=dev
+# -----------------------------
+
+spring:
+  config:
+    activate:
+      on-profile: dev
+  thymeleaf:
+    cache: false
+  jpa:
+    hibernate:
+      ddl-auto: update
+    defer-datasource-initialization: false
+  sql:
+    init:
+      mode: never
+
+---
+
+# -----------------------------
+# PROFIL INIT : Initialisation sans suppression des données
+# Activation avec --spring.profiles.active=init
+# -----------------------------
+
+spring:
+  config:
+    activate:
+      on-profile: init
+  devtools:
+    enabled: false
+    restart:
+      enabled: false
+  thymeleaf:
+    cache: false
+  jpa:
+    hibernate:
+      ddl-auto: update
+    defer-datasource-initialization: false
+  sql:
+    init:
+      mode: never
+
+---
+
+# -----------------------------
+# PROFIL PROD : Production
+# Activation avec --spring.profiles.active=prod
+# -----------------------------
+
+spring:
+  config:
+    activate:
+      on-profile: prod
+  devtools:
+    enabled: false
+    restart:
+      enabled: false
+  thymeleaf:
+    cache: true
+  jpa:
+    hibernate:
+      ddl-auto: validate
+  sql:
+    init:
+      mode: never
+
+# src/main/java/com/planteshop/repository/OrderRepository.java
+
+package com.planteshop.repository;
+
+import com.planteshop.model.entity.CustomerOrder;
+import com.planteshop.model.entity.User;
+import org.springframework.data.jpa.repository.JpaRepository;
+import java.util.List;
+
+public interface OrderRepository extends JpaRepository<CustomerOrder, Long> {
+	List<CustomerOrder> findByUserOrderByIdDesc(User user);
+}
+
+# src/main/java/com/planteshop/repository/UserRepository.java
+
+package com.planteshop.repository;
+
+import com.planteshop.model.entity.User;
+import org.springframework.data.jpa.repository.JpaRepository;
+import java.util.Optional;
+
+public interface UserRepository extends JpaRepository<User, Long> {
+    Optional<User> findByEmail(String email);
+}
+
+# src/main/java/com/planteshop/repository/PlantRepository.java
+
+package com.planteshop.repository;
+
+import com.planteshop.model.entity.Plant;
+import org.springframework.data.jpa.repository.JpaRepository;
+
+public interface PlantRepository extends JpaRepository<Plant, Long> {
+}
+
+# src/main/java/com/planteshop/model/enums/RoleType.java
+
+package com.planteshop.model.enums;
+
+public enum RoleType {
+    VISITOR,
+    USER,
+    ADMIN
+}
+
+# src/main/java/com/planteshop/model/entity/CustomerOrder.java
+
+package com.planteshop.model.entity;
+
+import jakarta.persistence.*;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
+
+@Entity
+@Table(name = "orders")
+public class CustomerOrder {
+    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    private Double totalPrice;
+    private String status;
+    private LocalDateTime createdAt = LocalDateTime.now();
+
+    @ManyToOne
+    @JoinColumn(name = "user_id")
+    private User user;
+
+		@OneToMany(mappedBy = "order", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    private List<OrderItem> items = new ArrayList<>();
+
+    // Getters, setters
+    public Long getId() { return id; }
+    public void setId(Long id) { this.id = id; }
+    public Double getTotalPrice() { return totalPrice; }
+    public void setTotalPrice(Double totalPrice) { this.totalPrice = totalPrice; }
+    public String getStatus() { return status; }
+    public void setStatus(String status) { this.status = status; }
+    public LocalDateTime getCreatedAt() { return createdAt; }
+    public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
+    public User getUser() { return user; }
+    public void setUser(User user) { this.user = user; }
+    public List<OrderItem> getItems() { return items; }
+    public void setItems(List<OrderItem> items) { this.items = items; }
+}
+
+# src/main/java/com/planteshop/model/entity/OrderItem.java
+
+package com.planteshop.model.entity;
+
+import jakarta.persistence.*;
+
+@Entity
+@Table(name = "order_items")
+public class OrderItem {
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	private Long id;
+
+	private Integer quantity;
+	@Column(nullable = false)
+	private double unitPrice;
+
+	@ManyToOne
+	@JoinColumn(name = "plant_id", foreignKey = @ForeignKey(name = "fk_orderitem_plant", foreignKeyDefinition = "FOREIGN KEY (plant_id) REFERENCES plant(id) ON DELETE CASCADE"))
+	private Plant plant;
+
+	@ManyToOne
+	@JoinColumn(name = "order_id")
+	private CustomerOrder order;
+
+	// Getters, setters
+	public Long getId() {
+		return id;
+	}
+
+	public void setId(Long id) {
+		this.id = id;
+	}
+
+	public Integer getQuantity() {
+		return quantity;
+	}
+
+	public void setQuantity(Integer quantity) {
+		this.quantity = quantity;
+	}
+
+	public Plant getPlant() {
+		return plant;
+	}
+
+	public void setPlant(Plant plant) {
+		this.plant = plant;
+	}
+
+	public CustomerOrder getOrder() {
+		return order;
+	}
+
+	public void setOrder(CustomerOrder order) {
+		this.order = order;
+	}
+
+	public double getUnitPrice() {
+		return unitPrice;
+	}
+
+	public void setUnitPrice(double unitPrice) {
+		this.unitPrice = unitPrice;
+	}
+}
+
+# src/main/java/com/planteshop/model/entity/User.java
+
+package com.planteshop.model.entity;
+
+import com.planteshop.model.enums.RoleType;
+import jakarta.persistence.*;
+
+import java.util.Collection;
+import java.util.List;
+
+import jakarta.validation.constraints.*;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
+
+@Entity
+@Table(name = "users")
+public class User implements UserDetails {
+    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+		@NotBlank(message = "Le nom est obligatoire")
+		private String name;
+
+		@NotBlank(message = "L'email est obligatoire")
+		@Email(message = "Email invalide")
+		private String email;
+
+		@NotBlank(message = "Le mot de passe est obligatoire")
+		@Size(min = 6, message = "Le mot de passe doit contenir au moins 6 caractères")
+		private String password;
+
+    @Enumerated(EnumType.STRING)
+    private RoleType role;
+
+    @OneToMany(mappedBy = "user")
+    private List<CustomerOrder> orders;
+
+		@Override
+    public Collection<? extends GrantedAuthority> getAuthorities() {
+        return List.of(new SimpleGrantedAuthority("ROLE_" + role.name()));
+    }
+    public Long getId() { return id; }
+    public void setId(Long id) { this.id = id; }
+    public String getName() { return name; }
+    public void setName(String name) { this.name = name; }
+    public String getEmail() { return email; }
+    public void setEmail(String email) { this.email = email; }
+    public String getPassword() { return password; }
+    public void setPassword(String password) { this.password = password; }
+    public RoleType getRole() { return role; }
+    public void setRole(RoleType role) { this.role = role; }
+    public List<CustomerOrder> getOrders() { return orders; }
+    public void setOrders(List<CustomerOrder> orders) { this.orders = orders; }
+    @Override public String getUsername() { return email; }
+    @Override public boolean isAccountNonExpired() { return true; }
+    @Override public boolean isAccountNonLocked() { return true; }
+    @Override public boolean isCredentialsNonExpired() { return true; }
+    @Override public boolean isEnabled() { return true; }
+}
+
+# src/main/java/com/planteshop/model/entity/Plant.java
+
+package com.planteshop.model.entity;
+
+import jakarta.persistence.*;
+
+@Entity
+public class Plant {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+    private String name;
+    private String description;
+    private Double price;
+    private String category;
+    private Integer stock;
+
+    // Getters/Setters
+    public Long getId() { return id; }
+    public void setId(Long id) { this.id = id; }
+    public String getName() { return name; }
+    public void setName(String name) { this.name = name; }
+    public String getDescription() { return description; }
+    public void setDescription(String description) { this.description = description; }
+    public Double getPrice() { return price; }
+    public void setPrice(Double price) { this.price = price; }
+    public String getCategory() { return category; }
+    public void setCategory(String category) { this.category = category; }
+    public Integer getStock() { return stock; }
+    public void setStock(Integer stock) { this.stock = stock; }
+}
+
+# src/main/java/com/planteshop/service/impl/UserDetailsServiceImpl.java
+
+package com.planteshop.service.impl;
+
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.stereotype.Service;
+
+import com.planteshop.model.entity.User;
+import com.planteshop.repository.UserRepository;
+
+@Service
+public class UserDetailsServiceImpl implements UserDetailsService {
+
+    private final UserRepository userRepository;
+
+    public UserDetailsServiceImpl(UserRepository userRepository) {
+        this.userRepository = userRepository;
+    }
+
+		public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
+			return userRepository.findByEmail(email)
+						 .orElseThrow(() -> new UsernameNotFoundException("Utilisateur non trouvé"));
+	}
+}
+
+# src/main/java/com/planteshop/controller/admin/AdminPlantController.java
+
+package com.planteshop.controller.admin;
+
+import com.planteshop.model.entity.Plant;
+import org.springframework.data.domain.Sort;
+import com.planteshop.repository.PlantRepository;
+import jakarta.validation.Valid;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.*;
+import java.util.Optional;
+
+@Controller
+@RequestMapping("/admin/plants")
+public class AdminPlantController {
+
+	private final PlantRepository plantRepository;
+
+	public AdminPlantController(PlantRepository plantRepository) {
+		this.plantRepository = plantRepository;
+	}
+
+	@GetMapping
+	public String index(Model model) {
+		model.addAttribute("plants", plantRepository.findAll(Sort.by("name").ascending()));
+		return "admin/plants/index";
+	}
+
+	@GetMapping("/new")
+	public String newPlant(Model model) {
+		model.addAttribute("plant", new Plant());
+		return "admin/plants/new";
+	}
+
+	@PostMapping
+	public String create(@ModelAttribute Plant plant) {
+		plantRepository.save(plant);
+		return "redirect:/admin/plants";
+	}
+
+	@GetMapping("/{id}/edit")
+	public String edit(@PathVariable Long id, Model model) {
+		Optional<Plant> plantOpt = plantRepository.findById(id);
+		if (plantOpt.isEmpty())
+			return "redirect:/admin/plants";
+		model.addAttribute("plant", plantOpt.get());
+		return "admin/plants/edit";
+	}
+
+	@PostMapping("/{id}")
+	public String update(@PathVariable Long id, @ModelAttribute Plant formPlant) {
+		plantRepository.findById(id).ifPresent(plant -> {
+			plant.setName(formPlant.getName());
+			plant.setPrice(formPlant.getPrice());
+			plant.setDescription(formPlant.getDescription());
+			plant.setStock(formPlant.getStock());
+			plant.setCategory(formPlant.getCategory());
+			plantRepository.save(plant);
+		});
+		return "redirect:/admin/plants";
+	}
+
+	@DeleteMapping("/{id}")
+	public String delete(@PathVariable Long id) {
+		plantRepository.deleteById(id);
+		return "redirect:/admin/plants";
+	}
+}
+
+# src/main/java/com/planteshop/controller/admin/AdminUserController.java
+
+package com.planteshop.controller.admin;
+
+import com.planteshop.model.entity.User;
+import com.planteshop.model.enums.RoleType;
+import com.planteshop.repository.UserRepository;
+import jakarta.validation.Valid;
+
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import java.util.Comparator;
+import org.springframework.web.bind.annotation.*;
+import java.util.Optional;
+
+@Controller
+@RequestMapping("/admin/users")
+public class AdminUserController {
+
+	private final UserRepository userRepository;
+
+	public AdminUserController(UserRepository userRepository) {
+		this.userRepository = userRepository;
+	}
+
+	@GetMapping
+	public String index(Model model) {
+		model.addAttribute("users", userRepository.findAll()
+				.stream()
+				.sorted(Comparator.comparing(User::getRole, Comparator.comparing(role -> role != RoleType.ADMIN))
+						.thenComparing(User::getName, String.CASE_INSENSITIVE_ORDER))
+				.toList());
+		return "admin/users/index";
+	}
+
+	@GetMapping("/{id}/edit")
+	public String edit(@PathVariable Long id, Model model) {
+		Optional<User> userOpt = userRepository.findById(id);
+		if (userOpt.isEmpty())
+			return "redirect:/admin/users";
+		model.addAttribute("user", userOpt.get());
+		return "admin/users/edit";
+	}
+
+	@PatchMapping("/{id}")
+	public String update(@PathVariable Long id, @ModelAttribute User formUser) {
+		userRepository.findById(id).ifPresent(user -> {
+			if (formUser.getEmail() != null && !formUser.getEmail().isBlank()) {
+				user.setEmail(formUser.getEmail());
+			}
+			if (formUser.getName() != null && !formUser.getName().isBlank()) {
+				user.setName(formUser.getName());
+			}
+			if (formUser.getRole() != null) {
+				user.setRole(formUser.getRole());
+			}
+			// Récupéreration de l'ancien mot de passe depuis la base de données
+			// et réattribution pour empêcher Hibernate de le mettre à NULL
+			User existingUser = userRepository.findById(id).orElseThrow();
+			user.setPassword(existingUser.getPassword());
+			System.err.println("DEBUG : AdminUserController, @PatchMapping(\"/{id}\"), user : name - " + user.getName()
+					+ ", email - " + user.getEmail() + ", role - " + user.getRole());
+			userRepository.save(user);
+			User userTmp = userRepository.findById(id).orElse(null);
+			if (userTmp != null) {
+				System.err.println("DEBUG : AdminUserController, @PatchMapping(\"/{id}\"), userTmp : name - "
+						+ userTmp.getName() + ", email - " + userTmp.getEmail() + ", role - " + userTmp.getRole());
+			}
+		});
+		SecurityContextHolder.clearContext();
+		return "redirect:/admin/users";
+	}
+
+	@DeleteMapping("/{id}")
+	public String delete(@PathVariable Long id) {
+		userRepository.deleteById(id);
+		return "redirect:/admin/users";
+	}
+}
+
+# src/main/java/com/planteshop/controller/api/ApiPlantController.java
+
+package com.planteshop.controller.api;
+
+import com.planteshop.model.entity.Plant;
+import com.planteshop.repository.PlantRepository;
+import org.springframework.web.bind.annotation.*;
+import java.util.List;
+
+@RestController
+@RequestMapping("/api/plants")
+public class ApiPlantController {
+    private final PlantRepository plantRepository;
+
+    public ApiPlantController(PlantRepository plantRepository) {
+        this.plantRepository = plantRepository;
+    }
+
+    @GetMapping
+    public List<Plant> getAllPlants() {
+        return plantRepository.findAll();
+    }
+
+    @GetMapping("/{id}")
+    public Plant getPlantById(@PathVariable Long id) {
+        return plantRepository.findById(id).orElse(null);
+    }
+
+    @PostMapping
+    public Plant addPlant(@RequestBody Plant plant) {
+        return plantRepository.save(plant);
+    }
+
+    @PutMapping("/{id}")
+    public Plant updatePlant(@PathVariable Long id, @RequestBody Plant plant) {
+        plant.setId(id);
+        return plantRepository.save(plant);
+    }
+
+    @DeleteMapping("/{id}")
+    public void deletePlant(@PathVariable Long id) {
+        plantRepository.deleteById(id);
+    }
+}
+
+# src/main/java/com/planteshop/controller/GlobalControllerAdvice.java
+
+// src/main/java/com/planteshop/controller/GlobalControllerAdvice.java
+package com.planteshop.controller;
+
+import com.planteshop.util.StringUtils;
+import com.planteshop.model.entity.User;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.ControllerAdvice;
+import org.springframework.web.bind.annotation.ModelAttribute;
+
+@ControllerAdvice
+public class GlobalControllerAdvice {
+		@ModelAttribute("loggedUserName")
+		public String loggedUserName(@AuthenticationPrincipal User user) {
+				return (user != null) ? StringUtils.toCapitalCase(user.getName()) : null;
+		}
+}
+
+# src/main/java/com/planteshop/controller/web/OrderController.java
+
+package com.planteshop.controller.web;
+
+import com.planteshop.model.entity.CustomerOrder;
+import com.planteshop.model.entity.OrderItem;
+import com.planteshop.model.entity.Plant;
+import com.planteshop.model.entity.User;
+import com.planteshop.repository.OrderRepository;
+import com.planteshop.repository.PlantRepository;
+
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+
+@Controller
+public class OrderController {
+
+	private final OrderRepository orderRepository;
+	private final PlantRepository plantRepository;
+
+	public OrderController(OrderRepository orderRepository, PlantRepository plantRepository) {
+		this.orderRepository = orderRepository;
+		this.plantRepository = plantRepository;
+	}
+
+	@GetMapping("/orders")
+	public String listOrders(@AuthenticationPrincipal User user, Model model) {
+		List<CustomerOrder> orders = orderRepository.findByUserOrderByIdDesc(user);
+
+		// 🔍 Log temporaire pour vérifier createdAt
+		orders.forEach(o -> System.out.println("DEBUG : OrderController, listOrders - Order ID: " + o.getId() + ", createdAt: " + o.getCreatedAt()));
+
+		model.addAttribute("orders", orders);
+		return "orders/index";
+	}
+
+	@PostMapping("/orders/checkout")
+	public ResponseEntity<String> checkout(@AuthenticationPrincipal User user,
+	                       @RequestBody List<CartItemDto> cartItems) {
+													if (user == null) {
+														return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("NOT_AUTHENTICATED");
+													}
+		CustomerOrder order = new CustomerOrder();
+		order.setUser(user);
+
+		double total = 0;
+
+		for (CartItemDto itemDto : cartItems) {
+
+			Plant plant = plantRepository.findById(itemDto.getId()).orElse(null);
+			if (plant == null || plant.getStock() < itemDto.getQty()) {
+				return ResponseEntity.badRequest().body("Erreur : produit indisponible");
+			}
+
+			plant.setStock(plant.getStock() - itemDto.getQty());
+			plantRepository.save(plant);
+
+			OrderItem item = new OrderItem();
+			item.setPlant(plant);
+			item.setQuantity(itemDto.getQty());
+			item.setUnitPrice(plant.getPrice());
+			item.setOrder(order);
+
+			order.getItems().add(item);
+			total += plant.getPrice() * itemDto.getQty();
+		}
+
+		order.setTotalPrice(total);
+		orderRepository.save(order);
+
+		return ResponseEntity.ok("OK");
+
+	}
+
+	public static class CartItemDto {
+		private Long id;
+		private int qty;
+
+		public Long getId() {
+			return id;
+		}
+
+		public void setId(Long id) {
+			this.id = id;
+		}
+
+		public int getQty() {
+			return qty;
+		}
+
+		public void setQty(int qty) {
+			this.qty = qty;
+		}
+	}
+}
+
+# src/main/java/com/planteshop/controller/web/RequiredArgsConstructor.java
+
+package com.planteshop.controller.web;
+
+public @interface RequiredArgsConstructor {
+
+}
+
+# src/main/java/com/planteshop/controller/web/ProfileController.java
+
+package com.planteshop.controller.web;
+
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import com.planteshop.repository.UserRepository;
+
+import com.planteshop.model.entity.User;
+import com.planteshop.util.StringUtils;
+
+@Controller
+public class ProfileController {
+	private final UserRepository userRepository;
+	private final PasswordEncoder passwordEncoder;
+
+	public ProfileController(UserRepository userRepository, PasswordEncoder passwordEncoder) {
+    this.userRepository = userRepository;
+    this.passwordEncoder = passwordEncoder;
+	}
+
+    @GetMapping("/my_profile")
+    public String profile(@AuthenticationPrincipal User user, Model model) {
+        model.addAttribute("user", user);
+        model.addAttribute("displayName", StringUtils.toCapitalCase(user.getName()));
+        return "profile/profile";
+    }
+
+		/** Formulaire d’édition */
+		@GetMapping("/my_profile/edit")
+    public String edit(@AuthenticationPrincipal User user, Model model) {
+        model.addAttribute("user", user);        // pré‑remplit le formulaire
+        return "profile/profile_edit";
+    }
+
+    /** Traitement du formulaire */
+		@PostMapping("/my_profile/edit")
+		public String update(@ModelAttribute("user") User formUser,
+												 BindingResult result,
+												 @AuthenticationPrincipal User sessionUser) {
+				if (result.hasErrors()) {
+						return "profile/profile_edit";
+				}
+
+				sessionUser.setName(formUser.getName());
+				sessionUser.setEmail(formUser.getEmail());
+
+				if (formUser.getPassword() != null && !formUser.getPassword().isBlank()) {
+						sessionUser.setPassword(passwordEncoder.encode(formUser.getPassword()));
+				}
+
+				userRepository.save(sessionUser);
+				return "redirect:/my_profile?updated";
+		}
+}
+
+# src/main/java/com/planteshop/controller/web/LoginController.java
+
+package com.planteshop.controller.web;
+
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.GetMapping;
+
+@Controller
+public class LoginController {
+
+    @GetMapping("/login")
+    public String login() {
+        return "login"; // Correspond à src/main/resources/templates/login.html
+    }
+}
+
+# src/main/java/com/planteshop/controller/web/CartController.java
+
+package com.planteshop.controller.web;
+
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.GetMapping;
+
+@Controller
+public class CartController {
+
+    @GetMapping("/cart")
+    public String cart() {
+        return "cart";
+    }
+}
+
+# src/main/java/com/planteshop/controller/web/WebPlantController.java
+
+package com.planteshop.controller.web;
+
+import com.planteshop.repository.PlantRepository;
+
+import org.springframework.data.domain.Sort;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+
+@Controller
+public class WebPlantController {
+    private final PlantRepository plantRepository;
+
+    public WebPlantController(PlantRepository plantRepository) {
+        this.plantRepository = plantRepository;
+    }
+
+    @GetMapping("/")
+    public String home() {
+        return "redirect:/plants";
+    }
+
+    @GetMapping("/plants")
+    public String index(Model model) {
+				model.addAttribute("plants", plantRepository.findAll(Sort.by("name").ascending()));
+        return "plants/index";
+    }
+
+    @GetMapping("/plants/{id}")
+    public String show(@PathVariable Long id, Model model) {
+        plantRepository.findById(id).ifPresent(plant -> model.addAttribute("plant", plant));
+        return "plants/show";
+    }
+}
+
+# src/main/java/com/planteshop/controller/web/RegistrationController.java
+
+package com.planteshop.controller.web;
+
+import com.planteshop.model.entity.User;
+import com.planteshop.model.enums.RoleType;
+import com.planteshop.repository.UserRepository;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import jakarta.validation.Valid;
+import org.springframework.validation.BindingResult;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PostMapping;
+
+@Controller
+public class RegistrationController {
+    private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
+
+    public RegistrationController(UserRepository userRepository, PasswordEncoder passwordEncoder) {
+        this.userRepository = userRepository;
+        this.passwordEncoder = passwordEncoder;
+    }
+
+    @GetMapping("/register")
+    public String showRegistrationForm(Model model) {
+        model.addAttribute("user", new User());
+        return "register";
+    }
+
+    @PostMapping("/register")
+    public String registerUser(@Valid @ModelAttribute("user") User user, BindingResult result, Model model) {
+        if (userRepository.findByEmail(user.getEmail()).isPresent()) {
+            result.rejectValue("email", "error.user", "Cet email est déjà utilisé");
+        }
+
+        if (result.hasErrors()) {
+            return "register";
+        }
+
+        user.setPassword(passwordEncoder.encode(user.getPassword()));
+        user.setRole(RoleType.USER);
+        userRepository.save(user);
+
+        return "redirect:/login?registered";
+    }
+}
+
+# src/main/java/com/planteshop/controller/GlobalUserTypeAdvice.java
+
+package com.planteshop.controller;
+
+import com.planteshop.model.entity.User;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.authentication.AnonymousAuthenticationToken;
+
+import org.springframework.web.bind.annotation.ControllerAdvice;
+import org.springframework.web.bind.annotation.ModelAttribute;
+
+@ControllerAdvice
+public class GlobalUserTypeAdvice {
+	@ModelAttribute("userRole")
+	public String userRole(Authentication authentication) {
+
+			if (authentication == null                       // pas de session
+					|| !authentication.isAuthenticated()         // pas encore validée
+					|| authentication instanceof AnonymousAuthenticationToken) {
+					return "visitor";
+			}
+
+			// on sait qu’on a notre entité User comme Principal
+			User user = (User) authentication.getPrincipal();
+			return user.getRole().name().toLowerCase();
+	}
+}
+
+# src/main/java/com/planteshop/controller/RoleType.java
+
+package com.planteshop.controller;
+
+public enum RoleType {
+    VISITOR,
+    USER,
+    ADMIN
+}
+
+# src/main/java/com/planteshop/config/SecurityConfig.java
+
+package com.planteshop.config;
+
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.web.SecurityFilterChain;
+
+@Configuration
+@EnableWebSecurity
+public class SecurityConfig {
+
+	@Bean
+	public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+		http
+				.csrf(csrf -> csrf.disable())
+				.authorizeHttpRequests(auth -> auth
+						.requestMatchers(
+								"/",
+								"/favicon.svg",
+								"/favicon.ico",
+								"/plants",
+								"/plants/**",
+								"/css/**",
+								"/js/**",
+								"/webjars/**",
+								"/login",
+
+								"/register",
+								"/api/plants/**",
+								"/cart/**")
+
+						.permitAll()
+						.requestMatchers("/admin/**").hasRole("ADMIN")
+						.requestMatchers("/orders/**", "/my_profile/**").authenticated()
+						.anyRequest().permitAll() // Modifié pour permettre l'accès à tout le reste
+				)
+				.formLogin(form -> form
+						.loginPage("/login")
+						.usernameParameter("email")
+						.defaultSuccessUrl("/plants") // Page après login réussi
+						.permitAll())
+				.logout(logout -> logout
+						.logoutSuccessUrl("/") // Page après logout
+						.permitAll());
+
+		return http.build();
+	}
+
+	@Bean
+	public PasswordEncoder passwordEncoder() {
+		return new BCryptPasswordEncoder();
+	}
+}
+
+# src/main/java/com/planteshop/seed/DatabaseSeeder.java
+
+package com.planteshop.seed;
+
+import java.io.FileWriter;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
+import org.springframework.boot.CommandLineRunner;
+import org.springframework.context.annotation.Profile;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Component;
+
+import com.planteshop.model.entity.Plant;
+import com.planteshop.model.entity.User;
+import com.planteshop.model.enums.RoleType;
+import com.planteshop.repository.PlantRepository;
+import com.planteshop.repository.UserRepository;
+
+import net.datafaker.Faker;
+
+@Component
+@Profile({ "seed", "init" })
+public class DatabaseSeeder implements CommandLineRunner {
+
+	private final PlantRepository plantRepository;
+	private final UserRepository userRepository;
+	private final PasswordEncoder passwordEncoder;
+	private final Faker faker = new Faker();
+
+	private final List<Credential> credentials = new ArrayList<>();
+
+	private static final List<String> PLANT_NAMES = Arrays.asList(
+			"Rose", "Tulipe", "Lavande", "Orchidée", "Basilic",
+			"Menthe", "Pivoine", "Tournesol", "Cactus", "Bambou");
+	private static final List<String> PLANT_CATEGORIES = Arrays.asList("intérieur", "extérieur");
+
+	private static final int NB_PLANTS = 30;
+	private static final int NB_ADMINS = 3;
+	private static final int NB_USERS = 15;
+
+	public DatabaseSeeder(PlantRepository plantRepository,
+			UserRepository userRepository,
+			PasswordEncoder passwordEncoder) {
+		this.plantRepository = plantRepository;
+		this.userRepository = userRepository;
+		this.passwordEncoder = passwordEncoder;
+	}
+
+	@Override
+	public void run(String... args) throws Exception {
+		// Suppression explicite des données existantes (ordre important à respecter)
+		plantRepository.deleteAll();
+		userRepository.deleteAll();
+
+		List<User> users = createUsers();
+		users.addAll(createFixedAdmins());
+		createPlants();
+		generateUsersFile();
+		System.out.println("Database seeded successfully!");
+	}
+
+	private List<User> createUsers() {
+		List<User> users = new ArrayList<>();
+
+		for (int i = 0; i < NB_ADMINS; i++) {
+			users.add(createUser(true));
+		}
+
+		for (int i = 0; i < NB_USERS; i++) {
+			users.add(createUser(false));
+		}
+
+		return userRepository.saveAll(users);
+	}
+
+	private User createUser(boolean isAdmin) {
+		String name = faker.name().fullName();
+		String email = generateEmailFromName(name);
+		String rawPassword = faker.color().name().replaceAll("\\s+", "").toLowerCase()
+				+ faker.animal().name().replaceAll("\\s+", "").toLowerCase()
+				+ faker.number().numberBetween(10, 99);
+
+		User user = new User();
+		user.setName(name);
+		user.setEmail(email);
+		user.setPassword(passwordEncoder.encode(rawPassword));
+		user.setRole(isAdmin ? RoleType.ADMIN : RoleType.USER);
+
+		credentials.add(new Credential(email, rawPassword, isAdmin));
+		System.err.println("DEBUG : 📝 Créé : " + email + " | " + rawPassword + " | role=" + (isAdmin ? "ADMIN" : "USER"));
+
+		return user;
+	}
+
+	private User createFixedAdmin(String username, String rawPassword) {
+		User user = new User();
+		user.setName(username);
+		user.setEmail(username + "@planteshop.com");
+		user.setPassword(passwordEncoder.encode(rawPassword));
+		user.setRole(RoleType.ADMIN);
+
+		credentials.add(new Credential(user.getEmail(), rawPassword, true));
+		System.err.println("DEBUG : 📝 Admin fixe : " + user.getEmail() + " | " + rawPassword);
+
+		return user;
+	}
+
+	private List<User> createFixedAdmins() {
+		List<User> fixedAdmins = new ArrayList<>();
+
+		fixedAdmins.add(createFixedAdmin("admin_exemple_1", "password"));
+		fixedAdmins.add(createFixedAdmin("admin_exemple_2", "password"));
+		fixedAdmins.add(createFixedAdmin("admin_exemple_3", "password"));
+
+		return userRepository.saveAll(fixedAdmins);
+	}
+
+	private String generateEmailFromName(String name) {
+		String slug = name.trim().toLowerCase().replaceAll("[^a-z ]", "").replaceAll("\\s+", ".");
+		return slug + "@planteshop.com";
+	}
+
+	private void createPlants() {
+		List<Plant> plants = new ArrayList<>();
+
+		for (int i = 0; i < NB_PLANTS; i++) {
+			Plant plant = new Plant();
+			plant.setName(PLANT_NAMES.get(i % PLANT_NAMES.size()) + " " + (i + 1));
+			plant.setDescription("Magnifique " + PLANT_NAMES.get(i % PLANT_NAMES.size()).toLowerCase());
+			plant.setPrice(5 + (i * 2.5));
+			plant.setCategory(PLANT_CATEGORIES.get(i % PLANT_CATEGORIES.size()));
+			plant.setStock(10 + i);
+			plants.add(plant);
+		}
+
+		plantRepository.saveAll(plants);
+	}
+
+	private void generateUsersFile() throws IOException {
+		try (FileWriter writer = new FileWriter("users.txt")) {
+			writer.write("=== ADMINS ===\n");
+			credentials.stream()
+					.filter(Credential::isAdmin)
+					.forEach(c -> writeCredential(writer, c));
+
+			writer.write("\n=== USERS ===\n");
+			credentials.stream()
+					.filter(c -> !c.isAdmin())
+					.forEach(c -> writeCredential(writer, c));
+		}
+	}
+
+	private void writeCredential(FileWriter writer, Credential c) {
+		try {
+			writer.write(c.email + " " + c.password + "\n");
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+
+	private static class Credential {
+		String email;
+		String password;
+		boolean admin;
+
+		public Credential(String email, String password, boolean admin) {
+			this.email = email;
+			this.password = password;
+			this.admin = admin;
+		}
+
+		public boolean isAdmin() {
+			return admin;
+		}
+	}
+}
+
+# src/main/java/com/planteshop/util/StringUtils.java
+
+package com.planteshop.util;
+
+public class StringUtils {
+    public static String toCapitalCase(String text) {
+        if (text == null || text.isEmpty()) {
+            return text;
+        }
+
+        String[] words = text.split("\\s+");
+        StringBuilder result = new StringBuilder();
+
+        for (String word : words) {
+            if (!word.isEmpty()) {
+                result.append(Character.toUpperCase(word.charAt(0)))
+                      .append(word.substring(1).toLowerCase())
+                      .append(" ");
+            }
+        }
+
+        return result.toString().trim();
+    }
+}
+
+# src/main/java/com/planteshop/PlantShopApplication.java
+
+package com.planteshop;
+
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.context.annotation.Bean;
+import org.springframework.web.filter.HiddenHttpMethodFilter;
+
+@SpringBootApplication
+public class PlantShopApplication {
+	public static void main(String[] args) {
+		SpringApplication.run(PlantShopApplication.class, args);
+	}
+
+	@Bean
+	public HiddenHttpMethodFilter hiddenHttpMethodFilter() {
+		return new HiddenHttpMethodFilter();
+	}
+}
+
+# pom.xml
+
+<project>
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-parent</artifactId>
+        <version>3.1.5</version>
+    </parent>
+
+    <groupId>com.planteshop</groupId>
+    <artifactId>plant-shop-jpa-spring-boot-hibernate-security</artifactId>
+    <version>1.0.0</version>
+
+    <dependencies>
+        <!-- PostgreSQL -->
+        <dependency>
+            <groupId>org.postgresql</groupId>
+            <artifactId>postgresql</artifactId>
+            <version>42.7.3</version>
+            <!-- <scope>runtime</scope> -->
+        </dependency>
+
+        <!-- Faker (pour la seed) -->
+        <dependency>
+            <groupId>net.datafaker</groupId>
+            <artifactId>datafaker</artifactId>
+            <version>2.0.2</version>
+        </dependency>
+
+        <!-- Web + Thymeleaf -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-thymeleaf</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>nz.net.ultraq.thymeleaf</groupId>
+            <artifactId>thymeleaf-layout-dialect</artifactId>
+            <version>3.0.0</version>
+        </dependency>
+				<dependency>
+    		<groupId>org.thymeleaf.extras</groupId>
+						<artifactId>thymeleaf-extras-springsecurity6</artifactId>
+				</dependency>
+
+        <!-- JPA + Hibernate -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-jpa</artifactId>
+        </dependency>
+
+        <!-- Security -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-security</artifactId>
+        </dependency>
+
+        <!-- Bootstrap -->
+        <dependency>
+            <groupId>org.webjars</groupId>
+            <artifactId>bootstrap</artifactId>
+            <version>5.3.2</version>
+        </dependency>
+        <dependency>
+            <groupId>org.webjars</groupId>
+            <artifactId>webjars-locator</artifactId>
+            <version>0.46</version>
+        </dependency>
+
+        <!-- Rechargement automatique -->
+        <!-- <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-devtools</artifactId>
+            <optional>true</optional>
+        </dependency> -->
+
+        <!-- Bean Validation API -->
+        <dependency>
+            <groupId>jakarta.validation</groupId>
+            <artifactId>jakarta.validation-api</artifactId>
+            <version>3.0.2</version>
+        </dependency>
+
+        <!-- Hibernate Validator (implémentation) -->
+        <dependency>
+            <groupId>org.hibernate.validator</groupId>
+            <artifactId>hibernate-validator</artifactId>
+            <version>8.0.1.Final</version>
+        </dependency>
+
+        <!-- Lombok -->
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <version>1.18.30</version>
+            <scope>provided</scope>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+            </plugin>
+        </plugins>
+    </build>
+</project>
+
 # Tree du dossier
 
 .
