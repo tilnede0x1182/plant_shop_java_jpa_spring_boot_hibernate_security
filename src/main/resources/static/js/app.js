@@ -31,4 +31,5 @@ document.addEventListener("DOMContentLoaded", () => {
 		(e) => e.key === "cart" && CartManager.refreshUI()
 	);
 });
+window.refreshCart = () => CartManager.refreshUI();
 window.refreshUI = () => CartManager.refreshUI();

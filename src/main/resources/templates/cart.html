@@ -38,132 +38,15 @@
 				</table>
 			</div>
 
-			<div class="text-start">
-				<form id="checkoutForm">
+			<div class="d-flex justify-content-between align-items-center mt-4">
+				<button type="button" class="btn btn-outline-secondary" id="clearCart">Vider le panier</button>
+				<form id="checkoutForm" class="mb-0">
 					<button type="submit" class="btn btn-success">Terminer la commande</button>
 				</form>
-				<div id="checkoutMessage" class="mt-3"></div>
 			</div>
+			<div id="checkoutMessage" class="mt-3"></div>
+
 		</section>
-		<script>
-			document.addEventListener('DOMContentLoaded', () => {
-				const body = document.getElementById('cartBody');
-				const totalE = document.getElementById('cartTotal');
-				const countE = document.querySelectorAll('.cart-count');
-
-				const load = () => JSON.parse(localStorage.getItem('cart') || '[]');
-				const save = c => localStorage.setItem('cart', JSON.stringify(c));
-
-				function render() {
-					const cart = load();
-					body.innerHTML = '';
-					let total = 0;
-
-					if (cart.length === 0) {
-						body.innerHTML = '<tr><td colspan="5" class="text-center">Votre panier est vide.</td></tr>';
-					} else {
-						cart.forEach((item, i) => {
-							const sub = item.price * item.qty;
-							total += sub;
-							body.insertAdjacentHTML('beforeend', `
-							<tr>
-								<td><a href="/plants/${item.id}" class="product-link">${item.name}</a></td>
-								<td>${item.price.toFixed(2)}</td>
-								<td>
-									<input type="number"
-										min="1"
-										onkeydown="return event.key !== 'e' && event.key !== '-'"
-										value="${item.qty}"
-										class="form-control form-control-sm qty-input"
-										style="width:80px;" data-i="${i}">
-								</td>
-								<td>${sub.toFixed(2)}</td>
-								<td><button class="btn btn-sm btn-danger" data-i="${i}">✕</button></td>
-							</tr>
-						`);
-						});
-						body.querySelectorAll('.qty-input').forEach(input => {
-							input.addEventListener('input', updateQty);
-							input.addEventListener('blur', updateQty);
-						});
-					}
-					totalE.textContent = total.toFixed(2);
-					countE.forEach(e => e.textContent = cart.reduce((s, it) => s + it.qty, 0));
-				}
-
-				body.addEventListener('click', e => {
-					if (e.target.matches('button[data-i]')) {
-						const cart = load();
-						cart.splice(e.target.dataset.i, 1);
-						save(cart);
-						render();
-					}
-				});
-
-				document.getElementById('checkoutForm')?.addEventListener('submit', async e => {
-					e.preventDefault();
-
-					if ("[[${userRole}]]" === "visitor") {
-						window.location.href = "/login";
-						return;
-					}
-
-					const cart = JSON.parse(localStorage.getItem('cart') || '[]');
-					const msgEl = document.getElementById('checkoutMessage');
-					msgEl.className = 'alert d-none';
-
-					if (cart.length === 0) {
-						msgEl.textContent = "Votre panier est vide.";
-						msgEl.className = "alert alert-danger";
-						return;
-					}
-
-					try {
-						const res = await fetch('/orders/checkout', {
-							method: 'POST',
-							headers: {'Content-Type': 'application/json'},
-							body: JSON.stringify(cart)
-						});
-						const text = await res.text();
-
-						if (res.ok && text === "OK") {
-							localStorage.removeItem('cart');
-							refreshCart();
-							msgEl.textContent = "Commande validée ! Redirection…";
-							msgEl.className = "alert alert-success";
-							setTimeout(() => window.location.href = "/orders", 0);
-						} else {
-							msgEl.textContent = "Erreur lors de la commande : " + text;
-							msgEl.className = "alert alert-danger";
-						}
-					} catch (err) {
-						msgEl.textContent = "Erreur réseau.";
-						msgEl.className = "alert alert-danger";
-					}
-				});
-
-				let qtyTimer;
-				function updateQty(e) {
-					clearTimeout(qtyTimer);
-					qtyTimer = setTimeout(() => {
-						const i = e.target.dataset.i;
-						let val = parseInt(e.target.value);
-						if (isNaN(val) || val < 1) val = 1;
-						e.target.value = val;
-						const cart = load();
-						cart[i].qty = val;
-						save(cart);
-						render();
-					}, 300);
-				}
-
-				render();
-				body.querySelectorAll('.qty-input').forEach(input => {
-					input.addEventListener('input', updateQty);
-					input.addEventListener('blur', updateQty);
-				}); g
-			});
-		</script>
 		<script th:src="@{/js/cart.js}"></script>
 	</div>
 </body>
