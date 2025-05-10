@@ -1,46 +1,60 @@
+/**
+ * Catalogue des plantes affichées, gestion de l’ajout au panier.
+ * @class PlantCatalog
+ */
 class PlantCatalog {
-  static init() {
-    document.querySelectorAll('.add-to-cart').forEach(btn => {
-      btn.addEventListener('click', e => {
-        e.stopPropagation();   // bloque la remontée vers l’élément <a>
-        e.preventDefault();    // annule la navigation
+	/**
+	 * Initialise les boutons d’ajout au panier sur chaque fiche plante.
+	 * Bloque la navigation via <a>, puis ajoute la plante au panier.
+	 */
+	static init() {
+		document.querySelectorAll(".add-to-cart").forEach((btn) => {
+			btn.addEventListener("click", (e) => {
+				e.stopPropagation(); // empêche la propagation vers le lien parent
+				e.preventDefault(); // empêche la navigation
 
-        const id = btn.dataset.id;
-        const name = btn.dataset.name;
-        const price = parseFloat(btn.dataset.price);
+				const id = btn.dataset.id;
+				const name = btn.dataset.name;
+				const price = parseFloat(btn.dataset.price);
+				const stock = parseInt(btn.dataset.stock);
 
-        const cart = JSON.parse(localStorage.getItem('cart') || '[]');
-        const item = cart.find(i => i.id == id);
-        item ? item.qty++ : cart.push({id, name, price, qty: 1});
-        localStorage.setItem('cart', JSON.stringify(cart));
-        refreshUI();
-      });
-    });
-  }
+				CartManager.add(id, name, price, stock);
+			});
+		});
+	}
 
-  static addToCart(event) {
-    const btn = event.currentTarget;
-    const plant = {
-      id: btn.dataset.id,
-      name: btn.dataset.name,
-      price: parseFloat(btn.dataset.price),
-      qty: 1
-    };
+	/**
+	 * Ajoute une plante au panier via bouton personnalisé.
+	 * @param {Event} event événement déclenché par le bouton
+	 */
+	static addToCart(event) {
+		const btn = event.currentTarget;
 
-    let cart = CartManager.load();
-    const existing = cart.find(item => item.id === plant.id);
+		/** @type {{id: string, name: string, price: number, qty: number}} */
+		const plant = {
+			id: btn.dataset.id,
+			name: btn.dataset.name,
+			price: parseFloat(btn.dataset.price),
+			qty: 1,
+		};
 
-    if (existing) {
-      existing.qty += 1;
-    } else {
-      cart.push(plant);
-    }
+		let cart = CartManager.load();
+		const existing = cart.find((item) => item.id === plant.id);
 
-    CartManager.save(cart);
-    CartManager.refreshUI();
-  }
+		if (existing) {
+			existing.qty += 1;
+		} else {
+			cart.push(plant);
+		}
+
+		CartManager.save(cart);
+		CartManager.refreshUI();
+	}
 }
 
-document.addEventListener('DOMContentLoaded', () => {
-  PlantCatalog.init();
+/**
+ * Initialise le catalogue à chargement de la page.
+ */
+document.addEventListener("DOMContentLoaded", () => {
+	PlantCatalog.init();
 });
