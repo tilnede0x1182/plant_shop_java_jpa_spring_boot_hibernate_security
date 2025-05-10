@@ -22,17 +22,20 @@
 					<p class="card-text">
 						<!-- <span th:text="${order.createdAt}">date</span> -->
 						<!-- <span th:text="${#temporals.format(order.createdAt, 'dd/MM/yyyy à HH:mm')}">date</span> -->
-						Passée le <span th:text="${order.createdAt != null ? #temporals.format(order.createdAt, 'dd/MM/yyyy HH:mm') : 'Date inconnue'}">date</span> –
+						Passée le <span
+							th:text="${order.createdAt != null ? #temporals.format(order.createdAt, 'dd/MM/yyyy HH:mm') : 'Date inconnue'}">date</span>
+						–
 						Total : <strong th:text="${#numbers.formatDecimal(order.totalPrice, 1, 'POINT', 2, 'POINT')} + ' €'">0.00
 							€</strong>
 					</p>
 
 					<ul>
 						<li th:each="item : ${order.items}">
-							<span th:text="${item.plant.name}">Nom</span> ×
-							<span th:text="${item.quantity}">1</span>
+							<a th:href="@{'/plants/' + ${item.plant.id}}" th:text="${item.plant.name}">Plante</a>
+							× <span th:text="${item.quantity}">1</span>
 						</li>
 					</ul>
+
 				</div>
 			</div>
 		</main>
