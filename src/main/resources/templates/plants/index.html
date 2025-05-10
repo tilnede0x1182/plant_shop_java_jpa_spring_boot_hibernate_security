@@ -35,26 +35,6 @@
 		</section>
 		<script>
 			document.addEventListener('DOMContentLoaded', () => {
-				const load = () => JSON.parse(localStorage.getItem('cart') || '[]');
-				const save = c => localStorage.setItem('cart', JSON.stringify(c));
-
-				// Bouton ajouter au panier
-				document.querySelectorAll('.add-to-cart').forEach(btn => {
-					btn.addEventListener('click', e => {
-						e.stopPropagation();   // bloque la remontée vers l’élément <a>
-						e.preventDefault();    // annule la navigation
-						const id = btn.dataset.id;
-						const name = btn.dataset.name;
-						const price = parseFloat(btn.dataset.price);
-
-						const cart = load();
-						const item = cart.find(i => i.id == id);
-						item ? item.qty++ : cart.push({id, name, price, qty: 1});
-						save(cart);
-						refreshCart();                 // fonction déjà définie dans base.html
-					});
-				});
-
 				// Navigation vers la fiche plante
 				document.querySelectorAll('.plant-card').forEach(card => {
 					card.addEventListener('click', () => {
@@ -64,6 +44,7 @@
 				});
 			});
 		</script>
+		<script th:src="@{/js/plants.js}"></script>
 	</div>
 </body>
 
