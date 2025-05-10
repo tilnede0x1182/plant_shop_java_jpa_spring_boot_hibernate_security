@@ -19,16 +19,16 @@ class CartManager {
 	 * @param {number} stock quantité disponible
 	 */
 	static add(id, name, price, stock) {
-    // console.log("[CartManager.add] received stock =", stock);
+		// console.log("[CartManager.add] received stock =", stock);
 		const cart = this.load();
 		const existing = cart.find((item) => item.id == id);
 		if (existing) {
-      // console.log("[CartManager.add] item exists, current qty =", existing.qty, "stock (before) =", existing.stock);
+			// console.log("[CartManager.add] item exists, current qty =", existing.qty, "stock (before) =", existing.stock);
 			existing.qty += 1;
-      existing.stock = stock;
-      // console.log("[CartManager.add] stock updated to =", existing.stock);
+			existing.stock = stock;
+			// console.log("[CartManager.add] stock updated to =", existing.stock);
 		} else {
-      // console.log("[CartManager.add] new item added with stock =", stock);
+			// console.log("[CartManager.add] new item added with stock =", stock);
 			cart.push({ id, name, price, qty: 1, stock });
 		}
 		this.save(cart);
@@ -60,7 +60,10 @@ class CartManager {
 			.querySelectorAll(".cart-count")
 			.forEach((el) => (el.textContent = count));
 		const link = document.getElementById("cart-link");
-		if (link) link.textContent = `Panier (${count})`;
+		if (link) {
+      console.log("mise à jour du chiffre du panier")
+			link.innerHTML = count > 0 ? `Mon Panier (${count})` : `Mon Panier`;
+		}
 	}
 }
 
