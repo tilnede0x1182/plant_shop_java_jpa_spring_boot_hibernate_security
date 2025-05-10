@@ -142,17 +142,19 @@
 					}
 				});
 
+				let qtyTimer;
 				function updateQty(e) {
-					const i = e.target.dataset.i;
-					let val = parseInt(e.target.value);
-
-					if (isNaN(val) || val < 1) val = 1;
-					e.target.value = val;
-
-					const cart = load();
-					cart[i].qty = val;
-					save(cart);
-					render();
+					clearTimeout(qtyTimer);
+					qtyTimer = setTimeout(() => {
+						const i = e.target.dataset.i;
+						let val = parseInt(e.target.value);
+						if (isNaN(val) || val < 1) val = 1;
+						e.target.value = val;
+						const cart = load();
+						cart[i].qty = val;
+						save(cart);
+						render();
+					}, 300);
 				}
 
 				render();

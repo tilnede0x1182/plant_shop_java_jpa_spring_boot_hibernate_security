@@ -3700,7 +3700,9 @@ public class PlantShopApplication {
 │   │       │   ├── favicon.ico
 │   │       │   ├── index.html
 │   │       │   └── js
-│   │       │       └── app.js
+│   │       │       ├── app.js
+│   │       │       ├── cart.js
+│   │       │       └── plants.js
 │   │       └── templates
 │   │           ├── admin
 │   │           │   ├── plants
@@ -3792,7 +3794,9 @@ public class PlantShopApplication {
 │   │   │   ├── favicon.ico
 │   │   │   ├── index.html
 │   │   │   └── js
-│   │   │       └── app.js
+│   │   │       ├── app.js
+│   │   │       ├── cart.js
+│   │   │       └── plants.js
 │   │   └── templates
 │   │       ├── admin
 │   │       │   ├── plants
@@ -3838,4 +3842,4 @@ public class PlantShopApplication {
 ├── tmp.txt
 └── users.txt
 
-95 directories, 111 files
+95 directories, 115 files
