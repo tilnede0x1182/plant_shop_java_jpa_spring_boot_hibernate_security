@@ -46,29 +46,7 @@
 			</div>
 		</div>
 	</div>
-
-	<script>
-		document.addEventListener('DOMContentLoaded', () => {
-			const load = () => JSON.parse(localStorage.getItem('cart') || '[]');
-			const save = c => localStorage.setItem('cart', JSON.stringify(c));
-
-			const btn = document.querySelector('.add-to-cart');
-			if (btn) {
-				btn.addEventListener('click', e => {
-					e.preventDefault();
-					const id = btn.dataset.id;
-					const name = btn.dataset.name;
-					const price = parseFloat(btn.dataset.price);
-
-					const cart = load();
-					const item = cart.find(i => i.id == id);
-					item ? item.qty++ : cart.push({id, name, price, qty: 1});
-					save(cart);
-					refreshCart();
-				});
-			}
-		});
-	</script>
+	<script th:src="@{/js/plants.js}"></script>
 </div>
 
 </html>

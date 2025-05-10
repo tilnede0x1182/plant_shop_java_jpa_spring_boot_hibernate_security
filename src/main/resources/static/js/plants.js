@@ -1,7 +1,21 @@
 class PlantCatalog {
   static init() {
-    document.querySelectorAll('.add-to-cart')
-      .forEach(btn => btn.addEventListener('click', e => this.addToCart(e)));
+    document.querySelectorAll('.add-to-cart').forEach(btn => {
+      btn.addEventListener('click', e => {
+        e.stopPropagation();   // bloque la remontée vers l’élément <a>
+        e.preventDefault();    // annule la navigation
+
+        const id = btn.dataset.id;
+        const name = btn.dataset.name;
+        const price = parseFloat(btn.dataset.price);
+
+        const cart = JSON.parse(localStorage.getItem('cart') || '[]');
+        const item = cart.find(i => i.id == id);
+        item ? item.qty++ : cart.push({id, name, price, qty: 1});
+        localStorage.setItem('cart', JSON.stringify(cart));
+        refreshUI();
+      });
+    });
   }
 
   static addToCart(event) {
