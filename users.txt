@@ -1,24 +1,24 @@
 === ADMINS ===
-damian.kutch.sr@planteshop.com magentagoldfish20
-idalia.beahan@planteshop.com limehare48
-yolande.ritchie@planteshop.com skybluekangaroo76
+mitch.yundt@planteshop.com tealplatypus92
+kenneth.graham@planteshop.com azurewallaby89
+mrs.glen.beier@planteshop.com whitehamster17
 admin_exemple_1@planteshop.com password
 admin_exemple_2@planteshop.com password
 admin_exemple_3@planteshop.com password
 
 === USERS ===
-jesusa.conroy.iv@planteshop.com skybluespider91
-elizebeth.pfeffer@planteshop.com orchidwaterbuffalo19
-jerry.okeefe@planteshop.com salmonpug19
-priscilla.kassulke@planteshop.com salmonyak93
-scot.rowe@planteshop.com ivoryyak14
-gregorio.parisian.dvm@planteshop.com azuretermite50
-jeffrey.wintheiser.jr@planteshop.com magentabadger57
-althea.heaney@planteshop.com fuchsiawhale59
-rory.brekke@planteshop.com silverdolphin19
-jayson.towne@planteshop.com salmonrhinoceros98
-morton.gerlach.dds@planteshop.com blackcamel85
-kortney.boyle@planteshop.com orchidcricket81
-lupe.walker.dds@planteshop.com plumsalmon91
-sung.schneider@planteshop.com purplefrog58
-otis.kovacek@planteshop.com silverlouse52
+kacey.spencer.i@planteshop.com limeeagle86
+elinore.stiedemann@planteshop.com indigowoodchuck97
+teresia.koch@planteshop.com pinkhippopotamus48
+columbus.maggio@planteshop.com violetfish75
+rex.keebler@planteshop.com silveryak50
+leonel.cartwright@planteshop.com turquoisedonkey53
+roslyn.bayer@planteshop.com indigotortoise67
+dr.rob.kautzer@planteshop.com azureclam67
+ariel.beier@planteshop.com orangebee15
+garland.heaney@planteshop.com greyjellyfish94
+lilian.boehm@planteshop.com yellowtortoise10
+mrs.parthenia.conroy@planteshop.com greenyellowjacket29
+scott.von@planteshop.com limemammoth47
+hector.jakubowski@planteshop.com bluehound83
+jami.miller@planteshop.com bluerat89
