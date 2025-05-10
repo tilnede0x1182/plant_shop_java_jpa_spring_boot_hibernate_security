@@ -14,6 +14,30 @@ class CartManager {
 	}
 
 	/**
+	 * Ajoute une plante au panier, avec gestion du stock initial.
+	 * @param {string|number} id identifiant unique de la plante
+	 * @param {string} name nom de la plante
+	 * @param {number} price prix unitaire
+	 * @param {number} stock quantité disponible
+	 */
+	static add(id, name, price, stock) {
+    console.log("[CartManager.add] received stock =", stock);
+		const cart = this.load();
+		const existing = cart.find((item) => item.id == id);
+		if (existing) {
+      console.log("[CartManager.add] item exists, current qty =", existing.qty, "stock (before) =", existing.stock);
+			existing.qty += 1;
+      existing.stock = stock;
+      console.log("[CartManager.add] stock updated to =", existing.stock);
+		} else {
+      console.log("[CartManager.add] new item added with stock =", stock);
+			cart.push({ id, name, price, qty: 1, stock });
+		}
+		this.save(cart);
+		this.refreshUI();
+	}
+
+	/**
 	 * Sauvegarde le panier dans le localStorage
 	 * @param {Array<Object>} cart liste des articles à sauvegarder
 	 */
@@ -90,6 +114,7 @@ class PlantCatalog {
 				const price = parseFloat(btn.dataset.price);
 				const stock = parseInt(btn.dataset.stock);
 
+        console.log("[plants.js] btn.dataset.stock =", btn.dataset.stock);
 				CartManager.add(id, name, price, stock);
 			});
 		});
@@ -165,24 +190,6 @@ class CartPage {
 		this.body.addEventListener("click", (e) => this.handleRemove(e));
 
 		this.render();
-	}
-
-	/**
-	 * Ajoute une plante au panier, avec gestion du stock initial.
-	 * @param {string|number} id identifiant unique de la plante
-	 * @param {string} name nom de la plante
-	 * @param {number} price prix unitaire
-	 * @param {number} stock quantité disponible en stock
-	 */
-	static add(id, name, price, stock) {
-		const cart = this.get();
-		if (cart[id]) {
-			cart[id].qty += 1;
-		} else {
-			cart[id] = { id, name, price, qty: 1, stock };
-		}
-		this.save(cart);
-		this.refreshUI();
 	}
 
 	/**
@@ -268,8 +275,9 @@ class CartPage {
 			timer = setTimeout(() => {
 				const cart = CartManager.load();
 				const id = input.dataset.cartId;
+        console.log("[cart.js] input.dataset.stock =", input.dataset.stock);
 				const stock = parseInt(input.dataset.stock) || 1;
-				console.log("stock = " + stock);
+        console.log("[cart.js] parsed stock =", stock);
 				let val = parseInt(input.value);
 				if (isNaN(val)) console.log("val is NaN, val = " + val);
 				if (isNaN(val) || val < 1) val = 1;
@@ -802,7 +810,7 @@ document.addEventListener("DOMContentLoaded", () => {
 				<div class="d-flex flex-wrap gap-2">
 					<a href="/plants" class="btn btn-secondary">Retour à la page d'acceuil</a>
 					<button type="button" class="btn btn-success add-to-cart" th:data-id="${plant.id}"
-						th:data-name="${plant.name}" th:data-price="${plant.price}">
+						th:data-name="${plant.name}" th:data-price="${plant.price}" th:data-stock="${plant.stock}">
 						Ajouter au panier
 					</button>
 					<div th:if="${userRoleString == 'admin'}" class="d-flex gap-2">
@@ -1149,7 +1157,7 @@ document.addEventListener("DOMContentLoaded", () => {
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<!-- Icône du site -->
-	<link rel="icon" href="/favicon.ico" type="image/x-icon"/>
+	<link rel="icon" href="/favicon.ico" type="image/x-icon" />
 
 	<title>PlantShop | [[${title}]]</title>
 
@@ -1178,7 +1186,7 @@ document.addEventListener("DOMContentLoaded", () => {
 		<script th:src="@{/js/app.js}"></script>
 	</th:block>
 
-	</body>
+</body>
 
 </html>
 
@@ -1533,6 +1541,30 @@ class CartManager {
 	}
 
 	/**
+	 * Ajoute une plante au panier, avec gestion du stock initial.
+	 * @param {string|number} id identifiant unique de la plante
+	 * @param {string} name nom de la plante
+	 * @param {number} price prix unitaire
+	 * @param {number} stock quantité disponible
+	 */
+	static add(id, name, price, stock) {
+    console.log("[CartManager.add] received stock =", stock);
+		const cart = this.load();
+		const existing = cart.find((item) => item.id == id);
+		if (existing) {
+      console.log("[CartManager.add] item exists, current qty =", existing.qty, "stock (before) =", existing.stock);
+			existing.qty += 1;
+      existing.stock = stock;
+      console.log("[CartManager.add] stock updated to =", existing.stock);
+		} else {
+      console.log("[CartManager.add] new item added with stock =", stock);
+			cart.push({ id, name, price, qty: 1, stock });
+		}
+		this.save(cart);
+		this.refreshUI();
+	}
+
+	/**
 	 * Sauvegarde le panier dans le localStorage
 	 * @param {Array<Object>} cart liste des articles à sauvegarder
 	 */
@@ -1609,6 +1641,7 @@ class PlantCatalog {
 				const price = parseFloat(btn.dataset.price);
 				const stock = parseInt(btn.dataset.stock);
 
+        console.log("[plants.js] btn.dataset.stock =", btn.dataset.stock);
 				CartManager.add(id, name, price, stock);
 			});
 		});
@@ -1684,24 +1717,6 @@ class CartPage {
 		this.body.addEventListener("click", (e) => this.handleRemove(e));
 
 		this.render();
-	}
-
-	/**
-	 * Ajoute une plante au panier, avec gestion du stock initial.
-	 * @param {string|number} id identifiant unique de la plante
-	 * @param {string} name nom de la plante
-	 * @param {number} price prix unitaire
-	 * @param {number} stock quantité disponible en stock
-	 */
-	static add(id, name, price, stock) {
-		const cart = this.get();
-		if (cart[id]) {
-			cart[id].qty += 1;
-		} else {
-			cart[id] = { id, name, price, qty: 1, stock };
-		}
-		this.save(cart);
-		this.refreshUI();
 	}
 
 	/**
@@ -1787,8 +1802,9 @@ class CartPage {
 			timer = setTimeout(() => {
 				const cart = CartManager.load();
 				const id = input.dataset.cartId;
+        console.log("[cart.js] input.dataset.stock =", input.dataset.stock);
 				const stock = parseInt(input.dataset.stock) || 1;
-				console.log("stock = " + stock);
+        console.log("[cart.js] parsed stock =", stock);
 				let val = parseInt(input.value);
 				if (isNaN(val)) console.log("val is NaN, val = " + val);
 				if (isNaN(val) || val < 1) val = 1;
@@ -2321,7 +2337,7 @@ document.addEventListener("DOMContentLoaded", () => {
 				<div class="d-flex flex-wrap gap-2">
 					<a href="/plants" class="btn btn-secondary">Retour à la page d'acceuil</a>
 					<button type="button" class="btn btn-success add-to-cart" th:data-id="${plant.id}"
-						th:data-name="${plant.name}" th:data-price="${plant.price}">
+						th:data-name="${plant.name}" th:data-price="${plant.price}" th:data-stock="${plant.stock}">
 						Ajouter au panier
 					</button>
 					<div th:if="${userRoleString == 'admin'}" class="d-flex gap-2">
@@ -2668,7 +2684,7 @@ document.addEventListener("DOMContentLoaded", () => {
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<!-- Icône du site -->
-	<link rel="icon" href="/favicon.ico" type="image/x-icon"/>
+	<link rel="icon" href="/favicon.ico" type="image/x-icon" />
 
 	<title>PlantShop | [[${title}]]</title>
 
@@ -2697,7 +2713,7 @@ document.addEventListener("DOMContentLoaded", () => {
 		<script th:src="@{/js/app.js}"></script>
 	</th:block>
 
-	</body>
+</body>
 
 </html>
 

@@ -31,7 +31,7 @@
 				<div class="d-flex flex-wrap gap-2">
 					<a href="/plants" class="btn btn-secondary">Retour à la page d'acceuil</a>
 					<button type="button" class="btn btn-success add-to-cart" th:data-id="${plant.id}"
-						th:data-name="${plant.name}" th:data-price="${plant.price}">
+						th:data-name="${plant.name}" th:data-price="${plant.price}" th:data-stock="${plant.stock}">
 						Ajouter au panier
 					</button>
 					<div th:if="${userRoleString == 'admin'}" class="d-flex gap-2">
