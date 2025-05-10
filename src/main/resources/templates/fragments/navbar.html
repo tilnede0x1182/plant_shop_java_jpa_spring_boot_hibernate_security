@@ -11,11 +11,11 @@
 				<ul class="navbar-nav me-auto"></ul>
 				<ul class="navbar-nav">
 					<li th:if="${loggedUserName}" class="navbar-text me-2"
-							th:text="${userRoleString == 'admin' ? loggedUserName + ' (Administrateur)' : loggedUserName}">
+						th:text="${userRoleString == 'admin' ? loggedUserName + ' (Administrateur)' : loggedUserName}">
 					</li>
 					<li th:if="${userRoleString == 'visitor' || userRoleString == 'user' || userRoleString == 'admin'}"
 						class="nav-item">
-						<a class="nav-link" href="/cart">Panier (<span class="cart-count">0</span>)</a>
+						<a class="nav-link" id="cart-link" href="/cart">Mon Panier</a>
 					</li>
 					<li th:if="${userRoleString == 'visitor'}" class="nav-item">
 						<a class="nav-link" href="/login">Connexion</a>
