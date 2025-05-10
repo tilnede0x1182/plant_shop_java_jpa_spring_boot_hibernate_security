@@ -115,12 +115,13 @@ class CartPage {
 			timer = setTimeout(() => {
 				const cart = CartManager.load();
 				const id = input.dataset.cartId;
+        // console.log("[cart.js] input.dataset.stock =", input.dataset.stock);
 				const stock = parseInt(input.dataset.stock) || 1;
-				console.log("stock = " + stock);
+        // console.log("[cart.js] parsed stock =", stock);
 				let val = parseInt(input.value);
-				if (isNaN(val)) console.log("val is NaN, val = " + val);
+				// if (isNaN(val)) console.log("val is NaN, val = " + val);
 				if (isNaN(val) || val < 1) val = 1;
-				console.log("Val = " + val);
+				// console.log("Val = " + val);
 				if (val > stock) val = stock;
 				input.value = val;
 				const item = cart.find((p) => p.id == id);

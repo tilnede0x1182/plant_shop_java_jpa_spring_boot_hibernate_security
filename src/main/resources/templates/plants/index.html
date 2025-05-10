@@ -13,7 +13,7 @@
 			</div>
 
 			<div class="row">
-				<div th:each="plant : ${plants}" class="col-md-4 mb-4">
+				<div th:each="plant : ${plants}" th:if="${plant.stock > 0}" class="col-md-4 mb-4">
 					<div class="card h-100 plant-card" th:data-id="${plant.id}">
 						<div class="card-body position-relative">
 							<h5 class="card-title" th:text="${plant.name}">Nom</h5>
@@ -24,8 +24,9 @@
 							</p>
 
 							<div class="d-flex gap-2">
-								<button type="button" class="btn btn-success flex-grow-1 add-to-cart" th:data-id="${plant.id}" style="z-index: 1; position: relative;"
-									th:data-name="${plant.name}" th:data-price="${plant.price}">
+								<button type="button" class="btn btn-success flex-grow-1 add-to-cart" th:data-id="${plant.id}"
+									style="z-index: 1; position: relative;" th:data-name="${plant.name}" th:data-price="${plant.price}"
+									th:data-stock="${plant.stock}">
 									Ajouter au panier
 								</button>
 							</div>

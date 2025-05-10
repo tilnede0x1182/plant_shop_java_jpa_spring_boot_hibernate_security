@@ -18,6 +18,7 @@ class PlantCatalog {
 				const price = parseFloat(btn.dataset.price);
 				const stock = parseInt(btn.dataset.stock);
 
+        // console.log("[plants.js] btn.dataset.stock =", btn.dataset.stock);
 				CartManager.add(id, name, price, stock);
 			});
 		});
