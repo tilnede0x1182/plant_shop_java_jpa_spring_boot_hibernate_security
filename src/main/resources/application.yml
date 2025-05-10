@@ -7,7 +7,7 @@ server:
 
 spring:
   datasource:
-    url: jdbc:postgresql://localhost:5432/plant_shop
+    url: jdbc:postgresql://localhost:5432/plant_shop_jpa
     username: tilnede0x1182
     password: tilnede0x1182
     driver-class-name: org.postgresql.Driver
