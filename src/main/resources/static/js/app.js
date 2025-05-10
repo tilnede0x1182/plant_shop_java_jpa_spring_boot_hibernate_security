@@ -61,7 +61,6 @@ class CartManager {
 			.forEach((el) => (el.textContent = count));
 		const link = document.getElementById("cart-link");
 		if (link) {
-      console.log("mise à jour du chiffre du panier")
 			link.innerHTML = count > 0 ? `Mon Panier (${count})` : `Mon Panier`;
 		}
 	}
