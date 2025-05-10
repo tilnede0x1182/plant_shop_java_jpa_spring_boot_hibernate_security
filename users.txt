@@ -1,24 +1,24 @@
 === ADMINS ===
-ms.nicky.bartell@planteshop.com greenferret38
-williemae.sipes@planteshop.com skybluewaterbuffalo55
-cristin.oberbrunner@planteshop.com magentarat26
+damian.kutch.sr@planteshop.com magentagoldfish20
+idalia.beahan@planteshop.com limehare48
+yolande.ritchie@planteshop.com skybluekangaroo76
 admin_exemple_1@planteshop.com password
 admin_exemple_2@planteshop.com password
 admin_exemple_3@planteshop.com password
 
 === USERS ===
-jina.kertzmann@planteshop.com salmonox71
-misha.towne@planteshop.com indigotrout53
-sidney.larkin@planteshop.com silverwoodchuck92
-michelle.olson@planteshop.com bluemule80
-grazyna.bins@planteshop.com goldcicada95
-clifford.lesch@planteshop.com lavendersealion63
-mel.wisozk@planteshop.com tealwallaby37
-sunday.lang.iii@planteshop.com cyanotter93
-milly.nikolaus@planteshop.com indigosnail53
-josphine.schiller.v@planteshop.com plumgnu71
-dr.adella.jast@planteshop.com bluebeaver44
-moises.crooks@planteshop.com whiteotter45
-jen.schroeder.jr@planteshop.com indigowallaby73
-arnold.pollich.ii@planteshop.com turquoisemonkey21
-ulysses.predovic.phd@planteshop.com tancoyote26
+jesusa.conroy.iv@planteshop.com skybluespider91
+elizebeth.pfeffer@planteshop.com orchidwaterbuffalo19
+jerry.okeefe@planteshop.com salmonpug19
+priscilla.kassulke@planteshop.com salmonyak93
+scot.rowe@planteshop.com ivoryyak14
+gregorio.parisian.dvm@planteshop.com azuretermite50
+jeffrey.wintheiser.jr@planteshop.com magentabadger57
+althea.heaney@planteshop.com fuchsiawhale59
+rory.brekke@planteshop.com silverdolphin19
+jayson.towne@planteshop.com salmonrhinoceros98
+morton.gerlach.dds@planteshop.com blackcamel85
+kortney.boyle@planteshop.com orchidcricket81
+lupe.walker.dds@planteshop.com plumsalmon91
+sung.schneider@planteshop.com purplefrog58
+otis.kovacek@planteshop.com silverlouse52

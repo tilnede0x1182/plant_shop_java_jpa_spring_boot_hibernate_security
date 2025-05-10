@@ -1,21 +1,31 @@
-CREATE TABLE IF NOT EXISTS plant (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    name TEXT NOT NULL,
+CREATE TABLE plant (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(255) NOT NULL,
     description TEXT,
-    price REAL NOT NULL,
-    category TEXT,
-    stock INTEGER DEFAULT 0
+    price NUMERIC(10,2) NOT NULL,
+    stock INT NOT NULL,
+    category VARCHAR(255) NOT NULL
 );
 
-CREATE TABLE IF NOT EXISTS app_user (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    first_name TEXT NOT NULL,
-    last_name TEXT NOT NULL,
-    email TEXT NOT NULL UNIQUE,
-    password TEXT NOT NULL,
-    role TEXT NOT NULL,
-    address TEXT,
-    phone TEXT,
-    active BOOLEAN NOT NULL DEFAULT true,
-    registration_date TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+CREATE TABLE customer_order (
+    id SERIAL PRIMARY KEY,
+    created_at TIMESTAMP,
+    status VARCHAR(255),
+    user_id INT
+);
+
+CREATE TABLE "user" (
+    id SERIAL PRIMARY KEY,
+    email VARCHAR(255) UNIQUE NOT NULL,
+    password VARCHAR(255) NOT NULL,
+    role VARCHAR(255) NOT NULL
+);
+
+CREATE TABLE order_item (
+    id SERIAL PRIMARY KEY,
+    quantity INT NOT NULL,
+    plant_id INT NOT NULL,
+    customer_order_id INT NOT NULL,
+    FOREIGN KEY (plant_id) REFERENCES plant(id) ON DELETE CASCADE,
+    FOREIGN KEY (customer_order_id) REFERENCES customer_order(id)
 );
