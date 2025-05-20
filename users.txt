@@ -1,24 +1,26 @@
 === ADMINS ===
-mitch.yundt@planteshop.com tealplatypus92
-kenneth.graham@planteshop.com azurewallaby89
-mrs.glen.beier@planteshop.com whitehamster17
-admin_exemple_1@planteshop.com password
-admin_exemple_2@planteshop.com password
-admin_exemple_3@planteshop.com password
+admin1@planteshop.com password
+admin2@planteshop.com password
+admin3@planteshop.com password
 
 === USERS ===
-kacey.spencer.i@planteshop.com limeeagle86
-elinore.stiedemann@planteshop.com indigowoodchuck97
-teresia.koch@planteshop.com pinkhippopotamus48
-columbus.maggio@planteshop.com violetfish75
-rex.keebler@planteshop.com silveryak50
-leonel.cartwright@planteshop.com turquoisedonkey53
-roslyn.bayer@planteshop.com indigotortoise67
-dr.rob.kautzer@planteshop.com azureclam67
-ariel.beier@planteshop.com orangebee15
-garland.heaney@planteshop.com greyjellyfish94
-lilian.boehm@planteshop.com yellowtortoise10
-mrs.parthenia.conroy@planteshop.com greenyellowjacket29
-scott.von@planteshop.com limemammoth47
-hector.jakubowski@planteshop.com bluehound83
-jami.miller@planteshop.com bluerat89
+lourdes.gottlieb@planteshop.com !I^^9b6hf3bVV
+regena.labadie@planteshop.com pwuvo$&%!0#p0At7
+miss.august.nolan@planteshop.com X5^&DO@ca9C
+theo.wiegand@planteshop.com ke#r*6!@2fTD$
+eulah.hintz.dds@planteshop.com 1JlAf^d$6U
+jarrett.wunsch@planteshop.com 5zT848NQj2FH*
+elliot.west@planteshop.com #^X2dR3l92
+edda.kiehn@planteshop.com #XY%8q5^1##vjI
+dr.elias.ryan@planteshop.com %%^9323&6^469I
+lin.cartwright.v@planteshop.com k37%p9$P5M67Sj!
+emmy.krajcik.i@planteshop.com xNDY6Z2re3hf!
+ermelinda.hermann@planteshop.com 3!Zj&FbP9^!2$r
+megan.kessler@planteshop.com Ju%^m3^cRb
+gale.predovic@planteshop.com 5@7wOF*^4Axo%2
+lekisha.kovacek.phd@planteshop.com CI*8n!4hKRs6x0g
+burton.abernathy@planteshop.com Dnr%gea88b
+antonietta.schmitt@planteshop.com 6pgpX4#S1$@WnbO
+mrs.mohammed.greenholt@planteshop.com e43Fh$5t*d%ii^#
+daniella.wiegand@planteshop.com 4C*x9tWZSW!oQ9N%
+ellis.kuhic@planteshop.com tjfzt%75$6@&b&R
