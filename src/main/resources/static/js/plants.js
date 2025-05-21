@@ -9,9 +9,9 @@ class PlantCatalog {
 	 */
 	static init() {
 		document.querySelectorAll(".add-to-cart").forEach((btn) => {
-			btn.addEventListener("click", (e) => {
-				e.stopPropagation(); // empêche la propagation vers le lien parent
-				e.preventDefault(); // empêche la navigation
+			btn.addEventListener("click", (exception) => {
+				exception.stopPropagation(); // empêche la propagation vers le lien parent
+				exception.preventDefault(); // empêche la navigation
 
 				const id = btn.dataset.id;
 				const name = btn.dataset.name;
