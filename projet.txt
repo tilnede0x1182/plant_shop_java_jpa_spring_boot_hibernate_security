@@ -1,94 +1,153 @@
 # target/classes/static/js/app.js
 
+// # Classe CartManager
+
 /**
  * Gère le panier via le localStorage
- * @class CartManager
  */
 class CartManager {
 	/**
 	 * Charge le panier depuis le localStorage
-	 * @returns {Array<Object>} liste des articles dans le panier
+	 * @returns {Array<Object>} Liste des articles dans le panier
 	 */
 	static load() {
-		return JSON.parse(localStorage.getItem("cart") || "[]");
-	}
-
-	/**
-	 * Ajoute une plante au panier, avec gestion du stock initial.
-	 * @param {string|number} id identifiant unique de la plante
-	 * @param {string} name nom de la plante
-	 * @param {number} price prix unitaire
-	 * @param {number} stock quantité disponible
-	 */
-	static add(id, name, price, stock) {
-    console.log("[CartManager.add] received stock =", stock);
-		const cart = this.load();
-		const existing = cart.find((item) => item.id == id);
-		if (existing) {
-      console.log("[CartManager.add] item exists, current qty =", existing.qty, "stock (before) =", existing.stock);
-			existing.qty += 1;
-      existing.stock = stock;
-      console.log("[CartManager.add] stock updated to =", existing.stock);
-		} else {
-      console.log("[CartManager.add] new item added with stock =", stock);
-			cart.push({ id, name, price, qty: 1, stock });
-		}
-		this.save(cart);
-		this.refreshUI();
+		const cartJson = localStorage.getItem("cart") || "[]";
+		return JSON.parse(cartJson);
 	}
 
 	/**
 	 * Sauvegarde le panier dans le localStorage
-	 * @param {Array<Object>} cart liste des articles à sauvegarder
+	 * @param {Array<Object>} cartList Liste des articles à sauvegarder
 	 */
-	static save(cart) {
-		localStorage.setItem("cart", JSON.stringify(cart));
+	static save(cartList) {
+		localStorage.setItem("cart", JSON.stringify(cartList));
+	}
+
+	/**
+	 * Applique les changements du panier et met à jour l'interface.
+	 * @param {Array<Object>} cartList État du panier à valider
+	 */
+	static #commitCart(cartList) {
+		this.save(cartList);
+		this.refreshUI();
+	}
+
+	/**
+	 * Ajoute un article au panier, ou incrémente sa quantité.
+	 * Gère aussi le dépassement de stock.
+	 * @param {number} productId Identifiant du produit
+	 * @param {string} productName Nom du produit
+	 * @param {number} unitPrice Prix unitaire
+	 * @param {number} stockMax Quantité maximale disponible
+	 */
+	static add(productId, productName, unitPrice, stockMax) {
+		const cartList = this.load();
+		const product = cartList.find((entry) => entry && entry.id == productId);
+
+		if (!product) {
+			cartList.push({ id: productId, name: productName, price: unitPrice, qty: 1, stock: stockMax });
+			this.#commitCart(cartList);
+			return;
+		}
+
+		if (product.qty >= stockMax) {
+			showStockAlert(productName, stockMax);
+			setTimeout(() => {
+				product.qty = stockMax;
+				this.#commitCart(cartList);
+			}, 300);
+		} else {
+			product.qty++;
+			this.#commitCart(cartList);
+		}
 	}
 
 	/**
 	 * Calcule le nombre total d'articles dans le panier
-	 * @returns {number} total des quantités
+	 * @returns {number} Total des quantités
 	 */
 	static countItems() {
-		return this.load().reduce((sum, item) => sum + item.qty, 0);
+		const cartList = this.load();
+		return cartList.filter((entry) => entry && typeof entry.qty === "number").reduce((total, entry) => total + entry.qty, 0);
 	}
 
 	/**
-	 * Met à jour les éléments de l’interface liés au panier
+	 * Met à jour les éléments de l’interface affichant le compteur
 	 */
 	static refreshUI() {
-		const count = this.countItems();
-		document
-			.querySelectorAll(".cart-count")
-			.forEach((el) => (el.textContent = count));
-		const link = document.getElementById("cart-link");
-		if (link) link.textContent = `Panier (${count})`;
+		const itemCount = this.countItems();
+
+		document.querySelectorAll(".cart-count").forEach((element) => {
+			element.textContent = itemCount;
+		});
+
+		const navbarLink = document.getElementById("cart-link");
+		if (navbarLink) {
+			navbarLink.innerHTML = itemCount > 0 ? `Mon Panier (${itemCount})` : `Mon Panier`;
+		}
 	}
 }
 
-/**
- * Initialise les tooltips Bootstrap et l’UI du panier à chargement de page
- */
-document.addEventListener("DOMContentLoaded", () => {
-	[...document.querySelectorAll('[data-bs-toggle="tooltip"]')].forEach(
-		(el) => new bootstrap.Tooltip(el)
-	);
-	CartManager.refreshUI();
-	window.addEventListener(
-		"storage",
-		(e) => e.key === "cart" && CartManager.refreshUI()
-	);
-});
+// # Fonctions utilitaires
 
 /**
- * @function window.refreshCart
- * @description Alias global pour rafraîchir l’UI du panier
+ * Affiche une alerte pour informer d'un stock insuffisant
+ * @param {string} plantName Nom du produit
+ * @param {number} stockLeft Quantité restante
+ */
+function showStockAlert(plantName, stockLeft) {
+	const alertElement = document.createElement("div");
+	alertElement.className = "alert alert-warning fade position-absolute top-0 start-50 translate-middle-x mt-3 shadow";
+	alertElement.role = "alert";
+	alertElement.style.zIndex = "1055";
+	alertElement.style.maxWidth = "600px";
+	alertElement.style.pointerEvents = "none";
+
+	const textStart = document.createTextNode("Stock insuffisant pour pour cette plante (");
+	const strongText = document.createElement("strong");
+	strongText.textContent = plantName;
+	const textEnd = document.createTextNode(`), actuellement, il en reste ${stockLeft}.`);
+
+	alertElement.appendChild(textStart);
+	alertElement.appendChild(strongText);
+	alertElement.appendChild(textEnd);
+
+	document.body.appendChild(alertElement);
+	setTimeout(() => alertElement.classList.add("show"), 10);
+	setTimeout(() => {
+		alertElement.classList.remove("show");
+		alertElement.classList.add("fade");
+		setTimeout(() => alertElement.remove(), 300);
+	}, 3000);
+}
+
+// # Initialisation DOM
+
+/**
+ * Initialise les tooltips Bootstrap et les compteurs panier
+ */
+document.addEventListener("DOMContentLoaded", () => {
+	const tooltipElements = document.querySelectorAll('[data-bs-toggle="tooltip"]');
+	tooltipElements.forEach((element) => new bootstrap.Tooltip(element));
+
+	CartManager.refreshUI();
+
+	window.addEventListener("storage", (storageEvent) => {
+		if (storageEvent.key === "cart") {
+			CartManager.refreshUI();
+		}
+	});
+});
+
+// # Fonctions globales
+
+/**
+ * Alias global pour rafraîchir l'interface panier
  */
 window.refreshCart = () => CartManager.refreshUI();
 
 /**
- * @function window.refreshUI
- * @description Autre alias global pour rafraîchir l’UI du panier
+ * Alias secondaire pour compatibilité
  */
 window.refreshUI = () => CartManager.refreshUI();
 
@@ -105,16 +164,16 @@ class PlantCatalog {
 	 */
 	static init() {
 		document.querySelectorAll(".add-to-cart").forEach((btn) => {
-			btn.addEventListener("click", (e) => {
-				e.stopPropagation(); // empêche la propagation vers le lien parent
-				e.preventDefault(); // empêche la navigation
+			btn.addEventListener("click", (exception) => {
+				exception.stopPropagation(); // empêche la propagation vers le lien parent
+				exception.preventDefault(); // empêche la navigation
 
 				const id = btn.dataset.id;
 				const name = btn.dataset.name;
 				const price = parseFloat(btn.dataset.price);
 				const stock = parseInt(btn.dataset.stock);
 
-        console.log("[plants.js] btn.dataset.stock =", btn.dataset.stock);
+        // console.log("[plants.js] btn.dataset.stock =", btn.dataset.stock);
 				CartManager.add(id, name, price, stock);
 			});
 		});
@@ -158,181 +217,203 @@ document.addEventListener("DOMContentLoaded", () => {
 
 # target/classes/static/js/cart.js
 
+// # Classe CartPage
+
 /**
  * Gère l'affichage, la mise à jour, et la validation du panier côté page.
- * @class CartPage
  */
 class CartPage {
 	/**
-	 * Initialise les éléments du DOM, les événements et le rendu initial.
+	 * Initialise les événements DOM, le rendu initial et les boutons.
 	 */
 	static init() {
-		/** @member {HTMLElement} this.body - Corps du tableau du panier */
-		this.body = document.getElementById("cartBody");
+		this.cartTableBody = document.getElementById("cartBody");
+		this.totalElement = document.getElementById("cartTotal");
+		this.messageElement = document.getElementById("checkoutMessage");
 
-		/** @member {HTMLElement} this.totalE - Élément affichant le total */
-		this.totalE = document.getElementById("cartTotal");
+		const form = document.getElementById("checkoutForm");
+		const clearButton = document.getElementById("clearCart");
 
-		/** @member {HTMLElement} this.msgEl - Élément pour les messages */
-		this.msgEl = document.getElementById("checkoutMessage");
-
-		// Événement de soumission du formulaire
-		document
-			.getElementById("checkoutForm")
-			?.addEventListener("submit", (e) => this.handleCheckout(e));
-
-		// Bouton pour vider le panier
-		document
-			.getElementById("clearCart")
-			?.addEventListener("click", () => this.clearCart());
-
-		// Événement pour suppression d'article
-		this.body.addEventListener("click", (e) => this.handleRemove(e));
+		form?.addEventListener("submit", (submitEvent) => this.handleCheckout(submitEvent));
+		clearButton?.addEventListener("click", () => this.clearCart());
+		this.cartTableBody.addEventListener("click", (mouseEvent) => this.handleRemove(mouseEvent));
 
 		this.render();
 	}
 
 	/**
-	 * Affiche dynamiquement le contenu du panier et le total.
+	 * Affiche dynamiquement les articles et le total du panier.
 	 */
 	static render() {
-		const cart = CartManager.load();
-		this.body.innerHTML = "";
-		let total = 0;
+		const currentCart = CartManager.load();
+		this.cartTableBody.innerHTML = "";
+		let cartTotal = 0;
 
-		if (cart.length === 0) {
-			// Affiche un message si le panier est vide
-			const row = document.createElement("tr");
-			const cell = document.createElement("td");
-			cell.colSpan = 5;
-			cell.className = "text-center";
-			cell.textContent = "Votre panier est vide.";
-			row.appendChild(cell);
-			this.body.appendChild(row);
+		if (currentCart.length === 0) {
+			this.#renderEmptyCartMessage();
 		} else {
-			// Affiche chaque article dans le panier
-			cart.forEach((item, i) => {
-				const row = document.createElement("tr");
-
-				// Nom + lien
-				const colName = document.createElement("td");
-				const link = document.createElement("a");
-				link.href = `/plants/${item.id}`;
-				link.className = "product-link";
-				link.textContent = item.name;
-				colName.appendChild(link);
-
-				// Prix unitaire
-				const colPrice = document.createElement("td");
-				colPrice.textContent = item.price.toFixed(2);
-
-				// Quantité modifiable
-				const colQty = document.createElement("td");
-				const input = document.createElement("input");
-				input.type = "number";
-				input.min = "1";
-				input.value = item.qty;
-				input.className = "form-control form-control-sm qty-input";
-				input.style.width = "80px";
-				input.dataset.cartId = item.id;
-				input.dataset.stock = item.stock;
-				input.onkeydown = (e) => e.key !== "e" && e.key !== "-";
-				this.attachQtyListener(input);
-				colQty.appendChild(input);
-
-				// Sous-total
-				const colSub = document.createElement("td");
-				colSub.textContent = (item.qty * item.price).toFixed(2);
-
-				// Bouton supprimer
-				const colDel = document.createElement("td");
-				const btn = document.createElement("button");
-				btn.className = "btn btn-sm btn-danger";
-				btn.textContent = "✕";
-				btn.dataset.i = i;
-				colDel.appendChild(btn);
-
-				[colName, colPrice, colQty, colSub, colDel].forEach((el) =>
-					row.appendChild(el)
-				);
-				this.body.appendChild(row);
-
-				total += item.qty * item.price;
+			currentCart.forEach((product, position) => {
+				const rowElement = this.#buildCartRow(product, position);
+				this.cartTableBody.appendChild(rowElement);
+				cartTotal += product.qty * product.price;
 			});
 		}
-
-		this.totalE.textContent = total.toFixed(2);
+		this.totalElement.textContent = cartTotal.toFixed(2);
 	}
 
 	/**
-	 * Attache les événements à un champ de quantité pour mettre à jour l’article.
-	 * @param {HTMLInputElement} input champ de saisie de la quantité
+	 * Génère un élément de ligne HTML pour un article du panier.
+	 * @param {Object} product Produit à afficher
+	 * @param {number} position Index dans le tableau
+	 * @returns {HTMLTableRowElement}
 	 */
-	static attachQtyListener(input) {
-		let timer;
+	static #buildCartRow(product, position) {
+		const row = document.createElement("tr");
+		row.appendChild(this.#buildNameCell(product));
+		row.appendChild(this.#buildPriceCell(product));
+		row.appendChild(this.#buildQuantityCell(product));
+		row.appendChild(this.#buildSubtotalCell(product));
+		row.appendChild(this.#buildRemoveCell(position));
+		return row;
+	}
+
+	/**
+	 * Crée une cellule avec lien vers la fiche produit.
+	 */
+	static #buildNameCell(product) {
+		const cell = document.createElement("td");
+		const link = document.createElement("a");
+		link.href = `/plants/${product.id}`;
+		link.className = "product-link";
+		link.textContent = product.name;
+		cell.appendChild(link);
+		return cell;
+	}
+
+	/**
+	 * Crée une cellule pour le prix unitaire.
+	 */
+	static #buildPriceCell(product) {
+		const cell = document.createElement("td");
+		cell.textContent = product.price.toFixed(2);
+		return cell;
+	}
+
+	/**
+	 * Crée une cellule avec champ quantité modifiable.
+	 */
+	static #buildQuantityCell(product) {
+		const cell = document.createElement("td");
+		const inputField = document.createElement("input");
+		inputField.type = "number";
+		inputField.min = "1";
+		inputField.value = product.qty;
+		inputField.className = "form-control form-control-sm qty-input";
+		inputField.style.width = "80px";
+		inputField.dataset.cartId = product.id;
+		inputField.dataset.stock = product.stock;
+		inputField.onkeydown = (keyboardEvent) =>
+			keyboardEvent.key !== "e" && keyboardEvent.key !== "-";
+		this.#attachQuantityHandler(inputField);
+		cell.appendChild(inputField);
+		return cell;
+	}
+
+	/**
+	 * Crée une cellule affichant le sous-total.
+	 */
+	static #buildSubtotalCell(product) {
+		const cell = document.createElement("td");
+		const subtotal = product.qty * product.price;
+		cell.textContent = subtotal.toFixed(2);
+		return cell;
+	}
+
+	/**
+	 * Crée une cellule avec bouton de suppression.
+	 */
+	static #buildRemoveCell(position) {
+		const cell = document.createElement("td");
+		const button = document.createElement("button");
+		button.className = "btn btn-sm btn-danger";
+		button.textContent = "✕";
+		button.dataset.i = position;
+		cell.appendChild(button);
+		return cell;
+	}
+
+	/**
+	 * Ajoute les gestionnaires input et blur au champ quantité.
+	 * @param {HTMLInputElement} inputField
+	 */
+	static #attachQuantityHandler(inputField) {
+		let delayTimer;
 		const handler = () => {
-			clearTimeout(timer);
-			timer = setTimeout(() => {
-				const cart = CartManager.load();
-				const id = input.dataset.cartId;
-        console.log("[cart.js] input.dataset.stock =", input.dataset.stock);
-				const stock = parseInt(input.dataset.stock) || 1;
-        console.log("[cart.js] parsed stock =", stock);
-				let val = parseInt(input.value);
-				if (isNaN(val)) console.log("val is NaN, val = " + val);
-				if (isNaN(val) || val < 1) val = 1;
-				console.log("Val = " + val);
-				if (val > stock) val = stock;
-				input.value = val;
-				const item = cart.find((p) => p.id == id);
-				if (item) item.qty = val;
-				CartManager.save(cart);
+			clearTimeout(delayTimer);
+			delayTimer = setTimeout(() => {
+				const currentCart = CartManager.load();
+				const productId = inputField.dataset.cartId;
+				const stockMax = parseInt(inputField.dataset.stock) || 1;
+				let quantity = parseInt(inputField.value);
+				if (isNaN(quantity) || quantity < 1) quantity = 1;
+				if (quantity > stockMax) quantity = stockMax;
+				inputField.value = quantity;
+
+				const product = currentCart.find((p) => p.id == productId);
+				if (product) product.qty = quantity;
+
+				CartManager.save(currentCart);
 				CartPage.render();
 				refreshCart();
 			}, 300);
 		};
-		input.addEventListener("input", handler);
-		input.addEventListener("blur", handler);
+		inputField.addEventListener("input", handler);
+		inputField.addEventListener("blur", handler);
 	}
 
 	/**
-	 * Gère la suppression d’un article via le bouton.
-	 * @param {MouseEvent} e événement de clic
+	 * Supprime un article cliqué du panier.
+	 * @param {MouseEvent} mouseEvent
 	 */
-	static handleRemove(e) {
-		if (e.target.matches("button[data-i]")) {
-			const cart = CartManager.load();
-			cart.splice(e.target.dataset.i, 1);
-			CartManager.save(cart);
+	static handleRemove(mouseEvent) {
+		if (mouseEvent.target.matches("button[data-i]")) {
+			const currentCart = CartManager.load();
+			currentCart.splice(mouseEvent.target.dataset.i, 1);
+			CartManager.save(currentCart);
 			this.render();
 			refreshCart();
 		}
 	}
 
 	/**
-	 * Gère la soumission du panier (checkout).
-	 * @param {SubmitEvent} e événement de soumission
+	 * Gère la soumission du panier vers le serveur.
+	 * @param {SubmitEvent} submitEvent
 	 */
-	static handleCheckout(e) {
-		e.preventDefault();
-
+	static handleCheckout(submitEvent) {
+		submitEvent.preventDefault();
 		if (window.userRole === "visitor") {
 			window.location.href = "/login";
 			return;
 		}
-
-		const cart = CartManager.load();
-		if (cart.length === 0) {
+		const currentCart = CartManager.load();
+		if (currentCart.length === 0) {
 			this.showMsg("Votre panier est vide.", "danger");
 			return;
 		}
+		this.#sendCheckoutRequest(currentCart);
+	}
 
+	/**
+	 * Envoie la requête POST de checkout au serveur.
+	 * @param {Object[]} currentCart
+	 */
+	static #sendCheckoutRequest(currentCart) {
 		fetch("/orders/checkout", {
 			method: "POST",
 			headers: { "Content-Type": "application/json" },
-			body: JSON.stringify(cart),
+			body: JSON.stringify(currentCart),
 		})
-			.then((res) => res.text().then((text) => ({ ok: res.ok, text })))
+			.then((response) => response.text().then((text) => ({ ok: response.ok, text })))
 			.then(({ ok, text }) => {
 				if (ok && text === "OK") {
 					localStorage.removeItem("cart");
@@ -340,10 +421,7 @@ class CartPage {
 					this.showMsg("Commande validée ! Redirection…", "success");
 					setTimeout(() => (window.location.href = "/orders"), 0);
 				} else {
-					this.showMsg(
-						"Erreur lors de la commande : " + text,
-						"danger"
-					);
+					this.showMsg("Erreur lors de la commande : " + text, "danger");
 				}
 			})
 			.catch(() => {
@@ -352,7 +430,7 @@ class CartPage {
 	}
 
 	/**
-	 * Vide le panier et met à jour l'interface.
+	 * Vide complètement le panier et recharge l'interface.
 	 */
 	static clearCart() {
 		localStorage.removeItem("cart");
@@ -361,18 +439,33 @@ class CartPage {
 	}
 
 	/**
-	 * Affiche un message utilisateur (erreur, succès…).
-	 * @param {string} text contenu du message
-	 * @param {string} type type Bootstrap (`success`, `danger`, etc.)
+	 * Affiche un message utilisateur type Bootstrap.
+	 * @param {string} message
+	 * @param {string} type
 	 */
-	static showMsg(text, type) {
-		this.msgEl.className = `alert alert-${type}`;
-		this.msgEl.textContent = text;
+	static showMsg(message, type) {
+		this.messageElement.className = `alert alert-${type}`;
+		this.messageElement.textContent = message;
+	}
+
+	/**
+	 * Affiche un message lorsque le panier est vide.
+	 */
+	static #renderEmptyCartMessage() {
+		const emptyRow = document.createElement("tr");
+		const emptyCell = document.createElement("td");
+		emptyCell.colSpan = 5;
+		emptyCell.className = "text-center";
+		emptyCell.textContent = "Votre panier est vide.";
+		emptyRow.appendChild(emptyCell);
+		this.cartTableBody.appendChild(emptyRow);
 	}
 }
 
+// # Lancement
+
 /**
- * Initialise la page du panier à chargement.
+ * Initialise le rendu du panier au chargement.
  */
 document.addEventListener("DOMContentLoaded", () => {
 	CartPage.init();
@@ -505,53 +598,158 @@ document.addEventListener("DOMContentLoaded", () => {
 </body>
 </html>
 
-# target/classes/templates/login.html
+# target/classes/templates/cart/cart.html
 
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org"
-      layout:decorate="~{fragments/base}"
-      th:with="title='Connexion'">
+<html xmlns:th="http://www.thymeleaf.org" layout:decorate="~{fragments/base}" th:with="title='Panier'">
+
 <head>
-    <title>PlantShop | Connexion</title>
+	<title>PlantShop | Panier</title>
 </head>
+
 <body>
-<div layout:fragment="content">
-    <section class="container pt-5 mt-5">
-        <div class="row justify-content-center">
-            <div class="col-md-6 col-lg-4">
-                <div class="card shadow">
-                    <div class="card-header bg-success text-white">
-                        <h4 class="mb-0 text-center">Connexion</h4>
-                    </div>
-                    <div class="card-body p-4">
+	<div layout:fragment="content">
+		<section class="container pt-5 mt-5">
+			<h2 class="mb-4">🛒 Votre panier</h2>
 
-                        <div th:if="${param.error}" class="alert alert-danger">
-                            Identifiants invalides
-                        </div>
+			<div id="checkoutMessage" class="alert d-none" role="alert"></div>
 
-                        <form th:action="@{/login}" method="post">
-                            <div class="mb-3">
-                                <label for="username" class="form-label">Email</label>
-                                <input type="text" class="form-control" id="username" name="email" required>
-                            </div>
-                            <div class="mb-3">
-                                <label for="password" class="form-label">Mot de passe</label>
-                                <input type="password" class="form-control" id="password" name="password" required>
-                            </div>
-                            <button type="submit" class="btn btn-success w-100">Se connecter</button>
-                        </form>
+			<div class="table-responsive">
+				<table class="table align-middle">
+					<thead>
+						<tr>
+							<th>Produit</th>
+							<th>Prix (€)</th>
+							<th>Quantité</th>
+							<th>Sous‑total (€)</th>
+							<th></th>
+						</tr>
+					</thead>
+					<tbody id="cartBody">
+						<tr id="emptyRow">
+							<td colspan="5" class="text-center">Votre panier est vide.</td>
+						</tr>
+					</tbody>
+					<tfoot class="table-light">
+						<tr>
+							<th colspan="3" class="text-end">Total&nbsp;:</th>
+							<th id="cartTotal">0.00</th>
+							<th></th>
+						</tr>
+					</tfoot>
+				</table>
+			</div>
 
-												<div class="mt-3 text-center">
-													<span>Pas encore de compte ?&nbsp;</span>
-													<a th:href="@{/register}" class="text-success text-decoration-none">Inscrivez-vous !</a>
-											</div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-</div>
+			<div class="d-flex justify-content-between align-items-center mt-4">
+				<button type="button" class="btn btn-outline-secondary" id="clearCart">Vider le panier</button>
+				<form id="checkoutForm" class="mb-0">
+					<button type="submit" class="btn btn-success">Terminer la commande</button>
+				</form>
+			</div>
+			<div id="checkoutMessage" class="mt-3"></div>
+
+		</section>
+		<script th:src="@{/js/cart.js}"></script>
+	</div>
 </body>
+
+</html>
+
+# target/classes/templates/layout/navbar.html
+
+<nav th:fragment="navbar" class="navbar navbar-expand-lg navbar fixed-top">
+	<!-- Navbar -->
+	<nav class="navbar navbar-expand-lg mb-4 fixed-top">
+		<div class="container">
+			<a class="navbar-brand" href="/">🌿 PlantShop</a>
+			<button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+				<span class="navbar-toggler-icon"></span>
+			</button>
+
+			<div class="collapse navbar-collapse" id="navbarNav">
+				<ul class="navbar-nav me-auto"></ul>
+				<ul class="navbar-nav">
+					<li th:if="${loggedUserName}" class="navbar-text me-2"
+						th:text="${userRoleString == 'admin' ? loggedUserName + ' (Administrateur)' : loggedUserName}">
+					</li>
+					<li th:if="${userRoleString == 'visitor' || userRoleString == 'user' || userRoleString == 'admin'}"
+						class="nav-item">
+						<a class="nav-link" id="cart-link" href="/cart">Mon Panier</a>
+					</li>
+					<li th:if="${userRoleString == 'visitor'}" class="nav-item">
+						<a class="nav-link" href="/login">Connexion</a>
+					</li>
+					<li th:if="${userRoleString == 'visitor'}" class="nav-item">
+						<a class="nav-link" href="/register">Inscription</a>
+					</li>
+					<li th:if="${userRoleString == 'user' || userRoleString == 'admin'}" class="nav-item">
+						<a class="nav-link" href="/my_profile">Mon Profil</a>
+					</li>
+					<li th:if="${userRoleString == 'user' || userRoleString == 'admin'}" class="nav-item">
+						<a class="nav-link" href="/orders">Mes Commandes</a>
+					</li>
+
+					<li th:if="${userRoleString == 'admin'}" class="nav-item dropdown">
+						<a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+							Admin
+						</a>
+						<ul class="dropdown-menu">
+							<li><a class="dropdown-item" href="/admin/plants">Gestion Plantes</a></li>
+							<li><a class="dropdown-item" href="/admin/users">Gestion Utilisateurs</a></li>
+						</ul>
+					</li>
+
+					<li th:if="${userRoleString == 'user' or userRoleString == 'admin'}" class="nav-item">
+						<form th:action="@{/logout}" method="post">
+							<button type="submit" class="nav-link btn btn-link">Déconnexion</button>
+						</form>
+					</li>
+				</ul>
+			</div>
+		</div>
+	</nav>
+</nav>
+
+# target/classes/templates/layout/application.html
+
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<!-- Icône du site -->
+	<link rel="icon" href="/favicon.ico" type="image/x-icon" />
+
+	<title>PlantShop | [[${title}]]</title>
+
+	<!-- Bootstrap CSS -->
+	<link rel="stylesheet" href="/webjars/bootstrap/5.3.2/css/bootstrap.min.css">
+
+	<!-- Custom CSS -->
+	<link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+
+<body>
+	<th:block th:with="userRoleString=${userRole}">
+		<!-- Navbar -->
+		<div th:replace="~{fragments/navbar :: navbar}"></div>
+		<div class="container">
+			<!-- Messages flash -->
+			<div th:if="${message}" class="alert alert-success" th:text="${message}"></div>
+			<div th:if="${error}" class="alert alert-danger" th:text="${error}"></div>
+
+			<!-- Contenu principal -->
+			<div layout:fragment="content"></div>
+		</div>
+
+		<!-- Bootstrap JS -->
+		<script src="/webjars/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
+		<script th:src="@{/js/app.js}"></script>
+	</th:block>
+
+</body>
+
 </html>
 
 # target/classes/templates/admin/plants/index.html
@@ -847,7 +1045,7 @@ document.addEventListener("DOMContentLoaded", () => {
 			</div>
 
 			<div class="row">
-				<div th:each="plant : ${plants}" class="col-md-4 mb-4">
+				<div th:each="plant : ${plants}" th:if="${plant.stock > 0}" class="col-md-4 mb-4">
 					<div class="card h-100 plant-card" th:data-id="${plant.id}">
 						<div class="card-body position-relative">
 							<h5 class="card-title" th:text="${plant.name}">Nom</h5>
@@ -858,8 +1056,9 @@ document.addEventListener("DOMContentLoaded", () => {
 							</p>
 
 							<div class="d-flex gap-2">
-								<button type="button" class="btn btn-success flex-grow-1 add-to-cart" th:data-id="${plant.id}" style="z-index: 1; position: relative;"
-									th:data-name="${plant.name}" th:data-price="${plant.price}">
+								<button type="button" class="btn btn-success flex-grow-1 add-to-cart" th:data-id="${plant.id}"
+									style="z-index: 1; position: relative;" th:data-name="${plant.name}" th:data-price="${plant.price}"
+									th:data-stock="${plant.stock}">
 									Ajouter au panier
 								</button>
 							</div>
@@ -882,56 +1081,6 @@ document.addEventListener("DOMContentLoaded", () => {
 	</div>
 </body>
 
-</html>
-
-# target/classes/templates/register.html
-
-<!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org"
-      layout:decorate="~{fragments/base}"
-      th:with="title='Inscription'">
-<head>
-    <title>PlantShop | Inscription</title>
-</head>
-<body>
-    <div layout:fragment="content">
-        <section class="container pt-5 mt-5">
-            <div class="row justify-content-center">
-                <div class="col-md-6">
-                    <div class="card shadow">
-                        <div class="card-header bg-success text-white">
-                            <h4 class="mb-0">Créer un compte</h4>
-                        </div>
-                        <div class="card-body">
-                            <form th:action="@{/register}" th:object="${user}" method="post">
-                                <div class="mb-3">
-                                    <label class="form-label">Nom complet</label>
-                                    <input type="text" class="form-control" th:field="*{name}" required>
-                                </div>
-                                <div class="mb-3">
-                                    <label class="form-label">Adresse email</label>
-                                    <input type="email" class="form-control" th:field="*{email}" required>
-                                    <small class="text-danger" th:if="${#fields.hasErrors('email')}" th:errors="*{email}"></small>
-                                </div>
-                                <div class="mb-3">
-                                    <label class="form-label">Mot de passe</label>
-                                    <input type="password" class="form-control" th:field="*{password}" required>
-                                </div>
-                                <button type="submit" class="btn btn-success w-100">S'inscrire</button>
-                            </form>
-                            <hr>
-                            <p class="text-center mb-0">
-                                Déjà un compte ?
-																&nbsp;
-                                <a th:href="@{/login}" class="text-success">Se connecter</a>
-                            </p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </section>
-    </div>
-</body>
 </html>
 
 # target/classes/templates/orders/index.html
@@ -982,64 +1131,60 @@ document.addEventListener("DOMContentLoaded", () => {
 
 </html>
 
-# target/classes/templates/cart.html
+# target/classes/templates/users/show.html
 
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org" layout:decorate="~{fragments/base}" th:with="title='Panier'">
+<html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+	layout:decorate="~{fragments/base}" th:with="title='Mon Profil'" lang="fr">
 
 <head>
-	<title>PlantShop | Panier</title>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>Mon Profil | PlantShop</title>
+	<link rel="stylesheet" href="/webjars/bootstrap/5.3.2/css/bootstrap.min.css">
+	<link rel="stylesheet" href="/css/style.css">
 </head>
 
 <body>
 	<div layout:fragment="content">
-		<section class="container pt-5 mt-5">
-			<h2 class="mb-4">🛒 Votre panier</h2>
+		<main class="container pt-5 mt-5">
+			<div class="row justify-content-center">
+				<div class="col-md-8">
+					<div class="card shadow">
+						<div class="card-header bg-success text-white">
+							<h2 class="h4 mb-0">Mon Profil</h2>
+						</div>
+						<div class="card-body">
+							<dl class="row">
+								<dt class="col-sm-4">Nom complet</dt>
+								<dd class="col-sm-8" th:text="${user.name}">-</dd>
 
-			<div id="checkoutMessage" class="alert d-none" role="alert"></div>
-
-			<div class="table-responsive">
-				<table class="table align-middle">
-					<thead>
-						<tr>
-							<th>Produit</th>
-							<th>Prix (€)</th>
-							<th>Quantité</th>
-							<th>Sous‑total (€)</th>
-							<th></th>
-						</tr>
-					</thead>
-					<tbody id="cartBody">
-						<tr id="emptyRow">
-							<td colspan="5" class="text-center">Votre panier est vide.</td>
-						</tr>
-					</tbody>
-					<tfoot class="table-light">
-						<tr>
-							<th colspan="3" class="text-end">Total&nbsp;:</th>
-							<th id="cartTotal">0.00</th>
-							<th></th>
-						</tr>
-					</tfoot>
-				</table>
+								<dt class="col-sm-4">Email</dt>
+								<dd class="col-sm-8" th:text="${user.email}">-</dd>
+								<div th:if="${userRoleString == 'admin'}" class="d-flex gap-2">
+									<dt class="col-sm-4">Administrateur</dt>
+									<dd class="col-sm-8">
+										<span th:text="${userRoleString == 'admin'} ? 'Oui' : 'Non'">-</span>
+									</dd>
+								</div>
+								<div class="mt-4 text-start">
+									<a href="/my_profile/edit" class="btn btn-primary px-5">Modifier</a>
+								</div>
+							</dl>
+						</div>
+					</div>
+				</div>
 			</div>
-
-			<div class="d-flex justify-content-between align-items-center mt-4">
-				<button type="button" class="btn btn-outline-secondary" id="clearCart">Vider le panier</button>
-				<form id="checkoutForm" class="mb-0">
-					<button type="submit" class="btn btn-success">Terminer la commande</button>
-				</form>
-			</div>
-			<div id="checkoutMessage" class="mt-3"></div>
-
-		</section>
-		<script th:src="@{/js/cart.js}"></script>
+		</main>
 	</div>
+
+	<script src="/webjars/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
+	<script src="https://kit.fontawesome.com/a14342fe13.js" crossorigin="anonymous"></script>
 </body>
 
 </html>
 
-# target/classes/templates/profile/profile_edit.html
+# target/classes/templates/users/edit.html
 
 <!DOCTYPE html>
 <html  lang="fr"
@@ -1095,155 +1240,104 @@ document.addEventListener("DOMContentLoaded", () => {
 </body>
 </html>
 
-# target/classes/templates/profile/profile.html
+# target/classes/templates/authentification/login.html
 
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
-	layout:decorate="~{fragments/base}" th:with="title='Mon Profil'" lang="fr">
-
+<html xmlns:th="http://www.thymeleaf.org"
+      layout:decorate="~{fragments/base}"
+      th:with="title='Connexion'">
 <head>
-	<meta charset="UTF-8">
-	<meta name="viewport" content="width=device-width, initial-scale=1">
-	<title>Mon Profil | PlantShop</title>
-	<link rel="stylesheet" href="/webjars/bootstrap/5.3.2/css/bootstrap.min.css">
-	<link rel="stylesheet" href="/css/style.css">
+    <title>PlantShop | Connexion</title>
 </head>
-
 <body>
-	<div layout:fragment="content">
-		<main class="container pt-5 mt-5">
-			<div class="row justify-content-center">
-				<div class="col-md-8">
-					<div class="card shadow">
-						<div class="card-header bg-success text-white">
-							<h2 class="h4 mb-0">Mon Profil</h2>
-						</div>
-						<div class="card-body">
-							<dl class="row">
-								<dt class="col-sm-4">Nom complet</dt>
-								<dd class="col-sm-8" th:text="${user.name}">-</dd>
+<div layout:fragment="content">
+    <section class="container pt-5 mt-5">
+        <div class="row justify-content-center">
+            <div class="col-md-6 col-lg-4">
+                <div class="card shadow">
+                    <div class="card-header bg-success text-white">
+                        <h4 class="mb-0 text-center">Connexion</h4>
+                    </div>
+                    <div class="card-body p-4">
 
-								<dt class="col-sm-4">Email</dt>
-								<dd class="col-sm-8" th:text="${user.email}">-</dd>
-								<div th:if="${userRoleString == 'admin'}" class="d-flex gap-2">
-									<dt class="col-sm-4">Administrateur</dt>
-									<dd class="col-sm-8">
-										<span th:text="${userRoleString == 'admin'} ? 'Oui' : 'Non'">-</span>
-									</dd>
-								</div>
-								<div class="mt-4 text-start">
-									<a href="/my_profile/edit" class="btn btn-primary px-5">Modifier</a>
-								</div>
-							</dl>
-						</div>
-					</div>
-				</div>
-			</div>
-		</main>
-	</div>
+                        <div th:if="${param.error}" class="alert alert-danger">
+                            Identifiants invalides
+                        </div>
 
-	<script src="/webjars/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
-	<script src="https://kit.fontawesome.com/a14342fe13.js" crossorigin="anonymous"></script>
+                        <form th:action="@{/login}" method="post">
+                            <div class="mb-3">
+                                <label for="username" class="form-label">Email</label>
+                                <input type="text" class="form-control" id="username" name="email" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="password" class="form-label">Mot de passe</label>
+                                <input type="password" class="form-control" id="password" name="password" required>
+                            </div>
+                            <button type="submit" class="btn btn-success w-100">Se connecter</button>
+                        </form>
+
+												<div class="mt-3 text-center">
+													<span>Pas encore de compte ?&nbsp;</span>
+													<a th:href="@{/register}" class="text-success text-decoration-none">Inscrivez-vous !</a>
+											</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+</div>
 </body>
-
 </html>
 
-# target/classes/templates/fragments/base.html
+# target/classes/templates/authentification/register.html
 
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
-
+<html xmlns:th="http://www.thymeleaf.org"
+      layout:decorate="~{fragments/base}"
+      th:with="title='Inscription'">
 <head>
-	<meta charset="UTF-8">
-	<meta name="viewport" content="width=device-width, initial-scale=1">
-	<!-- Icône du site -->
-	<link rel="icon" href="/favicon.ico" type="image/x-icon" />
-
-	<title>PlantShop | [[${title}]]</title>
-
-	<!-- Bootstrap CSS -->
-	<link rel="stylesheet" href="/webjars/bootstrap/5.3.2/css/bootstrap.min.css">
-
-	<!-- Custom CSS -->
-	<link rel="stylesheet" th:href="@{/css/style.css}">
+    <title>PlantShop | Inscription</title>
 </head>
-
 <body>
-	<th:block th:with="userRoleString=${userRole}">
-		<!-- Navbar -->
-		<div th:replace="~{fragments/navbar :: navbar}"></div>
-		<div class="container">
-			<!-- Messages flash -->
-			<div th:if="${message}" class="alert alert-success" th:text="${message}"></div>
-			<div th:if="${error}" class="alert alert-danger" th:text="${error}"></div>
-
-			<!-- Contenu principal -->
-			<div layout:fragment="content"></div>
-		</div>
-
-		<!-- Bootstrap JS -->
-		<script src="/webjars/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
-		<script th:src="@{/js/app.js}"></script>
-	</th:block>
-
+    <div layout:fragment="content">
+        <section class="container pt-5 mt-5">
+            <div class="row justify-content-center">
+                <div class="col-md-6">
+                    <div class="card shadow">
+                        <div class="card-header bg-success text-white">
+                            <h4 class="mb-0">Créer un compte</h4>
+                        </div>
+                        <div class="card-body">
+                            <form th:action="@{/register}" th:object="${user}" method="post">
+                                <div class="mb-3">
+                                    <label class="form-label">Nom complet</label>
+                                    <input type="text" class="form-control" th:field="*{name}" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Adresse email</label>
+                                    <input type="email" class="form-control" th:field="*{email}" required>
+                                    <small class="text-danger" th:if="${#fields.hasErrors('email')}" th:errors="*{email}"></small>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Mot de passe</label>
+                                    <input type="password" class="form-control" th:field="*{password}" required>
+                                </div>
+                                <button type="submit" class="btn btn-success w-100">S'inscrire</button>
+                            </form>
+                            <hr>
+                            <p class="text-center mb-0">
+                                Déjà un compte ?
+																&nbsp;
+                                <a th:href="@{/login}" class="text-success">Se connecter</a>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
 </body>
-
 </html>
-
-# target/classes/templates/fragments/navbar.html
-
-<nav th:fragment="navbar" class="navbar navbar-expand-lg navbar fixed-top">
-	<!-- Navbar -->
-	<nav class="navbar navbar-expand-lg mb-4 fixed-top">
-		<div class="container">
-			<a class="navbar-brand" href="/">🌿 PlantShop</a>
-			<button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-				<span class="navbar-toggler-icon"></span>
-			</button>
-
-			<div class="collapse navbar-collapse" id="navbarNav">
-				<ul class="navbar-nav me-auto"></ul>
-				<ul class="navbar-nav">
-					<li th:if="${loggedUserName}" class="navbar-text me-2"
-							th:text="${userRoleString == 'admin' ? loggedUserName + ' (Administrateur)' : loggedUserName}">
-					</li>
-					<li th:if="${userRoleString == 'visitor' || userRoleString == 'user' || userRoleString == 'admin'}"
-						class="nav-item">
-						<a class="nav-link" href="/cart">Panier (<span class="cart-count">0</span>)</a>
-					</li>
-					<li th:if="${userRoleString == 'visitor'}" class="nav-item">
-						<a class="nav-link" href="/login">Connexion</a>
-					</li>
-					<li th:if="${userRoleString == 'visitor'}" class="nav-item">
-						<a class="nav-link" href="/register">Inscription</a>
-					</li>
-					<li th:if="${userRoleString == 'user' || userRoleString == 'admin'}" class="nav-item">
-						<a class="nav-link" href="/my_profile">Mon Profil</a>
-					</li>
-					<li th:if="${userRoleString == 'user' || userRoleString == 'admin'}" class="nav-item">
-						<a class="nav-link" href="/orders">Mes Commandes</a>
-					</li>
-
-					<li th:if="${userRoleString == 'admin'}" class="nav-item dropdown">
-						<a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
-							Admin
-						</a>
-						<ul class="dropdown-menu">
-							<li><a class="dropdown-item" href="/admin/plants">Gestion Plantes</a></li>
-							<li><a class="dropdown-item" href="/admin/users">Gestion Utilisateurs</a></li>
-						</ul>
-					</li>
-
-					<li th:if="${userRoleString == 'user' or userRoleString == 'admin'}" class="nav-item">
-						<form th:action="@{/logout}" method="post">
-							<button type="submit" class="nav-link btn btn-link">Déconnexion</button>
-						</form>
-					</li>
-				</ul>
-			</div>
-		</div>
-	</nav>
-</nav>
 
 # target/classes/application.yml
 
@@ -1420,7 +1514,7 @@ Application complète de vente de plantes développée avec Spring Boot et Thyme
 - Maven
 
 ### Configuration
-1. Créer une base de données PostgreSQL nommée `plant_shop`
+1. Créer une base de données PostgreSQL nommée `plant_shop_jpa`
 2. Modifier les identifiants dans `application.yml` si nécessaire
 
 ### Démarrage
@@ -1527,95 +1621,154 @@ seed: init
 
 # src/main/resources/static/js/app.js
 
+// # Classe CartManager
+
 /**
  * Gère le panier via le localStorage
- * @class CartManager
  */
 class CartManager {
 	/**
 	 * Charge le panier depuis le localStorage
-	 * @returns {Array<Object>} liste des articles dans le panier
+	 * @returns {Array<Object>} Liste des articles dans le panier
 	 */
 	static load() {
-		return JSON.parse(localStorage.getItem("cart") || "[]");
-	}
-
-	/**
-	 * Ajoute une plante au panier, avec gestion du stock initial.
-	 * @param {string|number} id identifiant unique de la plante
-	 * @param {string} name nom de la plante
-	 * @param {number} price prix unitaire
-	 * @param {number} stock quantité disponible
-	 */
-	static add(id, name, price, stock) {
-    console.log("[CartManager.add] received stock =", stock);
-		const cart = this.load();
-		const existing = cart.find((item) => item.id == id);
-		if (existing) {
-      console.log("[CartManager.add] item exists, current qty =", existing.qty, "stock (before) =", existing.stock);
-			existing.qty += 1;
-      existing.stock = stock;
-      console.log("[CartManager.add] stock updated to =", existing.stock);
-		} else {
-      console.log("[CartManager.add] new item added with stock =", stock);
-			cart.push({ id, name, price, qty: 1, stock });
-		}
-		this.save(cart);
-		this.refreshUI();
+		const cartJson = localStorage.getItem("cart") || "[]";
+		return JSON.parse(cartJson);
 	}
 
 	/**
 	 * Sauvegarde le panier dans le localStorage
-	 * @param {Array<Object>} cart liste des articles à sauvegarder
+	 * @param {Array<Object>} cartList Liste des articles à sauvegarder
 	 */
-	static save(cart) {
-		localStorage.setItem("cart", JSON.stringify(cart));
+	static save(cartList) {
+		localStorage.setItem("cart", JSON.stringify(cartList));
+	}
+
+	/**
+	 * Applique les changements du panier et met à jour l'interface.
+	 * @param {Array<Object>} cartList État du panier à valider
+	 */
+	static #commitCart(cartList) {
+		this.save(cartList);
+		this.refreshUI();
+	}
+
+	/**
+	 * Ajoute un article au panier, ou incrémente sa quantité.
+	 * Gère aussi le dépassement de stock.
+	 * @param {number} productId Identifiant du produit
+	 * @param {string} productName Nom du produit
+	 * @param {number} unitPrice Prix unitaire
+	 * @param {number} stockMax Quantité maximale disponible
+	 */
+	static add(productId, productName, unitPrice, stockMax) {
+		const cartList = this.load();
+		const product = cartList.find((entry) => entry && entry.id == productId);
+
+		if (!product) {
+			cartList.push({ id: productId, name: productName, price: unitPrice, qty: 1, stock: stockMax });
+			this.#commitCart(cartList);
+			return;
+		}
+
+		if (product.qty >= stockMax) {
+			showStockAlert(productName, stockMax);
+			setTimeout(() => {
+				product.qty = stockMax;
+				this.#commitCart(cartList);
+			}, 300);
+		} else {
+			product.qty++;
+			this.#commitCart(cartList);
+		}
 	}
 
 	/**
 	 * Calcule le nombre total d'articles dans le panier
-	 * @returns {number} total des quantités
+	 * @returns {number} Total des quantités
 	 */
 	static countItems() {
-		return this.load().reduce((sum, item) => sum + item.qty, 0);
+		const cartList = this.load();
+		return cartList.filter((entry) => entry && typeof entry.qty === "number").reduce((total, entry) => total + entry.qty, 0);
 	}
 
 	/**
-	 * Met à jour les éléments de l’interface liés au panier
+	 * Met à jour les éléments de l’interface affichant le compteur
 	 */
 	static refreshUI() {
-		const count = this.countItems();
-		document
-			.querySelectorAll(".cart-count")
-			.forEach((el) => (el.textContent = count));
-		const link = document.getElementById("cart-link");
-		if (link) link.textContent = `Panier (${count})`;
+		const itemCount = this.countItems();
+
+		document.querySelectorAll(".cart-count").forEach((element) => {
+			element.textContent = itemCount;
+		});
+
+		const navbarLink = document.getElementById("cart-link");
+		if (navbarLink) {
+			navbarLink.innerHTML = itemCount > 0 ? `Mon Panier (${itemCount})` : `Mon Panier`;
+		}
 	}
 }
 
-/**
- * Initialise les tooltips Bootstrap et l’UI du panier à chargement de page
- */
-document.addEventListener("DOMContentLoaded", () => {
-	[...document.querySelectorAll('[data-bs-toggle="tooltip"]')].forEach(
-		(el) => new bootstrap.Tooltip(el)
-	);
-	CartManager.refreshUI();
-	window.addEventListener(
-		"storage",
-		(e) => e.key === "cart" && CartManager.refreshUI()
-	);
-});
+// # Fonctions utilitaires
 
 /**
- * @function window.refreshCart
- * @description Alias global pour rafraîchir l’UI du panier
+ * Affiche une alerte pour informer d'un stock insuffisant
+ * @param {string} plantName Nom du produit
+ * @param {number} stockLeft Quantité restante
+ */
+function showStockAlert(plantName, stockLeft) {
+	const alertElement = document.createElement("div");
+	alertElement.className = "alert alert-warning fade position-absolute top-0 start-50 translate-middle-x mt-3 shadow";
+	alertElement.role = "alert";
+	alertElement.style.zIndex = "1055";
+	alertElement.style.maxWidth = "600px";
+	alertElement.style.pointerEvents = "none";
+
+	const textStart = document.createTextNode("Stock insuffisant pour pour cette plante (");
+	const strongText = document.createElement("strong");
+	strongText.textContent = plantName;
+	const textEnd = document.createTextNode(`), actuellement, il en reste ${stockLeft}.`);
+
+	alertElement.appendChild(textStart);
+	alertElement.appendChild(strongText);
+	alertElement.appendChild(textEnd);
+
+	document.body.appendChild(alertElement);
+	setTimeout(() => alertElement.classList.add("show"), 10);
+	setTimeout(() => {
+		alertElement.classList.remove("show");
+		alertElement.classList.add("fade");
+		setTimeout(() => alertElement.remove(), 300);
+	}, 3000);
+}
+
+// # Initialisation DOM
+
+/**
+ * Initialise les tooltips Bootstrap et les compteurs panier
+ */
+document.addEventListener("DOMContentLoaded", () => {
+	const tooltipElements = document.querySelectorAll('[data-bs-toggle="tooltip"]');
+	tooltipElements.forEach((element) => new bootstrap.Tooltip(element));
+
+	CartManager.refreshUI();
+
+	window.addEventListener("storage", (storageEvent) => {
+		if (storageEvent.key === "cart") {
+			CartManager.refreshUI();
+		}
+	});
+});
+
+// # Fonctions globales
+
+/**
+ * Alias global pour rafraîchir l'interface panier
  */
 window.refreshCart = () => CartManager.refreshUI();
 
 /**
- * @function window.refreshUI
- * @description Autre alias global pour rafraîchir l’UI du panier
+ * Alias secondaire pour compatibilité
  */
 window.refreshUI = () => CartManager.refreshUI();
 
@@ -1632,16 +1785,16 @@ class PlantCatalog {
 	 */
 	static init() {
 		document.querySelectorAll(".add-to-cart").forEach((btn) => {
-			btn.addEventListener("click", (e) => {
-				e.stopPropagation(); // empêche la propagation vers le lien parent
-				e.preventDefault(); // empêche la navigation
+			btn.addEventListener("click", (exception) => {
+				exception.stopPropagation(); // empêche la propagation vers le lien parent
+				exception.preventDefault(); // empêche la navigation
 
 				const id = btn.dataset.id;
 				const name = btn.dataset.name;
 				const price = parseFloat(btn.dataset.price);
 				const stock = parseInt(btn.dataset.stock);
 
-        console.log("[plants.js] btn.dataset.stock =", btn.dataset.stock);
+        // console.log("[plants.js] btn.dataset.stock =", btn.dataset.stock);
 				CartManager.add(id, name, price, stock);
 			});
 		});
@@ -1685,181 +1838,203 @@ document.addEventListener("DOMContentLoaded", () => {
 
 # src/main/resources/static/js/cart.js
 
+// # Classe CartPage
+
 /**
  * Gère l'affichage, la mise à jour, et la validation du panier côté page.
- * @class CartPage
  */
 class CartPage {
 	/**
-	 * Initialise les éléments du DOM, les événements et le rendu initial.
+	 * Initialise les événements DOM, le rendu initial et les boutons.
 	 */
 	static init() {
-		/** @member {HTMLElement} this.body - Corps du tableau du panier */
-		this.body = document.getElementById("cartBody");
+		this.cartTableBody = document.getElementById("cartBody");
+		this.totalElement = document.getElementById("cartTotal");
+		this.messageElement = document.getElementById("checkoutMessage");
 
-		/** @member {HTMLElement} this.totalE - Élément affichant le total */
-		this.totalE = document.getElementById("cartTotal");
+		const form = document.getElementById("checkoutForm");
+		const clearButton = document.getElementById("clearCart");
 
-		/** @member {HTMLElement} this.msgEl - Élément pour les messages */
-		this.msgEl = document.getElementById("checkoutMessage");
-
-		// Événement de soumission du formulaire
-		document
-			.getElementById("checkoutForm")
-			?.addEventListener("submit", (e) => this.handleCheckout(e));
-
-		// Bouton pour vider le panier
-		document
-			.getElementById("clearCart")
-			?.addEventListener("click", () => this.clearCart());
-
-		// Événement pour suppression d'article
-		this.body.addEventListener("click", (e) => this.handleRemove(e));
+		form?.addEventListener("submit", (submitEvent) => this.handleCheckout(submitEvent));
+		clearButton?.addEventListener("click", () => this.clearCart());
+		this.cartTableBody.addEventListener("click", (mouseEvent) => this.handleRemove(mouseEvent));
 
 		this.render();
 	}
 
 	/**
-	 * Affiche dynamiquement le contenu du panier et le total.
+	 * Affiche dynamiquement les articles et le total du panier.
 	 */
 	static render() {
-		const cart = CartManager.load();
-		this.body.innerHTML = "";
-		let total = 0;
+		const currentCart = CartManager.load();
+		this.cartTableBody.innerHTML = "";
+		let cartTotal = 0;
 
-		if (cart.length === 0) {
-			// Affiche un message si le panier est vide
-			const row = document.createElement("tr");
-			const cell = document.createElement("td");
-			cell.colSpan = 5;
-			cell.className = "text-center";
-			cell.textContent = "Votre panier est vide.";
-			row.appendChild(cell);
-			this.body.appendChild(row);
+		if (currentCart.length === 0) {
+			this.#renderEmptyCartMessage();
 		} else {
-			// Affiche chaque article dans le panier
-			cart.forEach((item, i) => {
-				const row = document.createElement("tr");
-
-				// Nom + lien
-				const colName = document.createElement("td");
-				const link = document.createElement("a");
-				link.href = `/plants/${item.id}`;
-				link.className = "product-link";
-				link.textContent = item.name;
-				colName.appendChild(link);
-
-				// Prix unitaire
-				const colPrice = document.createElement("td");
-				colPrice.textContent = item.price.toFixed(2);
-
-				// Quantité modifiable
-				const colQty = document.createElement("td");
-				const input = document.createElement("input");
-				input.type = "number";
-				input.min = "1";
-				input.value = item.qty;
-				input.className = "form-control form-control-sm qty-input";
-				input.style.width = "80px";
-				input.dataset.cartId = item.id;
-				input.dataset.stock = item.stock;
-				input.onkeydown = (e) => e.key !== "e" && e.key !== "-";
-				this.attachQtyListener(input);
-				colQty.appendChild(input);
-
-				// Sous-total
-				const colSub = document.createElement("td");
-				colSub.textContent = (item.qty * item.price).toFixed(2);
-
-				// Bouton supprimer
-				const colDel = document.createElement("td");
-				const btn = document.createElement("button");
-				btn.className = "btn btn-sm btn-danger";
-				btn.textContent = "✕";
-				btn.dataset.i = i;
-				colDel.appendChild(btn);
-
-				[colName, colPrice, colQty, colSub, colDel].forEach((el) =>
-					row.appendChild(el)
-				);
-				this.body.appendChild(row);
-
-				total += item.qty * item.price;
+			currentCart.forEach((product, position) => {
+				const rowElement = this.#buildCartRow(product, position);
+				this.cartTableBody.appendChild(rowElement);
+				cartTotal += product.qty * product.price;
 			});
 		}
-
-		this.totalE.textContent = total.toFixed(2);
+		this.totalElement.textContent = cartTotal.toFixed(2);
 	}
 
 	/**
-	 * Attache les événements à un champ de quantité pour mettre à jour l’article.
-	 * @param {HTMLInputElement} input champ de saisie de la quantité
+	 * Génère un élément de ligne HTML pour un article du panier.
+	 * @param {Object} product Produit à afficher
+	 * @param {number} position Index dans le tableau
+	 * @returns {HTMLTableRowElement}
 	 */
-	static attachQtyListener(input) {
-		let timer;
+	static #buildCartRow(product, position) {
+		const row = document.createElement("tr");
+		row.appendChild(this.#buildNameCell(product));
+		row.appendChild(this.#buildPriceCell(product));
+		row.appendChild(this.#buildQuantityCell(product));
+		row.appendChild(this.#buildSubtotalCell(product));
+		row.appendChild(this.#buildRemoveCell(position));
+		return row;
+	}
+
+	/**
+	 * Crée une cellule avec lien vers la fiche produit.
+	 */
+	static #buildNameCell(product) {
+		const cell = document.createElement("td");
+		const link = document.createElement("a");
+		link.href = `/plants/${product.id}`;
+		link.className = "product-link";
+		link.textContent = product.name;
+		cell.appendChild(link);
+		return cell;
+	}
+
+	/**
+	 * Crée une cellule pour le prix unitaire.
+	 */
+	static #buildPriceCell(product) {
+		const cell = document.createElement("td");
+		cell.textContent = product.price.toFixed(2);
+		return cell;
+	}
+
+	/**
+	 * Crée une cellule avec champ quantité modifiable.
+	 */
+	static #buildQuantityCell(product) {
+		const cell = document.createElement("td");
+		const inputField = document.createElement("input");
+		inputField.type = "number";
+		inputField.min = "1";
+		inputField.value = product.qty;
+		inputField.className = "form-control form-control-sm qty-input";
+		inputField.style.width = "80px";
+		inputField.dataset.cartId = product.id;
+		inputField.dataset.stock = product.stock;
+		inputField.onkeydown = (keyboardEvent) =>
+			keyboardEvent.key !== "e" && keyboardEvent.key !== "-";
+		this.#attachQuantityHandler(inputField);
+		cell.appendChild(inputField);
+		return cell;
+	}
+
+	/**
+	 * Crée une cellule affichant le sous-total.
+	 */
+	static #buildSubtotalCell(product) {
+		const cell = document.createElement("td");
+		const subtotal = product.qty * product.price;
+		cell.textContent = subtotal.toFixed(2);
+		return cell;
+	}
+
+	/**
+	 * Crée une cellule avec bouton de suppression.
+	 */
+	static #buildRemoveCell(position) {
+		const cell = document.createElement("td");
+		const button = document.createElement("button");
+		button.className = "btn btn-sm btn-danger";
+		button.textContent = "✕";
+		button.dataset.i = position;
+		cell.appendChild(button);
+		return cell;
+	}
+
+	/**
+	 * Ajoute les gestionnaires input et blur au champ quantité.
+	 * @param {HTMLInputElement} inputField
+	 */
+	static #attachQuantityHandler(inputField) {
+		let delayTimer;
 		const handler = () => {
-			clearTimeout(timer);
-			timer = setTimeout(() => {
-				const cart = CartManager.load();
-				const id = input.dataset.cartId;
-        console.log("[cart.js] input.dataset.stock =", input.dataset.stock);
-				const stock = parseInt(input.dataset.stock) || 1;
-        console.log("[cart.js] parsed stock =", stock);
-				let val = parseInt(input.value);
-				if (isNaN(val)) console.log("val is NaN, val = " + val);
-				if (isNaN(val) || val < 1) val = 1;
-				console.log("Val = " + val);
-				if (val > stock) val = stock;
-				input.value = val;
-				const item = cart.find((p) => p.id == id);
-				if (item) item.qty = val;
-				CartManager.save(cart);
+			clearTimeout(delayTimer);
+			delayTimer = setTimeout(() => {
+				const currentCart = CartManager.load();
+				const productId = inputField.dataset.cartId;
+				const stockMax = parseInt(inputField.dataset.stock) || 1;
+				let quantity = parseInt(inputField.value);
+				if (isNaN(quantity) || quantity < 1) quantity = 1;
+				if (quantity > stockMax) quantity = stockMax;
+				inputField.value = quantity;
+
+				const product = currentCart.find((p) => p.id == productId);
+				if (product) product.qty = quantity;
+
+				CartManager.save(currentCart);
 				CartPage.render();
 				refreshCart();
 			}, 300);
 		};
-		input.addEventListener("input", handler);
-		input.addEventListener("blur", handler);
+		inputField.addEventListener("input", handler);
+		inputField.addEventListener("blur", handler);
 	}
 
 	/**
-	 * Gère la suppression d’un article via le bouton.
-	 * @param {MouseEvent} e événement de clic
+	 * Supprime un article cliqué du panier.
+	 * @param {MouseEvent} mouseEvent
 	 */
-	static handleRemove(e) {
-		if (e.target.matches("button[data-i]")) {
-			const cart = CartManager.load();
-			cart.splice(e.target.dataset.i, 1);
-			CartManager.save(cart);
+	static handleRemove(mouseEvent) {
+		if (mouseEvent.target.matches("button[data-i]")) {
+			const currentCart = CartManager.load();
+			currentCart.splice(mouseEvent.target.dataset.i, 1);
+			CartManager.save(currentCart);
 			this.render();
 			refreshCart();
 		}
 	}
 
 	/**
-	 * Gère la soumission du panier (checkout).
-	 * @param {SubmitEvent} e événement de soumission
+	 * Gère la soumission du panier vers le serveur.
+	 * @param {SubmitEvent} submitEvent
 	 */
-	static handleCheckout(e) {
-		e.preventDefault();
-
+	static handleCheckout(submitEvent) {
+		submitEvent.preventDefault();
 		if (window.userRole === "visitor") {
 			window.location.href = "/login";
 			return;
 		}
-
-		const cart = CartManager.load();
-		if (cart.length === 0) {
+		const currentCart = CartManager.load();
+		if (currentCart.length === 0) {
 			this.showMsg("Votre panier est vide.", "danger");
 			return;
 		}
+		this.#sendCheckoutRequest(currentCart);
+	}
 
+	/**
+	 * Envoie la requête POST de checkout au serveur.
+	 * @param {Object[]} currentCart
+	 */
+	static #sendCheckoutRequest(currentCart) {
 		fetch("/orders/checkout", {
 			method: "POST",
 			headers: { "Content-Type": "application/json" },
-			body: JSON.stringify(cart),
+			body: JSON.stringify(currentCart),
 		})
-			.then((res) => res.text().then((text) => ({ ok: res.ok, text })))
+			.then((response) => response.text().then((text) => ({ ok: response.ok, text })))
 			.then(({ ok, text }) => {
 				if (ok && text === "OK") {
 					localStorage.removeItem("cart");
@@ -1867,10 +2042,7 @@ class CartPage {
 					this.showMsg("Commande validée ! Redirection…", "success");
 					setTimeout(() => (window.location.href = "/orders"), 0);
 				} else {
-					this.showMsg(
-						"Erreur lors de la commande : " + text,
-						"danger"
-					);
+					this.showMsg("Erreur lors de la commande : " + text, "danger");
 				}
 			})
 			.catch(() => {
@@ -1879,7 +2051,7 @@ class CartPage {
 	}
 
 	/**
-	 * Vide le panier et met à jour l'interface.
+	 * Vide complètement le panier et recharge l'interface.
 	 */
 	static clearCart() {
 		localStorage.removeItem("cart");
@@ -1888,18 +2060,33 @@ class CartPage {
 	}
 
 	/**
-	 * Affiche un message utilisateur (erreur, succès…).
-	 * @param {string} text contenu du message
-	 * @param {string} type type Bootstrap (`success`, `danger`, etc.)
+	 * Affiche un message utilisateur type Bootstrap.
+	 * @param {string} message
+	 * @param {string} type
 	 */
-	static showMsg(text, type) {
-		this.msgEl.className = `alert alert-${type}`;
-		this.msgEl.textContent = text;
+	static showMsg(message, type) {
+		this.messageElement.className = `alert alert-${type}`;
+		this.messageElement.textContent = message;
+	}
+
+	/**
+	 * Affiche un message lorsque le panier est vide.
+	 */
+	static #renderEmptyCartMessage() {
+		const emptyRow = document.createElement("tr");
+		const emptyCell = document.createElement("td");
+		emptyCell.colSpan = 5;
+		emptyCell.className = "text-center";
+		emptyCell.textContent = "Votre panier est vide.";
+		emptyRow.appendChild(emptyCell);
+		this.cartTableBody.appendChild(emptyRow);
 	}
 }
 
+// # Lancement
+
 /**
- * Initialise la page du panier à chargement.
+ * Initialise le rendu du panier au chargement.
  */
 document.addEventListener("DOMContentLoaded", () => {
 	CartPage.init();
@@ -2032,53 +2219,158 @@ document.addEventListener("DOMContentLoaded", () => {
 </body>
 </html>
 
-# src/main/resources/templates/login.html
+# src/main/resources/templates/cart/cart.html
 
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org"
-      layout:decorate="~{fragments/base}"
-      th:with="title='Connexion'">
+<html xmlns:th="http://www.thymeleaf.org" layout:decorate="~{fragments/base}" th:with="title='Panier'">
+
 <head>
-    <title>PlantShop | Connexion</title>
+	<title>PlantShop | Panier</title>
 </head>
+
 <body>
-<div layout:fragment="content">
-    <section class="container pt-5 mt-5">
-        <div class="row justify-content-center">
-            <div class="col-md-6 col-lg-4">
-                <div class="card shadow">
-                    <div class="card-header bg-success text-white">
-                        <h4 class="mb-0 text-center">Connexion</h4>
-                    </div>
-                    <div class="card-body p-4">
+	<div layout:fragment="content">
+		<section class="container pt-5 mt-5">
+			<h2 class="mb-4">🛒 Votre panier</h2>
 
-                        <div th:if="${param.error}" class="alert alert-danger">
-                            Identifiants invalides
-                        </div>
+			<div id="checkoutMessage" class="alert d-none" role="alert"></div>
 
-                        <form th:action="@{/login}" method="post">
-                            <div class="mb-3">
-                                <label for="username" class="form-label">Email</label>
-                                <input type="text" class="form-control" id="username" name="email" required>
-                            </div>
-                            <div class="mb-3">
-                                <label for="password" class="form-label">Mot de passe</label>
-                                <input type="password" class="form-control" id="password" name="password" required>
-                            </div>
-                            <button type="submit" class="btn btn-success w-100">Se connecter</button>
-                        </form>
+			<div class="table-responsive">
+				<table class="table align-middle">
+					<thead>
+						<tr>
+							<th>Produit</th>
+							<th>Prix (€)</th>
+							<th>Quantité</th>
+							<th>Sous‑total (€)</th>
+							<th></th>
+						</tr>
+					</thead>
+					<tbody id="cartBody">
+						<tr id="emptyRow">
+							<td colspan="5" class="text-center">Votre panier est vide.</td>
+						</tr>
+					</tbody>
+					<tfoot class="table-light">
+						<tr>
+							<th colspan="3" class="text-end">Total&nbsp;:</th>
+							<th id="cartTotal">0.00</th>
+							<th></th>
+						</tr>
+					</tfoot>
+				</table>
+			</div>
 
-												<div class="mt-3 text-center">
-													<span>Pas encore de compte ?&nbsp;</span>
-													<a th:href="@{/register}" class="text-success text-decoration-none">Inscrivez-vous !</a>
-											</div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-</div>
+			<div class="d-flex justify-content-between align-items-center mt-4">
+				<button type="button" class="btn btn-outline-secondary" id="clearCart">Vider le panier</button>
+				<form id="checkoutForm" class="mb-0">
+					<button type="submit" class="btn btn-success">Terminer la commande</button>
+				</form>
+			</div>
+			<div id="checkoutMessage" class="mt-3"></div>
+
+		</section>
+		<script th:src="@{/js/cart.js}"></script>
+	</div>
 </body>
+
+</html>
+
+# src/main/resources/templates/layout/navbar.html
+
+<nav th:fragment="navbar" class="navbar navbar-expand-lg navbar fixed-top">
+	<!-- Navbar -->
+	<nav class="navbar navbar-expand-lg mb-4 fixed-top">
+		<div class="container">
+			<a class="navbar-brand" href="/">🌿 PlantShop</a>
+			<button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+				<span class="navbar-toggler-icon"></span>
+			</button>
+
+			<div class="collapse navbar-collapse" id="navbarNav">
+				<ul class="navbar-nav me-auto"></ul>
+				<ul class="navbar-nav">
+					<li th:if="${loggedUserName}" class="navbar-text me-2"
+						th:text="${userRoleString == 'admin' ? loggedUserName + ' (Administrateur)' : loggedUserName}">
+					</li>
+					<li th:if="${userRoleString == 'visitor' || userRoleString == 'user' || userRoleString == 'admin'}"
+						class="nav-item">
+						<a class="nav-link" id="cart-link" href="/cart">Mon Panier</a>
+					</li>
+					<li th:if="${userRoleString == 'visitor'}" class="nav-item">
+						<a class="nav-link" href="/login">Connexion</a>
+					</li>
+					<li th:if="${userRoleString == 'visitor'}" class="nav-item">
+						<a class="nav-link" href="/register">Inscription</a>
+					</li>
+					<li th:if="${userRoleString == 'user' || userRoleString == 'admin'}" class="nav-item">
+						<a class="nav-link" href="/my_profile">Mon Profil</a>
+					</li>
+					<li th:if="${userRoleString == 'user' || userRoleString == 'admin'}" class="nav-item">
+						<a class="nav-link" href="/orders">Mes Commandes</a>
+					</li>
+
+					<li th:if="${userRoleString == 'admin'}" class="nav-item dropdown">
+						<a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+							Admin
+						</a>
+						<ul class="dropdown-menu">
+							<li><a class="dropdown-item" href="/admin/plants">Gestion Plantes</a></li>
+							<li><a class="dropdown-item" href="/admin/users">Gestion Utilisateurs</a></li>
+						</ul>
+					</li>
+
+					<li th:if="${userRoleString == 'user' or userRoleString == 'admin'}" class="nav-item">
+						<form th:action="@{/logout}" method="post">
+							<button type="submit" class="nav-link btn btn-link">Déconnexion</button>
+						</form>
+					</li>
+				</ul>
+			</div>
+		</div>
+	</nav>
+</nav>
+
+# src/main/resources/templates/layout/application.html
+
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<!-- Icône du site -->
+	<link rel="icon" href="/favicon.ico" type="image/x-icon" />
+
+	<title>PlantShop | [[${title}]]</title>
+
+	<!-- Bootstrap CSS -->
+	<link rel="stylesheet" href="/webjars/bootstrap/5.3.2/css/bootstrap.min.css">
+
+	<!-- Custom CSS -->
+	<link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+
+<body>
+	<th:block th:with="userRoleString=${userRole}">
+		<!-- Navbar -->
+		<div th:replace="~{fragments/navbar :: navbar}"></div>
+		<div class="container">
+			<!-- Messages flash -->
+			<div th:if="${message}" class="alert alert-success" th:text="${message}"></div>
+			<div th:if="${error}" class="alert alert-danger" th:text="${error}"></div>
+
+			<!-- Contenu principal -->
+			<div layout:fragment="content"></div>
+		</div>
+
+		<!-- Bootstrap JS -->
+		<script src="/webjars/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
+		<script th:src="@{/js/app.js}"></script>
+	</th:block>
+
+</body>
+
 </html>
 
 # src/main/resources/templates/admin/plants/index.html
@@ -2374,7 +2666,7 @@ document.addEventListener("DOMContentLoaded", () => {
 			</div>
 
 			<div class="row">
-				<div th:each="plant : ${plants}" class="col-md-4 mb-4">
+				<div th:each="plant : ${plants}" th:if="${plant.stock > 0}" class="col-md-4 mb-4">
 					<div class="card h-100 plant-card" th:data-id="${plant.id}">
 						<div class="card-body position-relative">
 							<h5 class="card-title" th:text="${plant.name}">Nom</h5>
@@ -2385,8 +2677,9 @@ document.addEventListener("DOMContentLoaded", () => {
 							</p>
 
 							<div class="d-flex gap-2">
-								<button type="button" class="btn btn-success flex-grow-1 add-to-cart" th:data-id="${plant.id}" style="z-index: 1; position: relative;"
-									th:data-name="${plant.name}" th:data-price="${plant.price}">
+								<button type="button" class="btn btn-success flex-grow-1 add-to-cart" th:data-id="${plant.id}"
+									style="z-index: 1; position: relative;" th:data-name="${plant.name}" th:data-price="${plant.price}"
+									th:data-stock="${plant.stock}">
 									Ajouter au panier
 								</button>
 							</div>
@@ -2409,56 +2702,6 @@ document.addEventListener("DOMContentLoaded", () => {
 	</div>
 </body>
 
-</html>
-
-# src/main/resources/templates/register.html
-
-<!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org"
-      layout:decorate="~{fragments/base}"
-      th:with="title='Inscription'">
-<head>
-    <title>PlantShop | Inscription</title>
-</head>
-<body>
-    <div layout:fragment="content">
-        <section class="container pt-5 mt-5">
-            <div class="row justify-content-center">
-                <div class="col-md-6">
-                    <div class="card shadow">
-                        <div class="card-header bg-success text-white">
-                            <h4 class="mb-0">Créer un compte</h4>
-                        </div>
-                        <div class="card-body">
-                            <form th:action="@{/register}" th:object="${user}" method="post">
-                                <div class="mb-3">
-                                    <label class="form-label">Nom complet</label>
-                                    <input type="text" class="form-control" th:field="*{name}" required>
-                                </div>
-                                <div class="mb-3">
-                                    <label class="form-label">Adresse email</label>
-                                    <input type="email" class="form-control" th:field="*{email}" required>
-                                    <small class="text-danger" th:if="${#fields.hasErrors('email')}" th:errors="*{email}"></small>
-                                </div>
-                                <div class="mb-3">
-                                    <label class="form-label">Mot de passe</label>
-                                    <input type="password" class="form-control" th:field="*{password}" required>
-                                </div>
-                                <button type="submit" class="btn btn-success w-100">S'inscrire</button>
-                            </form>
-                            <hr>
-                            <p class="text-center mb-0">
-                                Déjà un compte ?
-																&nbsp;
-                                <a th:href="@{/login}" class="text-success">Se connecter</a>
-                            </p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </section>
-    </div>
-</body>
 </html>
 
 # src/main/resources/templates/orders/index.html
@@ -2509,64 +2752,60 @@ document.addEventListener("DOMContentLoaded", () => {
 
 </html>
 
-# src/main/resources/templates/cart.html
+# src/main/resources/templates/users/show.html
 
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org" layout:decorate="~{fragments/base}" th:with="title='Panier'">
+<html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+	layout:decorate="~{fragments/base}" th:with="title='Mon Profil'" lang="fr">
 
 <head>
-	<title>PlantShop | Panier</title>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>Mon Profil | PlantShop</title>
+	<link rel="stylesheet" href="/webjars/bootstrap/5.3.2/css/bootstrap.min.css">
+	<link rel="stylesheet" href="/css/style.css">
 </head>
 
 <body>
 	<div layout:fragment="content">
-		<section class="container pt-5 mt-5">
-			<h2 class="mb-4">🛒 Votre panier</h2>
+		<main class="container pt-5 mt-5">
+			<div class="row justify-content-center">
+				<div class="col-md-8">
+					<div class="card shadow">
+						<div class="card-header bg-success text-white">
+							<h2 class="h4 mb-0">Mon Profil</h2>
+						</div>
+						<div class="card-body">
+							<dl class="row">
+								<dt class="col-sm-4">Nom complet</dt>
+								<dd class="col-sm-8" th:text="${user.name}">-</dd>
 
-			<div id="checkoutMessage" class="alert d-none" role="alert"></div>
-
-			<div class="table-responsive">
-				<table class="table align-middle">
-					<thead>
-						<tr>
-							<th>Produit</th>
-							<th>Prix (€)</th>
-							<th>Quantité</th>
-							<th>Sous‑total (€)</th>
-							<th></th>
-						</tr>
-					</thead>
-					<tbody id="cartBody">
-						<tr id="emptyRow">
-							<td colspan="5" class="text-center">Votre panier est vide.</td>
-						</tr>
-					</tbody>
-					<tfoot class="table-light">
-						<tr>
-							<th colspan="3" class="text-end">Total&nbsp;:</th>
-							<th id="cartTotal">0.00</th>
-							<th></th>
-						</tr>
-					</tfoot>
-				</table>
+								<dt class="col-sm-4">Email</dt>
+								<dd class="col-sm-8" th:text="${user.email}">-</dd>
+								<div th:if="${userRoleString == 'admin'}" class="d-flex gap-2">
+									<dt class="col-sm-4">Administrateur</dt>
+									<dd class="col-sm-8">
+										<span th:text="${userRoleString == 'admin'} ? 'Oui' : 'Non'">-</span>
+									</dd>
+								</div>
+								<div class="mt-4 text-start">
+									<a href="/my_profile/edit" class="btn btn-primary px-5">Modifier</a>
+								</div>
+							</dl>
+						</div>
+					</div>
+				</div>
 			</div>
-
-			<div class="d-flex justify-content-between align-items-center mt-4">
-				<button type="button" class="btn btn-outline-secondary" id="clearCart">Vider le panier</button>
-				<form id="checkoutForm" class="mb-0">
-					<button type="submit" class="btn btn-success">Terminer la commande</button>
-				</form>
-			</div>
-			<div id="checkoutMessage" class="mt-3"></div>
-
-		</section>
-		<script th:src="@{/js/cart.js}"></script>
+		</main>
 	</div>
+
+	<script src="/webjars/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
+	<script src="https://kit.fontawesome.com/a14342fe13.js" crossorigin="anonymous"></script>
 </body>
 
 </html>
 
-# src/main/resources/templates/profile/profile_edit.html
+# src/main/resources/templates/users/edit.html
 
 <!DOCTYPE html>
 <html  lang="fr"
@@ -2622,155 +2861,104 @@ document.addEventListener("DOMContentLoaded", () => {
 </body>
 </html>
 
-# src/main/resources/templates/profile/profile.html
+# src/main/resources/templates/authentification/login.html
 
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
-	layout:decorate="~{fragments/base}" th:with="title='Mon Profil'" lang="fr">
-
+<html xmlns:th="http://www.thymeleaf.org"
+      layout:decorate="~{fragments/base}"
+      th:with="title='Connexion'">
 <head>
-	<meta charset="UTF-8">
-	<meta name="viewport" content="width=device-width, initial-scale=1">
-	<title>Mon Profil | PlantShop</title>
-	<link rel="stylesheet" href="/webjars/bootstrap/5.3.2/css/bootstrap.min.css">
-	<link rel="stylesheet" href="/css/style.css">
+    <title>PlantShop | Connexion</title>
 </head>
-
 <body>
-	<div layout:fragment="content">
-		<main class="container pt-5 mt-5">
-			<div class="row justify-content-center">
-				<div class="col-md-8">
-					<div class="card shadow">
-						<div class="card-header bg-success text-white">
-							<h2 class="h4 mb-0">Mon Profil</h2>
-						</div>
-						<div class="card-body">
-							<dl class="row">
-								<dt class="col-sm-4">Nom complet</dt>
-								<dd class="col-sm-8" th:text="${user.name}">-</dd>
+<div layout:fragment="content">
+    <section class="container pt-5 mt-5">
+        <div class="row justify-content-center">
+            <div class="col-md-6 col-lg-4">
+                <div class="card shadow">
+                    <div class="card-header bg-success text-white">
+                        <h4 class="mb-0 text-center">Connexion</h4>
+                    </div>
+                    <div class="card-body p-4">
 
-								<dt class="col-sm-4">Email</dt>
-								<dd class="col-sm-8" th:text="${user.email}">-</dd>
-								<div th:if="${userRoleString == 'admin'}" class="d-flex gap-2">
-									<dt class="col-sm-4">Administrateur</dt>
-									<dd class="col-sm-8">
-										<span th:text="${userRoleString == 'admin'} ? 'Oui' : 'Non'">-</span>
-									</dd>
-								</div>
-								<div class="mt-4 text-start">
-									<a href="/my_profile/edit" class="btn btn-primary px-5">Modifier</a>
-								</div>
-							</dl>
-						</div>
-					</div>
-				</div>
-			</div>
-		</main>
-	</div>
+                        <div th:if="${param.error}" class="alert alert-danger">
+                            Identifiants invalides
+                        </div>
 
-	<script src="/webjars/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
-	<script src="https://kit.fontawesome.com/a14342fe13.js" crossorigin="anonymous"></script>
+                        <form th:action="@{/login}" method="post">
+                            <div class="mb-3">
+                                <label for="username" class="form-label">Email</label>
+                                <input type="text" class="form-control" id="username" name="email" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="password" class="form-label">Mot de passe</label>
+                                <input type="password" class="form-control" id="password" name="password" required>
+                            </div>
+                            <button type="submit" class="btn btn-success w-100">Se connecter</button>
+                        </form>
+
+												<div class="mt-3 text-center">
+													<span>Pas encore de compte ?&nbsp;</span>
+													<a th:href="@{/register}" class="text-success text-decoration-none">Inscrivez-vous !</a>
+											</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+</div>
 </body>
-
 </html>
 
-# src/main/resources/templates/fragments/base.html
+# src/main/resources/templates/authentification/register.html
 
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
-
+<html xmlns:th="http://www.thymeleaf.org"
+      layout:decorate="~{fragments/base}"
+      th:with="title='Inscription'">
 <head>
-	<meta charset="UTF-8">
-	<meta name="viewport" content="width=device-width, initial-scale=1">
-	<!-- Icône du site -->
-	<link rel="icon" href="/favicon.ico" type="image/x-icon" />
-
-	<title>PlantShop | [[${title}]]</title>
-
-	<!-- Bootstrap CSS -->
-	<link rel="stylesheet" href="/webjars/bootstrap/5.3.2/css/bootstrap.min.css">
-
-	<!-- Custom CSS -->
-	<link rel="stylesheet" th:href="@{/css/style.css}">
+    <title>PlantShop | Inscription</title>
 </head>
-
 <body>
-	<th:block th:with="userRoleString=${userRole}">
-		<!-- Navbar -->
-		<div th:replace="~{fragments/navbar :: navbar}"></div>
-		<div class="container">
-			<!-- Messages flash -->
-			<div th:if="${message}" class="alert alert-success" th:text="${message}"></div>
-			<div th:if="${error}" class="alert alert-danger" th:text="${error}"></div>
-
-			<!-- Contenu principal -->
-			<div layout:fragment="content"></div>
-		</div>
-
-		<!-- Bootstrap JS -->
-		<script src="/webjars/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
-		<script th:src="@{/js/app.js}"></script>
-	</th:block>
-
+    <div layout:fragment="content">
+        <section class="container pt-5 mt-5">
+            <div class="row justify-content-center">
+                <div class="col-md-6">
+                    <div class="card shadow">
+                        <div class="card-header bg-success text-white">
+                            <h4 class="mb-0">Créer un compte</h4>
+                        </div>
+                        <div class="card-body">
+                            <form th:action="@{/register}" th:object="${user}" method="post">
+                                <div class="mb-3">
+                                    <label class="form-label">Nom complet</label>
+                                    <input type="text" class="form-control" th:field="*{name}" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Adresse email</label>
+                                    <input type="email" class="form-control" th:field="*{email}" required>
+                                    <small class="text-danger" th:if="${#fields.hasErrors('email')}" th:errors="*{email}"></small>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Mot de passe</label>
+                                    <input type="password" class="form-control" th:field="*{password}" required>
+                                </div>
+                                <button type="submit" class="btn btn-success w-100">S'inscrire</button>
+                            </form>
+                            <hr>
+                            <p class="text-center mb-0">
+                                Déjà un compte ?
+																&nbsp;
+                                <a th:href="@{/login}" class="text-success">Se connecter</a>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
 </body>
-
 </html>
-
-# src/main/resources/templates/fragments/navbar.html
-
-<nav th:fragment="navbar" class="navbar navbar-expand-lg navbar fixed-top">
-	<!-- Navbar -->
-	<nav class="navbar navbar-expand-lg mb-4 fixed-top">
-		<div class="container">
-			<a class="navbar-brand" href="/">🌿 PlantShop</a>
-			<button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-				<span class="navbar-toggler-icon"></span>
-			</button>
-
-			<div class="collapse navbar-collapse" id="navbarNav">
-				<ul class="navbar-nav me-auto"></ul>
-				<ul class="navbar-nav">
-					<li th:if="${loggedUserName}" class="navbar-text me-2"
-							th:text="${userRoleString == 'admin' ? loggedUserName + ' (Administrateur)' : loggedUserName}">
-					</li>
-					<li th:if="${userRoleString == 'visitor' || userRoleString == 'user' || userRoleString == 'admin'}"
-						class="nav-item">
-						<a class="nav-link" href="/cart">Panier (<span class="cart-count">0</span>)</a>
-					</li>
-					<li th:if="${userRoleString == 'visitor'}" class="nav-item">
-						<a class="nav-link" href="/login">Connexion</a>
-					</li>
-					<li th:if="${userRoleString == 'visitor'}" class="nav-item">
-						<a class="nav-link" href="/register">Inscription</a>
-					</li>
-					<li th:if="${userRoleString == 'user' || userRoleString == 'admin'}" class="nav-item">
-						<a class="nav-link" href="/my_profile">Mon Profil</a>
-					</li>
-					<li th:if="${userRoleString == 'user' || userRoleString == 'admin'}" class="nav-item">
-						<a class="nav-link" href="/orders">Mes Commandes</a>
-					</li>
-
-					<li th:if="${userRoleString == 'admin'}" class="nav-item dropdown">
-						<a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
-							Admin
-						</a>
-						<ul class="dropdown-menu">
-							<li><a class="dropdown-item" href="/admin/plants">Gestion Plantes</a></li>
-							<li><a class="dropdown-item" href="/admin/users">Gestion Utilisateurs</a></li>
-						</ul>
-					</li>
-
-					<li th:if="${userRoleString == 'user' or userRoleString == 'admin'}" class="nav-item">
-						<form th:action="@{/logout}" method="post">
-							<button type="submit" class="nav-link btn btn-link">Déconnexion</button>
-						</form>
-					</li>
-				</ul>
-			</div>
-		</div>
-	</nav>
-</nav>
 
 # src/main/resources/application.yml
 
@@ -3764,163 +3952,180 @@ package com.planteshop.seed;
 
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-
+import java.util.*;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Profile;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
-
 import com.planteshop.model.entity.Plant;
 import com.planteshop.model.entity.User;
 import com.planteshop.model.enums.RoleType;
+import com.planteshop.repository.OrderRepository;
 import com.planteshop.repository.PlantRepository;
 import com.planteshop.repository.UserRepository;
-
 import net.datafaker.Faker;
 
 @Component
 @Profile({ "seed", "init" })
 public class DatabaseSeeder implements CommandLineRunner {
 
+	// # Dépendances principales
 	private final PlantRepository plantRepository;
 	private final UserRepository userRepository;
 	private final PasswordEncoder passwordEncoder;
+	private final OrderRepository orderRepository;
 	private final Faker faker = new Faker();
 
-	private final List<Credential> credentials = new ArrayList<>();
+	// # Liste pour stocker les credentials générés
+	private final List<Credential> userCredentialsList = new ArrayList<>();
 
-	private static final List<String> PLANT_NAMES = Arrays.asList(
-			"Rose", "Tulipe", "Lavande", "Orchidée", "Basilic",
-			"Menthe", "Pivoine", "Tournesol", "Cactus", "Bambou");
-	private static final List<String> PLANT_CATEGORIES = Arrays.asList("intérieur", "extérieur");
+	// # Variables globales pour la seed
+	private static final int NUMBER_OF_PLANTS = 30; // 🌱 Nombre de plantes à créer
+	private static final int NUMBER_OF_ADMINS = 3; // 👤 Nombre d'administrateurs à créer
+	private static final int NUMBER_OF_USERS = 20; // 👥 Nombre d'utilisateurs à créer
 
-	private static final int NB_PLANTS = 30;
-	private static final int NB_ADMINS = 3;
-	private static final int NB_USERS = 15;
+	private static final List<String> PLANT_NAMES_LIST = Arrays.asList(
+			"Rose", "Tulipe", "Lavande", "Orchidée", "Basilic", "Menthe", "Pivoine", "Tournesol",
+			"Cactus (Echinopsis)", "Bambou", "Camomille (Matricaria recutita)", "Sauge (Salvia officinalis)",
+			"Romarin (Rosmarinus officinalis)", "Thym (Thymus vulgaris)", "Laurier-rose (Nerium oleander)",
+			"Aloe vera", "Jasmin (Jasminum officinale)", "Hortensia (Hydrangea macrophylla)",
+			"Marguerite (Leucanthemum vulgare)", "Géranium (Pelargonium graveolens)", "Fuchsia (Fuchsia magellanica)",
+			"Anémone (Anemone coronaria)", "Azalée (Rhododendron simsii)", "Chrysanthème (Chrysanthemum morifolium)",
+			"Digitale pourpre (Digitalis purpurea)", "Glaïeul (Gladiolus hortulanus)", "Lys (Lilium candidum)",
+			"Violette (Viola odorata)", "Muguet (Convallaria majalis)", "Iris (Iris germanica)",
+			"Lavandin (Lavandula intermedia)", "Érable du Japon (Acer palmatum)", "Citronnelle (Cymbopogon citratus)",
+			"Pin parasol (Pinus pinea)", "Cyprès (Cupressus sempervirens)", "Olivier (Olea europaea)",
+			"Papyrus (Cyperus papyrus)", "Figuier (Ficus carica)", "Eucalyptus (Eucalyptus globulus)",
+			"Acacia (Acacia dealbata)", "Bégonia (Begonia semperflorens)", "Calathea (Calathea ornata)",
+			"Dieffenbachia (Dieffenbachia seguine)", "Ficus elastica", "Sansevieria (Sansevieria trifasciata)",
+			"Philodendron (Philodendron scandens)", "Yucca (Yucca elephantipes)", "Zamioculcas zamiifolia",
+			"Monstera deliciosa", "Pothos (Epipremnum aureum)", "Agave (Agave americana)",
+			"Cactus raquette (Opuntia ficus-indica)",
+			"Palmier-dattier (Phoenix dactylifera)", "Amaryllis (Hippeastrum hybridum)", "Bleuet (Centaurea cyanus)",
+			"Cœur-de-Marie (Lamprocapnos spectabilis)", "Croton (Codiaeum variegatum)", "Dracaena (Dracaena marginata)",
+			"Hosta (Hosta plantaginea)", "Lierre (Hedera helix)", "Mimosa (Acacia dealbata)");
+	private static final List<String> PLANT_CATEGORY_LIST = Arrays.asList("intérieur", "extérieur");
 
-	public DatabaseSeeder(PlantRepository plantRepository,
+	// # Constructeur
+	public DatabaseSeeder(
+			PlantRepository plantRepository,
 			UserRepository userRepository,
-			PasswordEncoder passwordEncoder) {
+			PasswordEncoder passwordEncoder,
+			OrderRepository orderRepository) {
 		this.plantRepository = plantRepository;
 		this.userRepository = userRepository;
 		this.passwordEncoder = passwordEncoder;
+		this.orderRepository = orderRepository;
 	}
 
+	// # Point d'entrée principal de la seed
 	@Override
 	public void run(String... args) throws Exception {
-		// Suppression explicite des données existantes (ordre important à respecter)
-		plantRepository.deleteAll();
-		userRepository.deleteAll();
-
-		List<User> users = createUsers();
-		users.addAll(createFixedAdmins());
-		createPlants();
-		generateUsersFile();
+		resetDatabaseData();
+		createFixedAdminUsers();
+		createStandardUsers();
+		createPlantsList();
+		generateUserCredentialsFile();
 		System.out.println("Database seeded successfully!");
 	}
 
-	private List<User> createUsers() {
-		List<User> users = new ArrayList<>();
-
-		for (int i = 0; i < NB_ADMINS; i++) {
-			users.add(createUser(true));
-		}
-
-		for (int i = 0; i < NB_USERS; i++) {
-			users.add(createUser(false));
-		}
-
-		return userRepository.saveAll(users);
+	// # Suppression des données existantes dans le bon ordre (respect contraintes
+	// FK)
+	private void resetDatabaseData() {
+		orderRepository.deleteAll();
+		plantRepository.deleteAll();
+		userRepository.deleteAll();
 	}
 
-	private User createUser(boolean isAdmin) {
-		String name = faker.name().fullName();
-		String email = generateEmailFromName(name);
-		String rawPassword = faker.color().name().replaceAll("\\s+", "").toLowerCase()
-				+ faker.animal().name().replaceAll("\\s+", "").toLowerCase()
-				+ faker.number().numberBetween(10, 99);
-
-		User user = new User();
-		user.setName(name);
-		user.setEmail(email);
-		user.setPassword(passwordEncoder.encode(rawPassword));
-		user.setRole(isAdmin ? RoleType.ADMIN : RoleType.USER);
-
-		credentials.add(new Credential(email, rawPassword, isAdmin));
-		System.err.println("DEBUG : 📝 Créé : " + email + " | " + rawPassword + " | role=" + (isAdmin ? "ADMIN" : "USER"));
-
-		return user;
-	}
-
-	private User createFixedAdmin(String username, String rawPassword) {
-		User user = new User();
-		user.setName(username);
-		user.setEmail(username + "@planteshop.com");
-		user.setPassword(passwordEncoder.encode(rawPassword));
-		user.setRole(RoleType.ADMIN);
-
-		credentials.add(new Credential(user.getEmail(), rawPassword, true));
-		System.err.println("DEBUG : 📝 Admin fixe : " + user.getEmail() + " | " + rawPassword);
-
-		return user;
-	}
-
-	private List<User> createFixedAdmins() {
-		List<User> fixedAdmins = new ArrayList<>();
-
-		fixedAdmins.add(createFixedAdmin("admin_exemple_1", "password"));
-		fixedAdmins.add(createFixedAdmin("admin_exemple_2", "password"));
-		fixedAdmins.add(createFixedAdmin("admin_exemple_3", "password"));
-
-		return userRepository.saveAll(fixedAdmins);
-	}
-
-	private String generateEmailFromName(String name) {
-		String slug = name.trim().toLowerCase().replaceAll("[^a-z ]", "").replaceAll("\\s+", ".");
-		return slug + "@planteshop.com";
-	}
-
-	private void createPlants() {
-		List<Plant> plants = new ArrayList<>();
-
-		for (int i = 0; i < NB_PLANTS; i++) {
-			Plant plant = new Plant();
-			plant.setName(PLANT_NAMES.get(i % PLANT_NAMES.size()) + " " + (i + 1));
-			plant.setDescription("Magnifique " + PLANT_NAMES.get(i % PLANT_NAMES.size()).toLowerCase());
-			plant.setPrice(5 + (i * 2.5));
-			plant.setCategory(PLANT_CATEGORIES.get(i % PLANT_CATEGORIES.size()));
-			plant.setStock(10 + i);
-			plants.add(plant);
-		}
-
-		plantRepository.saveAll(plants);
-	}
-
-	private void generateUsersFile() throws IOException {
-		try (FileWriter writer = new FileWriter("users.txt")) {
-			writer.write("=== ADMINS ===\n");
-			credentials.stream()
-					.filter(Credential::isAdmin)
-					.forEach(c -> writeCredential(writer, c));
-
-			writer.write("\n=== USERS ===\n");
-			credentials.stream()
-					.filter(c -> !c.isAdmin())
-					.forEach(c -> writeCredential(writer, c));
+	// # Création des administrateurs fixes (adminX@planteshop.com / password)
+	private void createFixedAdminUsers() {
+		for (int adminIndex = 1; adminIndex <= NUMBER_OF_ADMINS; adminIndex++) {
+			String adminUsername = "admin" + adminIndex;
+			User adminUser = new User();
+			adminUser.setName(adminUsername);
+			adminUser.setEmail(adminUsername + "@planteshop.com");
+			adminUser.setPassword(passwordEncoder.encode("password"));
+			adminUser.setRole(RoleType.ADMIN);
+			userRepository.save(adminUser);
+			userCredentialsList.add(new Credential(adminUser.getEmail(), "password", true));
+			System.err.println("DEBUG : 📝 Admin fixe : " + adminUser.getEmail() + " | password");
 		}
 	}
 
-	private void writeCredential(FileWriter writer, Credential c) {
+	// # Création des utilisateurs classiques
+	private void createStandardUsers() {
+		for (int userIndex = 0; userIndex < NUMBER_OF_USERS; userIndex++) {
+			String fullName = faker.name().fullName();
+			String generatedEmail = generateEmailFromFullName(fullName);
+			String generatedPassword = faker.internet().password(10, 16, true, true);
+			User standardUser = new User();
+			standardUser.setName(fullName);
+			standardUser.setEmail(generatedEmail);
+			standardUser.setPassword(passwordEncoder.encode(generatedPassword));
+			standardUser.setRole(RoleType.USER);
+			userRepository.save(standardUser);
+			userCredentialsList.add(new Credential(generatedEmail, generatedPassword, false));
+			System.err.println("DEBUG : 📝 User : " + generatedEmail + " | " + generatedPassword);
+		}
+	}
+
+	// # Retourne un nom de plante (suffixe si > 60)
+	private String getPlantNameFromIndex(int plantIndex) {
+		int plantNamesCount = PLANT_NAMES_LIST.size();
+		if (NUMBER_OF_PLANTS > plantNamesCount) {
+			return PLANT_NAMES_LIST.get(plantIndex % plantNamesCount) + " " + (plantIndex / plantNamesCount + 1);
+		}
+		return PLANT_NAMES_LIST.get(plantIndex % plantNamesCount);
+	}
+
+	// # Création des plantes
+	private void createPlantsList() {
+		List<Plant> plantsToInsertList = new ArrayList<>();
+		for (int plantIndex = 0; plantIndex < NUMBER_OF_PLANTS; plantIndex++) {
+			Plant plantEntity = new Plant();
+			plantEntity.setName(getPlantNameFromIndex(plantIndex));
+			plantEntity
+					.setDescription("Magnifique " + PLANT_NAMES_LIST.get(plantIndex % PLANT_NAMES_LIST.size()).toLowerCase());
+			plantEntity.setPrice(5 + (plantIndex * 2.5));
+			plantEntity.setCategory(PLANT_CATEGORY_LIST.get(plantIndex % PLANT_CATEGORY_LIST.size()));
+			plantEntity.setStock(10 + plantIndex);
+			plantsToInsertList.add(plantEntity);
+		}
+		plantRepository.saveAll(plantsToInsertList);
+	}
+
+	// # Génération du fichier des credentials (users.txt)
+	private void generateUserCredentialsFile() throws IOException {
+		try (FileWriter fileWriter = new FileWriter("users.txt")) {
+			fileWriter.write("=== ADMINS ===\n");
+			for (Credential adminCredential : userCredentialsList) {
+				if (adminCredential.isAdmin())
+					writeCredential(fileWriter, adminCredential);
+			}
+			fileWriter.write("\n=== USERS ===\n");
+			for (Credential userCredential : userCredentialsList) {
+				if (!userCredential.isAdmin())
+					writeCredential(fileWriter, userCredential);
+			}
+		}
+	}
+
+	// # Écriture d'une ligne credentials
+	private void writeCredential(FileWriter fileWriter, Credential credentialEntity) {
 		try {
-			writer.write(c.email + " " + c.password + "\n");
-		} catch (IOException e) {
-			e.printStackTrace();
+			fileWriter.write(credentialEntity.email + " " + credentialEntity.password + "\n");
+		} catch (IOException exception) {
+			exception.printStackTrace();
 		}
 	}
 
+	// # Génère un email "slug" à partir du nom
+	private String generateEmailFromFullName(String fullName) {
+		String slugName = fullName.trim().toLowerCase().replaceAll("[^a-z ]", "").replaceAll("\\s+", ".");
+		return slugName + "@planteshop.com";
+	}
+
+	// # Classe interne Credential pour stocker les credentials
 	private static class Credential {
 		String email;
 		String password;
@@ -4181,20 +4386,22 @@ public class PlantShopApplication {
 │   │           │   └── users
 │   │           │       ├── edit.html
 │   │           │       └── index.html
-│   │           ├── cart.html
-│   │           ├── fragments
-│   │           │   ├── base.html
+│   │           ├── authentification
+│   │           │   ├── login.html
+│   │           │   └── register.html
+│   │           ├── cart
+│   │           │   └── cart.html
+│   │           ├── layout
+│   │           │   ├── application.html
 │   │           │   └── navbar.html
-│   │           ├── login.html
 │   │           ├── orders
 │   │           │   └── index.html
 │   │           ├── plants
 │   │           │   ├── index.html
 │   │           │   └── show.html
-│   │           ├── profile
-│   │           │   ├── profile_edit.html
-│   │           │   └── profile.html
-│   │           └── register.html
+│   │           └── users
+│   │               ├── edit.html
+│   │               └── show.html
 │   └── test
 │       └── java
 │           └── com
@@ -4275,20 +4482,25 @@ public class PlantShopApplication {
 │   │       │   └── users
 │   │       │       ├── edit.html
 │   │       │       └── index.html
-│   │       ├── cart.html
+│   │       ├── authentification
+│   │       │   ├── login.html
+│   │       │   └── register.html
+│   │       ├── cart
+│   │       │   └── cart.html
 │   │       ├── fragments
-│   │       │   ├── base.html
+│   │       ├── layout
+│   │       │   ├── application.html
 │   │       │   └── navbar.html
-│   │       ├── login.html
 │   │       ├── orders
 │   │       │   └── index.html
 │   │       ├── plants
 │   │       │   ├── index.html
 │   │       │   └── show.html
 │   │       ├── profile
-│   │       │   ├── profile_edit.html
-│   │       │   └── profile.html
-│   │       └── register.html
+│   │       ├── user
+│   │       └── users
+│   │           ├── edit.html
+│   │           └── show.html
 │   ├── generated-sources
 │   │   └── annotations
 │   ├── generated-test-sources
@@ -4301,6 +4513,7 @@ public class PlantShopApplication {
 │   │       │       └── inputFiles.lst
 │   │       └── testCompile
 │   │           └── default-testCompile
+│   │               ├── createdFiles.lst
 │   │               └── inputFiles.lst
 │   └── test-classes
 │       └── com
@@ -4310,4 +4523,4 @@ public class PlantShopApplication {
 ├── tmp.txt
 └── users.txt
 
-95 directories, 115 files
+102 directories, 116 files

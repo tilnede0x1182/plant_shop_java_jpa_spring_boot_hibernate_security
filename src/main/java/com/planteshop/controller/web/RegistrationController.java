@@ -25,7 +25,7 @@ public class RegistrationController {
     @GetMapping("/register")
     public String showRegistrationForm(Model model) {
         model.addAttribute("user", new User());
-        return "register";
+        return "authentification/register";
     }
 
     @PostMapping("/register")
@@ -35,7 +35,7 @@ public class RegistrationController {
         }
 
         if (result.hasErrors()) {
-            return "register";
+            return "authentification/register";
         }
 
         user.setPassword(passwordEncoder.encode(user.getPassword()));

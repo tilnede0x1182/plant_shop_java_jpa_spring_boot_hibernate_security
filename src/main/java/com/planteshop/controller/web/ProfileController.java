@@ -27,14 +27,14 @@ public class ProfileController {
     public String profile(@AuthenticationPrincipal User user, Model model) {
         model.addAttribute("user", user);
         model.addAttribute("displayName", StringUtils.toCapitalCase(user.getName()));
-        return "profile/profile";
+        return "users/show";
     }
 
 		/** Formulaire d’édition */
 		@GetMapping("/my_profile/edit")
     public String edit(@AuthenticationPrincipal User user, Model model) {
         model.addAttribute("user", user);        // pré‑remplit le formulaire
-        return "profile/profile_edit";
+        return "users/edit";
     }
 
     /** Traitement du formulaire */

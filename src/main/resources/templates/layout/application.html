@@ -19,7 +19,7 @@
 <body>
 	<th:block th:with="userRoleString=${userRole}">
 		<!-- Navbar -->
-		<div th:replace="~{fragments/navbar :: navbar}"></div>
+		<div th:replace="~{layout/navbar :: navbar}"></div>
 		<div class="container">
 			<!-- Messages flash -->
 			<div th:if="${message}" class="alert alert-success" th:text="${message}"></div>
