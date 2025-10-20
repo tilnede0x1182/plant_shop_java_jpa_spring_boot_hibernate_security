@@ -18,10 +18,10 @@
 						<a class="nav-link" id="cart-link" href="/cart">Mon Panier</a>
 					</li>
 					<li th:if="${userRoleString == 'visitor'}" class="nav-item">
-						<a class="nav-link" href="/login">Connexion</a>
+						<a class="nav-link" href="/register">Inscription</a>
 					</li>
 					<li th:if="${userRoleString == 'visitor'}" class="nav-item">
-						<a class="nav-link" href="/register">Inscription</a>
+						<a class="nav-link" href="/login">Connexion</a>
 					</li>
 					<li th:if="${userRoleString == 'user' || userRoleString == 'admin'}" class="nav-item">
 						<a class="nav-link" href="/my_profile">Mon Profil</a>
