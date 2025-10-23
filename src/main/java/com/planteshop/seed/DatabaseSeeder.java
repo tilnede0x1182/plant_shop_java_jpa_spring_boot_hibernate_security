@@ -90,10 +90,11 @@ public class DatabaseSeeder implements CommandLineRunner {
 	// # Création des administrateurs fixes (adminX@planteshop.com / password)
 	private void createFixedAdminUsers() {
 		for (int adminIndex = 1; adminIndex <= NUMBER_OF_ADMINS; adminIndex++) {
-			String adminUsername = "admin" + adminIndex;
+			String adminUsernameForEmail = "admin" + adminIndex;
+			String adminUsername = faker.name().fullName();
 			User adminUser = new User();
 			adminUser.setName(adminUsername);
-			adminUser.setEmail(adminUsername + "@planteshop.com");
+			adminUser.setEmail(adminUsernameForEmail + "@planteshop.com");
 			adminUser.setPassword(passwordEncoder.encode("password"));
 			adminUser.setRole(RoleType.ADMIN);
 			userRepository.save(adminUser);
