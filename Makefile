@@ -13,11 +13,18 @@ prod:
 		java -jar ./jar/plant-shop.jar; \
 	fi
 
+prod-dev:
+	rm -f ./jar/plant-shop.jar
+	$(MAKE) prod
+
 build: clean
 	if [ -d target ]; then rm -f $$(find target -name '*.class' -type f); fi
 	mvn clean compile
 
-build-dev: build run
+build-dev:
+	if [ -d target ]; then rm -f $$(find target -name '*.class' -type f); fi
+	$(MAKE) build
+	$(MAKE) run
 
 compile:
 	mvn clean compile
@@ -47,15 +54,20 @@ build-jar:
 # ───────────────────────────────
 
 seed:
-	mvn clean spring-boot:run -Dspring-boot.run.profiles=seed
+	mvn clean compile exec:java \
+		-Dexec.mainClass=com.planteshop.seed.SeedRunner \
+		-Dspring.profiles.active=seed
 
 compile-seed:
-	mvn clean compile -Dspring-boot.run.profiles=seed
+	mvn clean compile -Dspring.profiles.active=seed
 
-seed-dev: compile-seed seed
+seed-dev:
+	if [ -d target ]; then rm -f $$(find target -name '*.class' -type f); fi
+	$(MAKE) compile-seed
+	$(MAKE) seed
 
 seed-build:
-	mvn clean package -DskipTests -Dspring-boot.run.profiles=seed
+	mvn clean package -DskipTests -Dspring.profiles.active=seed
 
 # ───────────────────────────────
 #   Gestion du test end-to-end
