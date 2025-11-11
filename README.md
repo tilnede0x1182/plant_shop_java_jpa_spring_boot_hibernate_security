@@ -7,7 +7,7 @@ Application complète de vente de plantes développée avec Spring Boot et Thyme
 ## 🛠 Stack Technique
 
 ### Backend
-- **Langage**: Java 17
+- **Langage**: Java 21
 - **Framework**: Spring Boot 3.1.5
 - **Persistence**:
   - Spring Data JPA
@@ -57,7 +57,7 @@ Application complète de vente de plantes développée avec Spring Boot et Thyme
 ## Installation et lancement
 
 ### Prérequis
-- Java 17+
+- Java 21+
 - PostgreSQL
 - Maven
 

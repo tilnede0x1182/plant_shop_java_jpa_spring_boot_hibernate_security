@@ -601,7 +601,7 @@ document.addEventListener("DOMContentLoaded", () => {
 # target/classes/templates/cart/cart.html
 
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org" layout:decorate="~{fragments/base}" th:with="title='Panier'">
+<html xmlns:th="http://www.thymeleaf.org" layout:decorate="~{layout/application}" th:with="title='Panier'">
 
 <head>
 	<title>PlantShop | Panier</title>
@@ -677,10 +677,10 @@ document.addEventListener("DOMContentLoaded", () => {
 						<a class="nav-link" id="cart-link" href="/cart">Mon Panier</a>
 					</li>
 					<li th:if="${userRoleString == 'visitor'}" class="nav-item">
-						<a class="nav-link" href="/login">Connexion</a>
+						<a class="nav-link" href="/register">Inscription</a>
 					</li>
 					<li th:if="${userRoleString == 'visitor'}" class="nav-item">
-						<a class="nav-link" href="/register">Inscription</a>
+						<a class="nav-link" href="/login">Connexion</a>
 					</li>
 					<li th:if="${userRoleString == 'user' || userRoleString == 'admin'}" class="nav-item">
 						<a class="nav-link" href="/my_profile">Mon Profil</a>
@@ -733,7 +733,7 @@ document.addEventListener("DOMContentLoaded", () => {
 <body>
 	<th:block th:with="userRoleString=${userRole}">
 		<!-- Navbar -->
-		<div th:replace="~{fragments/navbar :: navbar}"></div>
+		<div th:replace="~{layout/navbar :: navbar}"></div>
 		<div class="container">
 			<!-- Messages flash -->
 			<div th:if="${message}" class="alert alert-success" th:text="${message}"></div>
@@ -755,7 +755,7 @@ document.addEventListener("DOMContentLoaded", () => {
 # target/classes/templates/admin/plants/index.html
 
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org" layout:decorate="~{fragments/base}" th:with="title='Gestion des plantes'">
+<html xmlns:th="http://www.thymeleaf.org" layout:decorate="~{layout/application}" th:with="title='Gestion des plantes'">
 
 <head>
 	<title>PlantShop | Gestion des plantes</title>
@@ -771,7 +771,7 @@ document.addEventListener("DOMContentLoaded", () => {
 			</div>
 
 			<table class="table table-striped table-hover">
-				<thead class="table-dark">
+				<thead class="table-light">
 					<tr>
 						<th>Nom</th>
 						<th>Prix</th>
@@ -806,7 +806,7 @@ document.addEventListener("DOMContentLoaded", () => {
 # target/classes/templates/admin/plants/edit.html
 
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org" layout:decorate="~{fragments/base}" th:with="title='Modifier plante'">
+<html xmlns:th="http://www.thymeleaf.org" layout:decorate="~{layout/application}" th:with="title='Modifier plante'">
 <head>
     <title>PlantShop | Modifier Plante</title>
 </head>
@@ -823,7 +823,7 @@ document.addEventListener("DOMContentLoaded", () => {
 # target/classes/templates/admin/plants/new.html
 
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org" layout:decorate="~{fragments/base}" th:with="title='Nouvelle plante'">
+<html xmlns:th="http://www.thymeleaf.org" layout:decorate="~{layout/application}" th:with="title='Nouvelle plante'">
 <head>
     <title>PlantShop | Nouvelle Plante</title>
 </head>
@@ -874,7 +874,7 @@ document.addEventListener("DOMContentLoaded", () => {
 # target/classes/templates/admin/users/index.html
 
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org" layout:decorate="~{fragments/base}"
+<html xmlns:th="http://www.thymeleaf.org" layout:decorate="~{layout/application}"
 	th:with="title='Gestion des utilisateurs'">
 
 <head>
@@ -887,7 +887,7 @@ document.addEventListener("DOMContentLoaded", () => {
 			<h1 class="mb-4">Gestion des Utilisateurs</h1>
 
 			<table class="table table-striped table-hover">
-				<thead class="table-dark">
+				<thead class="table-light">
 					<tr>
 						<th>Name</th>
 						<th>Email</th>
@@ -927,7 +927,7 @@ document.addEventListener("DOMContentLoaded", () => {
 # target/classes/templates/admin/users/edit.html
 
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org" layout:decorate="~{fragments/base}" th:with="title='Modifier utilisateur'">
+<html xmlns:th="http://www.thymeleaf.org" layout:decorate="~{layout/application}" th:with="title='Modifier utilisateur'">
 
 <head>
 	<title>PlantShop | Modifier utilisateur</title>
@@ -976,7 +976,7 @@ document.addEventListener("DOMContentLoaded", () => {
 # target/classes/templates/plants/show.html
 
 <!DOCTYPE html>
-<html layout:decorate="~{fragments/base}" xmlns:th="http://www.thymeleaf.org"
+<html layout:decorate="~{layout/application}" xmlns:th="http://www.thymeleaf.org"
 	th:with="title='PlantShop | ' + ${plant.name}">
 
 <head>
@@ -1031,7 +1031,7 @@ document.addEventListener("DOMContentLoaded", () => {
 # target/classes/templates/plants/index.html
 
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org" layout:decorate="~{fragments/base}" th:with="title='Liste des plantes'">
+<html xmlns:th="http://www.thymeleaf.org" layout:decorate="~{layout/application}" th:with="title='Liste des plantes'">
 
 <head>
 	<title>PlantShop | Acceuil</title>
@@ -1050,11 +1050,13 @@ document.addEventListener("DOMContentLoaded", () => {
 						<div class="card-body position-relative">
 							<h5 class="card-title" th:text="${plant.name}">Nom</h5>
 							<p class="card-text" th:text="${plant.description}">Description</p>
-							<p class="text-muted">Prix : <span th:text="${plant.price}">0.0</span> €</p>
-							<p class="text-muted" th:if="${userRoleString == 'admin'}">
-								Stock : <span th:text="${plant.stock}">0</span>
+							<p class="text-muted">
+								Prix : <span th:text="${plant.price}">0.0</span> €
+								<br th:if="${userRoleString == 'admin'}" />
+								<span th:if="${userRoleString == 'admin'}">
+									Stock : <span th:text="${plant.stock}">0</span>
+								</span>
 							</p>
-
 							<div class="d-flex gap-2">
 								<button type="button" class="btn btn-success flex-grow-1 add-to-cart" th:data-id="${plant.id}"
 									style="z-index: 1; position: relative;" th:data-name="${plant.name}" th:data-price="${plant.price}"
@@ -1086,7 +1088,7 @@ document.addEventListener("DOMContentLoaded", () => {
 # target/classes/templates/orders/index.html
 
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org" layout:decorate="~{fragments/base}" th:with="title='Mes commandes'">
+<html xmlns:th="http://www.thymeleaf.org" layout:decorate="~{layout/application}" th:with="title='Mes commandes'">
 
 <head>
 	<title>PlantShop | Mes commandes</title>
@@ -1135,7 +1137,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
-	layout:decorate="~{fragments/base}" th:with="title='Mon Profil'" lang="fr">
+	layout:decorate="~{layout/application}" th:with="title='Mon Profil'" lang="fr">
 
 <head>
 	<meta charset="UTF-8">
@@ -1189,7 +1191,7 @@ document.addEventListener("DOMContentLoaded", () => {
 <!DOCTYPE html>
 <html  lang="fr"
        xmlns:th="http://www.thymeleaf.org"
-       layout:decorate="~{fragments/base}"
+       layout:decorate="~{layout/application}"
        th:with="title='Modifier mon profil'">
 
 <head>
@@ -1244,7 +1246,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org"
-      layout:decorate="~{fragments/base}"
+      layout:decorate="~{layout/application}"
       th:with="title='Connexion'">
 <head>
     <title>PlantShop | Connexion</title>
@@ -1293,7 +1295,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org"
-      layout:decorate="~{fragments/base}"
+      layout:decorate="~{layout/application}"
       th:with="title='Inscription'">
 <head>
     <title>PlantShop | Inscription</title>
@@ -1540,6 +1542,10 @@ Architecture MVC classique avec séparation des couches controller, service, rep
 # Définition des variables
 PROFILE = dev
 PORT = 8080
+
+JAVA_HOME := /usr/lib/jvm/java-17-openjdk-amd64
+export JAVA_HOME
+export PATH := $(JAVA_HOME)/bin:$(PATH)
 
 # Tâches par défaut
 default: help
@@ -2222,7 +2228,7 @@ document.addEventListener("DOMContentLoaded", () => {
 # src/main/resources/templates/cart/cart.html
 
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org" layout:decorate="~{fragments/base}" th:with="title='Panier'">
+<html xmlns:th="http://www.thymeleaf.org" layout:decorate="~{layout/application}" th:with="title='Panier'">
 
 <head>
 	<title>PlantShop | Panier</title>
@@ -2298,10 +2304,10 @@ document.addEventListener("DOMContentLoaded", () => {
 						<a class="nav-link" id="cart-link" href="/cart">Mon Panier</a>
 					</li>
 					<li th:if="${userRoleString == 'visitor'}" class="nav-item">
-						<a class="nav-link" href="/login">Connexion</a>
+						<a class="nav-link" href="/register">Inscription</a>
 					</li>
 					<li th:if="${userRoleString == 'visitor'}" class="nav-item">
-						<a class="nav-link" href="/register">Inscription</a>
+						<a class="nav-link" href="/login">Connexion</a>
 					</li>
 					<li th:if="${userRoleString == 'user' || userRoleString == 'admin'}" class="nav-item">
 						<a class="nav-link" href="/my_profile">Mon Profil</a>
@@ -2354,7 +2360,7 @@ document.addEventListener("DOMContentLoaded", () => {
 <body>
 	<th:block th:with="userRoleString=${userRole}">
 		<!-- Navbar -->
-		<div th:replace="~{fragments/navbar :: navbar}"></div>
+		<div th:replace="~{layout/navbar :: navbar}"></div>
 		<div class="container">
 			<!-- Messages flash -->
 			<div th:if="${message}" class="alert alert-success" th:text="${message}"></div>
@@ -2376,7 +2382,7 @@ document.addEventListener("DOMContentLoaded", () => {
 # src/main/resources/templates/admin/plants/index.html
 
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org" layout:decorate="~{fragments/base}" th:with="title='Gestion des plantes'">
+<html xmlns:th="http://www.thymeleaf.org" layout:decorate="~{layout/application}" th:with="title='Gestion des plantes'">
 
 <head>
 	<title>PlantShop | Gestion des plantes</title>
@@ -2392,7 +2398,7 @@ document.addEventListener("DOMContentLoaded", () => {
 			</div>
 
 			<table class="table table-striped table-hover">
-				<thead class="table-dark">
+				<thead class="table-light">
 					<tr>
 						<th>Nom</th>
 						<th>Prix</th>
@@ -2427,7 +2433,7 @@ document.addEventListener("DOMContentLoaded", () => {
 # src/main/resources/templates/admin/plants/edit.html
 
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org" layout:decorate="~{fragments/base}" th:with="title='Modifier plante'">
+<html xmlns:th="http://www.thymeleaf.org" layout:decorate="~{layout/application}" th:with="title='Modifier plante'">
 <head>
     <title>PlantShop | Modifier Plante</title>
 </head>
@@ -2444,7 +2450,7 @@ document.addEventListener("DOMContentLoaded", () => {
 # src/main/resources/templates/admin/plants/new.html
 
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org" layout:decorate="~{fragments/base}" th:with="title='Nouvelle plante'">
+<html xmlns:th="http://www.thymeleaf.org" layout:decorate="~{layout/application}" th:with="title='Nouvelle plante'">
 <head>
     <title>PlantShop | Nouvelle Plante</title>
 </head>
@@ -2495,7 +2501,7 @@ document.addEventListener("DOMContentLoaded", () => {
 # src/main/resources/templates/admin/users/index.html
 
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org" layout:decorate="~{fragments/base}"
+<html xmlns:th="http://www.thymeleaf.org" layout:decorate="~{layout/application}"
 	th:with="title='Gestion des utilisateurs'">
 
 <head>
@@ -2508,7 +2514,7 @@ document.addEventListener("DOMContentLoaded", () => {
 			<h1 class="mb-4">Gestion des Utilisateurs</h1>
 
 			<table class="table table-striped table-hover">
-				<thead class="table-dark">
+				<thead class="table-light">
 					<tr>
 						<th>Name</th>
 						<th>Email</th>
@@ -2548,7 +2554,7 @@ document.addEventListener("DOMContentLoaded", () => {
 # src/main/resources/templates/admin/users/edit.html
 
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org" layout:decorate="~{fragments/base}" th:with="title='Modifier utilisateur'">
+<html xmlns:th="http://www.thymeleaf.org" layout:decorate="~{layout/application}" th:with="title='Modifier utilisateur'">
 
 <head>
 	<title>PlantShop | Modifier utilisateur</title>
@@ -2597,7 +2603,7 @@ document.addEventListener("DOMContentLoaded", () => {
 # src/main/resources/templates/plants/show.html
 
 <!DOCTYPE html>
-<html layout:decorate="~{fragments/base}" xmlns:th="http://www.thymeleaf.org"
+<html layout:decorate="~{layout/application}" xmlns:th="http://www.thymeleaf.org"
 	th:with="title='PlantShop | ' + ${plant.name}">
 
 <head>
@@ -2652,7 +2658,7 @@ document.addEventListener("DOMContentLoaded", () => {
 # src/main/resources/templates/plants/index.html
 
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org" layout:decorate="~{fragments/base}" th:with="title='Liste des plantes'">
+<html xmlns:th="http://www.thymeleaf.org" layout:decorate="~{layout/application}" th:with="title='Liste des plantes'">
 
 <head>
 	<title>PlantShop | Acceuil</title>
@@ -2671,11 +2677,13 @@ document.addEventListener("DOMContentLoaded", () => {
 						<div class="card-body position-relative">
 							<h5 class="card-title" th:text="${plant.name}">Nom</h5>
 							<p class="card-text" th:text="${plant.description}">Description</p>
-							<p class="text-muted">Prix : <span th:text="${plant.price}">0.0</span> €</p>
-							<p class="text-muted" th:if="${userRoleString == 'admin'}">
-								Stock : <span th:text="${plant.stock}">0</span>
+							<p class="text-muted">
+								Prix : <span th:text="${plant.price}">0.0</span> €
+								<br th:if="${userRoleString == 'admin'}" />
+								<span th:if="${userRoleString == 'admin'}">
+									Stock : <span th:text="${plant.stock}">0</span>
+								</span>
 							</p>
-
 							<div class="d-flex gap-2">
 								<button type="button" class="btn btn-success flex-grow-1 add-to-cart" th:data-id="${plant.id}"
 									style="z-index: 1; position: relative;" th:data-name="${plant.name}" th:data-price="${plant.price}"
@@ -2707,7 +2715,7 @@ document.addEventListener("DOMContentLoaded", () => {
 # src/main/resources/templates/orders/index.html
 
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org" layout:decorate="~{fragments/base}" th:with="title='Mes commandes'">
+<html xmlns:th="http://www.thymeleaf.org" layout:decorate="~{layout/application}" th:with="title='Mes commandes'">
 
 <head>
 	<title>PlantShop | Mes commandes</title>
@@ -2756,7 +2764,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
-	layout:decorate="~{fragments/base}" th:with="title='Mon Profil'" lang="fr">
+	layout:decorate="~{layout/application}" th:with="title='Mon Profil'" lang="fr">
 
 <head>
 	<meta charset="UTF-8">
@@ -2810,7 +2818,7 @@ document.addEventListener("DOMContentLoaded", () => {
 <!DOCTYPE html>
 <html  lang="fr"
        xmlns:th="http://www.thymeleaf.org"
-       layout:decorate="~{fragments/base}"
+       layout:decorate="~{layout/application}"
        th:with="title='Modifier mon profil'">
 
 <head>
@@ -2865,7 +2873,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org"
-      layout:decorate="~{fragments/base}"
+      layout:decorate="~{layout/application}"
       th:with="title='Connexion'">
 <head>
     <title>PlantShop | Connexion</title>
@@ -2914,7 +2922,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org"
-      layout:decorate="~{fragments/base}"
+      layout:decorate="~{layout/application}"
       th:with="title='Inscription'">
 <head>
     <title>PlantShop | Inscription</title>
@@ -3698,14 +3706,14 @@ public class ProfileController {
     public String profile(@AuthenticationPrincipal User user, Model model) {
         model.addAttribute("user", user);
         model.addAttribute("displayName", StringUtils.toCapitalCase(user.getName()));
-        return "profile/profile";
+        return "users/show";
     }
 
 		/** Formulaire d’édition */
 		@GetMapping("/my_profile/edit")
     public String edit(@AuthenticationPrincipal User user, Model model) {
         model.addAttribute("user", user);        // pré‑remplit le formulaire
-        return "profile/profile_edit";
+        return "users/edit";
     }
 
     /** Traitement du formulaire */
@@ -3741,7 +3749,7 @@ public class LoginController {
 
     @GetMapping("/login")
     public String login() {
-        return "login"; // Correspond à src/main/resources/templates/login.html
+        return "authentification/login"; // Correspond à src/main/resources/templates/login.html
     }
 }
 
@@ -3757,7 +3765,7 @@ public class CartController {
 
     @GetMapping("/cart")
     public String cart() {
-        return "cart";
+        return "cart/cart";
     }
 }
 
@@ -3828,7 +3836,7 @@ public class RegistrationController {
     @GetMapping("/register")
     public String showRegistrationForm(Model model) {
         model.addAttribute("user", new User());
-        return "register";
+        return "authentification/register";
     }
 
     @PostMapping("/register")
@@ -3838,7 +3846,7 @@ public class RegistrationController {
         }
 
         if (result.hasErrors()) {
-            return "register";
+            return "authentification/register";
         }
 
         user.setPassword(passwordEncoder.encode(user.getPassword()));
@@ -4040,10 +4048,11 @@ public class DatabaseSeeder implements CommandLineRunner {
 	// # Création des administrateurs fixes (adminX@planteshop.com / password)
 	private void createFixedAdminUsers() {
 		for (int adminIndex = 1; adminIndex <= NUMBER_OF_ADMINS; adminIndex++) {
-			String adminUsername = "admin" + adminIndex;
+			String adminUsernameForEmail = "admin" + adminIndex;
+			String adminUsername = faker.name().fullName();
 			User adminUser = new User();
 			adminUser.setName(adminUsername);
-			adminUser.setEmail(adminUsername + "@planteshop.com");
+			adminUser.setEmail(adminUsernameForEmail + "@planteshop.com");
 			adminUser.setPassword(passwordEncoder.encode("password"));
 			adminUser.setRole(RoleType.ADMIN);
 			userRepository.save(adminUser);
@@ -4292,14 +4301,22 @@ public class PlantShopApplication {
         </dependency>
     </dependencies>
 
-    <build>
-        <plugins>
-            <plugin>
-                <groupId>org.springframework.boot</groupId>
-                <artifactId>spring-boot-maven-plugin</artifactId>
-            </plugin>
-        </plugins>
-    </build>
+		<build>
+				<plugins>
+						<plugin>
+								<groupId>org.springframework.boot</groupId>
+								<artifactId>spring-boot-maven-plugin</artifactId>
+						</plugin>
+						<plugin>
+								<groupId>org.apache.maven.plugins</groupId>
+								<artifactId>maven-compiler-plugin</artifactId>
+								<version>3.11.0</version>
+								<configuration>
+										<release>17</release>
+								</configuration>
+						</plugin>
+				</plugins>
+		</build>
 </project>
 
 # Tree du dossier
@@ -4421,7 +4438,6 @@ public class PlantShopApplication {
 │   │   │       │   │   └── AdminUserController.class
 │   │   │       │   ├── api
 │   │   │       │   │   └── ApiPlantController.class
-│   │   │       │   ├── exception
 │   │   │       │   ├── GlobalControllerAdvice.class
 │   │   │       │   ├── GlobalUserTypeAdvice.class
 │   │   │       │   ├── RoleType.class
@@ -4435,9 +4451,6 @@ public class PlantShopApplication {
 │   │   │       │       ├── RequiredArgsConstructor.class
 │   │   │       │       └── WebPlantController.class
 │   │   │       ├── model
-│   │   │       │   ├── dto
-│   │   │       │   │   ├── request
-│   │   │       │   │   └── response
 │   │   │       │   ├── entity
 │   │   │       │   │   ├── CustomerOrder.class
 │   │   │       │   │   ├── OrderItem.class
@@ -4487,7 +4500,6 @@ public class PlantShopApplication {
 │   │       │   └── register.html
 │   │       ├── cart
 │   │       │   └── cart.html
-│   │       ├── fragments
 │   │       ├── layout
 │   │       │   ├── application.html
 │   │       │   └── navbar.html
@@ -4496,8 +4508,6 @@ public class PlantShopApplication {
 │   │       ├── plants
 │   │       │   ├── index.html
 │   │       │   └── show.html
-│   │       ├── profile
-│   │       ├── user
 │   │       └── users
 │   │           ├── edit.html
 │   │           └── show.html
@@ -4516,11 +4526,7 @@ public class PlantShopApplication {
 │   │               ├── createdFiles.lst
 │   │               └── inputFiles.lst
 │   └── test-classes
-│       └── com
-│           └── planteshop
-│               ├── controller
-│               └── service
 ├── tmp.txt
 └── users.txt
 
-102 directories, 116 files
+91 directories, 116 files

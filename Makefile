@@ -1,85 +1,99 @@
-# Définition des variables
-PROFILE = dev
-PORT = 8080
+# ───────────────────────────────
+#   Compilation et exécution principales
+# ───────────────────────────────
 
-JAVA_HOME := /usr/lib/jvm/java-17-openjdk-amd64
-export JAVA_HOME
-export PATH := $(JAVA_HOME)/bin:$(PATH)
+run:
+	mvn spring-boot:run -Dspring-boot.run.profiles=dev
 
-# Tâches par défaut
-default: help
+prod:
+	if [ -f ./jar/plant-shop.jar ]; then \
+		java -jar ./jar/plant-shop.jar; \
+	else \
+		$(MAKE) build-jar; \
+		java -jar ./jar/plant-shop.jar; \
+	fi
 
-# Affiche l'aide
-help:
-	@echo "Commandes disponibles :"
-	@echo "  make help          Affiche cette aide"
-	@echo "  make run           Lance l'application (profil dev)"
-	@echo "  make prod          Lance l'application (profil prod)"
-	@echo "  make init          Lance l'application (profil init)"
-	@echo "  make install       Compile le projet"
-	@echo "  make test          Exécute les tests"
-	@echo "  make clean         Supprime les fichiers générés"
-	@echo "  make db-create     Crée la base de données"
-	@echo "  make db-drop       Supprime la base de données"
-	@echo "  make update        Met à jour le projet (alias reset)"
-	@echo "  make reset         Réinitialise la base (alias init)"
-	@echo "  make seed          Alias vers init"
-	@echo "  make print_port    Affiche le port de l'application"
-
-# Affichage du port
-print_port:
-	@echo "Port configuré : $(PORT)"
-
-# Installaton des dépendances
-install:
-	clear
-	@echo "Installation en cours..."
+build: clean
+	if [ -d target ]; then rm -f $$(find target -name '*.class' -type f); fi
 	mvn clean compile
 
-# Lance l'application
-run:
-	clear
-	@echo "Lancement en cours..."
-	@$(MAKE) print_port
-	# mvn -q spring-boot:run -Dspring-boot.run.profiles=$(PROFILE) | grep -E "WARN|ERROR|DEBUG :"
-	mvn -q spring-boot:run -Dspring-boot.run.profiles=$(PROFILE)
+build-dev: build run
 
-prod: clean
-	clear
-	@echo "Lancement en cours..."
-	@$(MAKE) print_port
-	mvn -q spring-boot:run -Dspring-boot.run.profiles=prod | grep -E "WARN|ERROR"
+compile:
+	mvn clean compile
 
-init: print_port
-	clear
-	@echo "Lancement en cours..."
-	@$(MAKE) print_port
-	# mvn spring-boot:run -Dspring-boot.run.profiles=init | grep -E "WARN|ERROR|DEBUG :"
-	mvn spring-boot:run -Dspring-boot.run.profiles=init
+compile_run: compile run
 
-# Exécute les tests
-test:
-	clear && mvn -q test
-
-# Nettoie les fichiers générés
 clean:
-	clear && mvn -q clean
+	mvn clean
+	rm -rf target
+	rm -rf jar
+	rm -rf javadoc
 
-# Crée les tables de la base de données
-db-create: seed
+javadoc:
+	mkdir -p ./javadoc
+	mvn clean javadoc:javadoc
+	if [ -d target/site/apidocs ]; then cp -R target/site/apidocs/. javadoc/; fi
 
-# Supprime les tables de la base de données
+build-jar:
+	mvn clean package -DskipTests
+	mkdir -p jar
+	jar_file=$$(ls -1t target/plant-shop-jpa-spring-boot-hibernate-security-*.jar 2>/dev/null | head -n 1); \
+	if [ -z "$$jar_file" ]; then echo "Aucun JAR généré."; exit 1; fi; \
+	cp "$$jar_file" ./jar/plant-shop.jar
+
+# ───────────────────────────────
+#   Gestion de la seed
+# ───────────────────────────────
+
+seed:
+	mvn clean spring-boot:run -Dspring-boot.run.profiles=seed
+
+compile-seed:
+	mvn clean compile -Dspring-boot.run.profiles=seed
+
+seed-dev: compile-seed seed
+
+seed-build:
+	mvn clean package -DskipTests -Dspring-boot.run.profiles=seed
+
+# ───────────────────────────────
+#   Gestion du test end-to-end
+# ───────────────────────────────
+
+tests:
+	mvn clean test
+
+compile-test:
+	mvn clean test -DskipTests
+
+test-dev: compile-test tests
+
+test-build:
+	mvn clean verify
+
+# ───────────────────────────────
+#   Commandes Base de données
+# ───────────────────────────────
+
+# Extrait la valeur depuis application.yml si disponible
+# DB_NAME := $(shell sed -n 's/.*jdbc:postgresql:\/\/[^\/]*\/\([^?[:space:]]*\).*/\1/p' src/main/resources/application.yml | head -n 1 | tr -d '[:space:]')
+DB_NAME = plant_shop_jpa
+
+db-create:
+	sudo -u postgres psql -c "CREATE DATABASE $(DB_NAME)" || echo "↳ base déjà existante."
+
+db-migrate:
+	sudo -u postgres psql -d $(DB_NAME) -f db/schema.sql
+
 db-drop:
-	sudo -u postgres psql -d $(DB_NAME) -c "DROP SCHEMA public CASCADE;"
-	sudo -u postgres psql -d $(DB_NAME) -c "CREATE SCHEMA public;"
+	sudo -u postgres psql -c "DROP DATABASE IF EXISTS $(DB_NAME);"
 
-# Met à jour les dépendances et reconstruit le projet
-update: reset
+db-reset: db-drop db-create db-migrate
 
-# Réinitialise la base de données
-reset: init
+# ───────────────────────────────
+#   Utilitaires
+# ───────────────────────────────
 
-# Tâche pour seed la base de données (si vous avez un mécanisme de seed)
-seed: init
-
-.PHONY: test clean db-create db-drop update reset seed
+tree:
+	tree . -I "target|jar|javadoc"
