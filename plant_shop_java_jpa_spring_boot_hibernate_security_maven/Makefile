@@ -90,13 +90,13 @@ test-build:
 
 # Extrait la valeur depuis application.yml si disponible
 # DB_NAME := $(shell sed -n 's/.*jdbc:postgresql:\/\/[^\/]*\/\([^?[:space:]]*\).*/\1/p' src/main/resources/application.yml | head -n 1 | tr -d '[:space:]')
-DB_NAME = plant_shop_jpa
+DB_NAME = plant_shop_jpa_maven
 
 db-create:
 	sudo -u postgres psql -c "CREATE DATABASE $(DB_NAME)" || echo "↳ base déjà existante."
 
 db-migrate:
-	sudo -u postgres psql -d $(DB_NAME) -f db/schema.sql
+	sudo -u postgres psql -d $(DB_NAME) -f src/main/resources/db/migration/V1__init_schema.sql
 
 db-drop:
 	sudo -u postgres psql -c "DROP DATABASE IF EXISTS $(DB_NAME);"

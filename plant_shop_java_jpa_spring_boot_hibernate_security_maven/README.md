@@ -62,7 +62,7 @@ Application complète de vente de plantes développée avec Spring Boot et Thyme
 - Maven
 
 ### Configuration
-1. Créer une base de données PostgreSQL nommée `plant_shop_jpa`
+1. Créer une base de données PostgreSQL nommée `plant_shop_jpa_maven`
 2. Modifier les identifiants dans `application.yml` si nécessaire
 
 ### Démarrage
