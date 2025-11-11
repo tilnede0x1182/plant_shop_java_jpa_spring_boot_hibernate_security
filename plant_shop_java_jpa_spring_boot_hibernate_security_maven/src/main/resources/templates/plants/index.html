@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" layout:decorate="~{layout/application}" th:with="title='Liste des plantes'">
+
+<head>
+	<title>PlantShop | Acceuil</title>
+</head>
+
+<body>
+	<div layout:fragment="content">
+		<section class="container pt-5 mt-5">
+			<div th:if="${userRoleString == 'admin'}" class="mb-3">
+				<a href="/admin/plants/new" class="btn btn-primary">Ajouter une plante</a>
+			</div>
+
+			<div class="row">
+				<div th:each="plant : ${plants}" th:if="${plant.stock > 0}" class="col-md-4 mb-4">
+					<div class="card h-100 plant-card" th:data-id="${plant.id}">
+						<div class="card-body position-relative">
+							<h5 class="card-title" th:text="${plant.name}">Nom</h5>
+							<p class="card-text" th:text="${plant.description}">Description</p>
+							<p class="text-muted">
+								Prix : <span th:text="${plant.price}">0.0</span> €
+								<br th:if="${userRoleString == 'admin'}" />
+								<span th:if="${userRoleString == 'admin'}">
+									Stock : <span th:text="${plant.stock}">0</span>
+								</span>
+							</p>
+							<div class="d-flex gap-2">
+								<button type="button" class="btn btn-success flex-grow-1 add-to-cart" th:data-id="${plant.id}"
+									style="z-index: 1; position: relative;" th:data-name="${plant.name}" th:data-price="${plant.price}"
+									th:data-stock="${plant.stock}">
+									Ajouter au panier
+								</button>
+							</div>
+						</div>
+					</div>
+				</div>
+		</section>
+		<script>
+			document.addEventListener('DOMContentLoaded', () => {
+				// Navigation vers la fiche plante
+				document.querySelectorAll('.plant-card').forEach(card => {
+					card.addEventListener('click', () => {
+						const id = card.dataset.id;
+						window.location.href = "/plants/" + id;
+					});
+				});
+			});
+		</script>
+		<script th:src="@{/js/plants.js}"></script>
+	</div>
+</body>
+
+</html>

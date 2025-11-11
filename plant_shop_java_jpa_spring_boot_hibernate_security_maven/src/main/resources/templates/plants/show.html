@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html layout:decorate="~{layout/application}" xmlns:th="http://www.thymeleaf.org"
+	th:with="title='PlantShop | ' + ${plant.name}">
+
+<head>
+	<meta charset="UTF-8">
+	<title th:text="'PlantShop | ' + ${plant.name}">PlantShop</title>
+</head>
+
+<div layout:fragment="content">
+	<div class="container">
+		<h1 class="mb-4">🌱 Détail de la plante</h1>
+
+		<div class="card mb-4 shadow-sm">
+			<div class="card-body">
+				<h2 class="card-title" th:text="${plant.name}">Nom de la plante</h2>
+				<p class="card-text" th:text="${plant.description}">Description</p>
+
+				<ul class="list-group list-group-flush mb-3">
+					<li class="list-group-item">
+						<strong>Catégorie :</strong> <span th:text="${plant.category}">Catégorie</span>
+					</li>
+					<li class="list-group-item">
+						<strong>Prix :</strong> <span th:text="${plant.price}">0.00</span> €
+					</li>
+					<li class="list-group-item" th:if="${userRoleString == 'admin'}">
+						<strong>Stock disponible :</strong> <span th:text="${plant.stock}">0</span>
+					</li>
+				</ul>
+
+				<div class="d-flex flex-wrap gap-2">
+					<a href="/plants" class="btn btn-secondary">Retour à la page d'acceuil</a>
+					<button type="button" class="btn btn-success add-to-cart" th:data-id="${plant.id}"
+						th:data-name="${plant.name}" th:data-price="${plant.price}" th:data-stock="${plant.stock}">
+						Ajouter au panier
+					</button>
+					<div th:if="${userRoleString == 'admin'}" class="d-flex gap-2">
+						<a th:href="@{'/admin/plants/' + ${plant.id} + '/edit'}" class="btn btn-warning">Modifier</a>
+						<form th:action="@{'/admin/plants/' + ${plant.id}}" method="post"
+							onsubmit="return confirm('Supprimer cette plante ?');">
+							<input type="hidden" name="_method" value="delete" />
+							<button type="submit" class="btn btn-danger">Supprimer</button>
+						</form>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	<script th:src="@{/js/plants.js}"></script>
+</div>
+
+</html>

@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>OrganisationSim - Accueil</title>
+	<link rel="icon" type="image/x-icon" href="favicon/organisation-sim.svg">
+  <link rel="stylesheet" href="style/main.css">
+</head>
+<body>
+
+<!-- 🔗 Barre de navigation globale -->
+<nav class="navbar">
+  <a href="index.html" class="logo">OrganisationSim</a>
+  <a href="constraints.html">Créer un projet</a>
+  <a href="projects.html">Liste des projets</a>
+</nav>
+
+<header>
+  <h1>Bienvenue sur OrganisationSim</h1>
+</header>
+
+<div class="container">
+  <h2>Tableau récapitulatif (Diagramme de Pert simplifié)</h2>
+
+  <table class="pert-table">
+    <thead>
+      <tr>
+        <th>Étape</th>
+        <th>Responsable</th>
+        <th>Durée estimée</th>
+        <th>Prérequis</th>
+      </tr>
+    </thead>
+    <tbody id="pertTableBody">
+      <tr>
+        <td>Analyse</td>
+        <td>Chef de projet</td>
+        <td>3 jours</td>
+        <td>-</td>
+      </tr>
+      <tr>
+        <td>Conception</td>
+        <td>Architecte</td>
+        <td>5 jours</td>
+        <td>Analyse</td>
+      </tr>
+      <tr>
+        <td>Développement</td>
+        <td>Équipe Dev</td>
+        <td>10 jours</td>
+        <td>Conception</td>
+      </tr>
+      <tr>
+        <td>Recette</td>
+        <td>QA</td>
+        <td>4 jours</td>
+        <td>Développement</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+</body>
+</html>

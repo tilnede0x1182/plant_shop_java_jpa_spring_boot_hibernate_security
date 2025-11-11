@@ -1,0 +1,26 @@
+=== ADMINS ===
+admin1@planteshop.com password
+admin2@planteshop.com password
+admin3@planteshop.com password
+
+=== USERS ===
+wilbur.herzog@planteshop.com 53dV0QN&8@mSd%v
+garth.nader@planteshop.com 35vL4!791VA
+ruben.zieme@planteshop.com 6d#U@g5J3%np2O@
+jeremy.schaden@planteshop.com 4R6GYbA%7J
+miss.bennie.glover@planteshop.com w@^D3Y4$2msG!@9
+prudence.daniel@planteshop.com $YPT5sDWx&
+vikki.wyman@planteshop.com ^m!W4^^kmNMsVk
+darrick.smith@planteshop.com *!7^gpuC%2q
+miss.jospeh.robel@planteshop.com JytjF!As5qn69
+mr.sonny.rolfson@planteshop.com #$k!O6q5o7%
+geraldo.langworth@planteshop.com Y$3R9S4^7%&r9a
+deedee.orn@planteshop.com Fx58pQE$KBO
+elia.greenholt@planteshop.com Awcd@42kvVWU7I1T
+celinda.konopelski@planteshop.com C^Lx@@Ymb14^C
+marion.oconnell@planteshop.com uvGum^&0*@WV*
+gerardo.barrows@planteshop.com P9&8d96ysjq9@^
+rolf.towne@planteshop.com i^PiYIsfr*7^
+kali.hills@planteshop.com pKL21^y@&*km#Ql
+felipe.strosin@planteshop.com 7Jus@1s#%@
+tobias.kris@planteshop.com 6z8r$3j094Xy5I

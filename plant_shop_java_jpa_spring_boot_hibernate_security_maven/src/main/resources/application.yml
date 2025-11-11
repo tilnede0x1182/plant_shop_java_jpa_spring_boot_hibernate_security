@@ -1,0 +1,106 @@
+# -----------------------------
+# CONFIGURATION GÉNÉRALE COMMUNE
+# S'applique quel que soit le profil actif (dev, seed, prod)
+# -----------------------------
+server:
+  port: 8080 # Port HTTP utilisé par le serveur intégré (Tomcat par défaut)
+
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/plant_shop_jpa
+    username: tilnede0x1182
+    password: tilnede0x1182
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    show-sql: true
+    open-in-view: false
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        format_sql: true
+        default_schema: public
+  thymeleaf:
+    prefix: classpath:/templates/
+    suffix: .html
+    mode: HTML
+    encoding: UTF-8
+    cache: false
+  sql:
+    init:
+      mode: never
+
+logging:
+  level:
+    org.hibernate.SQL: DEBUG
+    org.hibernate.type.descriptor.sql.BasicBinder: TRACE
+    org.springframework.security: DEBUG
+---
+
+# -----------------------------
+# PROFIL DEV : Développement local
+# Activation avec --spring.profiles.active=dev
+# -----------------------------
+
+spring:
+  config:
+    activate:
+      on-profile: dev
+  thymeleaf:
+    cache: false
+  jpa:
+    hibernate:
+      ddl-auto: update
+    defer-datasource-initialization: false
+  sql:
+    init:
+      mode: never
+
+---
+
+# -----------------------------
+# PROFIL INIT : Initialisation sans suppression des données
+# Activation avec --spring.profiles.active=init
+# -----------------------------
+
+spring:
+  config:
+    activate:
+      on-profile: init
+  devtools:
+    enabled: false
+    restart:
+      enabled: false
+  thymeleaf:
+    cache: false
+  jpa:
+    hibernate:
+      ddl-auto: update
+    defer-datasource-initialization: false
+  sql:
+    init:
+      mode: never
+
+---
+
+# -----------------------------
+# PROFIL PROD : Production
+# Activation avec --spring.profiles.active=prod
+# -----------------------------
+
+spring:
+  config:
+    activate:
+      on-profile: prod
+  devtools:
+    enabled: false
+    restart:
+      enabled: false
+  thymeleaf:
+    cache: true
+  jpa:
+    hibernate:
+      ddl-auto: validate
+  sql:
+    init:
+      mode: never

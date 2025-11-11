@@ -1,0 +1,57 @@
+.card {
+    transition: transform 0.2s;
+}
+
+.card:hover {
+    box-shadow: 0 3px 3px rgba(0,0,0,.1);
+}
+
+.plant-card {
+	cursor: pointer;
+}
+
+.navbar {
+    box-shadow: 0 2px 4px rgba(0,0,0,.1);
+		background-color: #165437;
+}
+
+.navbar .navbar-brand,
+.navbar .nav-link,
+.navbar .navbar-text {
+  color: white !important;
+}
+
+/* Profile Page Styles */
+.card.profile-card {
+	border-radius: 10px;
+	overflow: hidden;
+}
+
+.profile-icon {
+	font-size: 5rem;
+	color: #28a745;
+}
+
+.profile-badge {
+	font-size: 0.9rem;
+	padding: 0.35em 0.65em;
+}
+
+.card-shadow {
+	box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+}
+
+.form-label {
+	font-weight: 500;
+}
+
+.product-link {
+  text-decoration: none;
+  color: inherit;
+  transition: all 0.1s ease;
+}
+
+.product-link:hover {
+  /* text-decoration: underline; */
+  text-shadow: 0 0 3px rgba(0, 0, 0, 0.2);
+}
