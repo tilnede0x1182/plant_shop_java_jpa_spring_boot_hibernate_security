@@ -67,6 +67,7 @@ tasks.register<JavaExec>("seed") {
     mainClass.set("com.planteshop.seed.SeedRunner")
     classpath = sourceSets["main"].runtimeClasspath
     jvmArgs = listOf("-Dspring.profiles.active=seed")
+    systemProperty("spring.devtools.restart.enabled", "false")
 }
 
 tasks.register<Copy>("syncProdJar") {
