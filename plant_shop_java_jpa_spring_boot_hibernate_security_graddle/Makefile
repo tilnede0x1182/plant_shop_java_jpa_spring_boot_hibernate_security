@@ -3,7 +3,7 @@
 # ───────────────────────────────
 
 run:
-	SPRING_PROFILES_ACTIVE=dev ./gradlew bootRun --console=plain
+	SPRING_PROFILES_ACTIVE=dev ./gradlew --console=plain bootRun
 
 prod:
 	@if [ -f ./jar/plant-shop.jar ]; then \
@@ -18,61 +18,45 @@ prod-dev:
 	$(MAKE) prod
 
 build: clean
-	./gradlew clean compileJava
+	./gradlew --console=plain clean compileJava
 
 build-dev:
 	$(MAKE) build
 	$(MAKE) run
 
 compile:
-	./gradlew clean compileJava
+	./gradlew --console=plain clean compileJava
 
 compile_run: compile run
 
-clean:
-	./gradlew clean
+	./gradlew --console=plain clean
 	rm -rf build
 	rm -rf jar
 	rm -rf javadoc
 
 javadoc:
 	mkdir -p ./javadoc
-	./gradlew clean javadoc
+	./gradlew --console=plain clean javadoc
 	if [ -d build/docs/javadoc ]; then cp -R build/docs/javadoc/. javadoc/; fi
 
 build-jar:
-	./gradlew clean syncProdJar
+	./gradlew --console=plain clean syncProdJar
 
 # ───────────────────────────────
 #   Gestion de la seed
 # ───────────────────────────────
 
 seed:
-	SPRING_PROFILES_ACTIVE=seed ./gradlew seed
+	SPRING_PROFILES_ACTIVE=seed ./gradlew --console=plain seed
 
 compile-seed:
-	SPRING_PROFILES_ACTIVE=seed ./gradlew clean compileJava
+	SPRING_PROFILES_ACTIVE=seed ./gradlew --console=plain clean compileJava
 
 seed-dev:
-	./gradlew clean seed
+	./gradlew --console=plain clean seed
 
 seed-build:
-	SPRING_PROFILES_ACTIVE=seed ./gradlew clean bootJar -x test
-
-# ───────────────────────────────
-#   Gestion du test end-to-end
-# ───────────────────────────────
-
-tests:
-	./gradlew clean test
-
-compile-test:
-	./gradlew testClasses
-
-test-dev: compile-test tests
-
-test-build:
-	./gradlew clean build
+	SPRING_PROFILES_ACTIVE=seed ./gradlew --console=plain clean bootJar -x test
 
 # ───────────────────────────────
 #   Commandes Base de données

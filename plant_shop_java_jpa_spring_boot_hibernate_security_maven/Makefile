@@ -70,21 +70,6 @@ seed-build:
 	mvn clean package -DskipTests -Dspring.profiles.active=seed
 
 # ───────────────────────────────
-#   Gestion du test end-to-end
-# ───────────────────────────────
-
-tests:
-	mvn clean test
-
-compile-test:
-	mvn clean test -DskipTests
-
-test-dev: compile-test tests
-
-test-build:
-	mvn clean verify
-
-# ───────────────────────────────
 #   Commandes Base de données
 # ───────────────────────────────
 
