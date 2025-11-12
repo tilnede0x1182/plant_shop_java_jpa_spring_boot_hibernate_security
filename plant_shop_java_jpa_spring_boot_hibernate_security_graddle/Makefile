@@ -86,7 +86,7 @@ db-create:
 	sudo -u postgres psql -c "CREATE DATABASE $(DB_NAME)" || echo "↳ base déjà existante."
 
 db-migrate:
-	sudo -u postgres psql -d $(DB_NAME) -f src/main/resources/db/migration/V1__init_schema.sql
+	sudo -u postgres psql -d $(DB_NAME) -f src/main/resources/db/migration/migration.sql
 
 db-drop:
 	sudo -u postgres psql -c "DROP DATABASE IF EXISTS $(DB_NAME);"

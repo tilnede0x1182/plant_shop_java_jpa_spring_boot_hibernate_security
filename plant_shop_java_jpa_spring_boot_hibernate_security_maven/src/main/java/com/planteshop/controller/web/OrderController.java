@@ -30,10 +30,6 @@ public class OrderController {
 	@GetMapping("/orders")
 	public String listOrders(@AuthenticationPrincipal User user, Model model) {
 		List<CustomerOrder> orders = orderRepository.findByUserOrderByIdDesc(user);
-
-		// 🔍 Log temporaire pour vérifier createdAt
-		orders.forEach(o -> System.out.println("DEBUG : OrderController, listOrders - Order ID: " + o.getId() + ", createdAt: " + o.getCreatedAt()));
-
 		model.addAttribute("orders", orders);
 		return "orders/index";
 	}

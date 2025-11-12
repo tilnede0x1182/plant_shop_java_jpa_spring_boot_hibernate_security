@@ -57,14 +57,9 @@ public class AdminUserController {
 			// et réattribution pour empêcher Hibernate de le mettre à NULL
 			User existingUser = userRepository.findById(id).orElseThrow();
 			user.setPassword(existingUser.getPassword());
-			System.err.println("DEBUG : AdminUserController, @PatchMapping(\"/{id}\"), user : name - " + user.getName()
-					+ ", email - " + user.getEmail() + ", role - " + user.getRole());
+
 			userRepository.save(user);
 			User userTmp = userRepository.findById(id).orElse(null);
-			if (userTmp != null) {
-				System.err.println("DEBUG : AdminUserController, @PatchMapping(\"/{id}\"), userTmp : name - "
-						+ userTmp.getName() + ", email - " + userTmp.getEmail() + ", role - " + userTmp.getRole());
-			}
 		});
 		SecurityContextHolder.clearContext();
 		return "redirect:/admin/users";
