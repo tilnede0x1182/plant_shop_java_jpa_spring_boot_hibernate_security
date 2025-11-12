@@ -43,6 +43,7 @@ public class DatabaseSeeder implements CommandLineRunner {
     private static final int ITEMS_PER_ORDER = 2; // 📦 Articles par commande
     private static final int MAX_QTY_PER_ITEM = 5;
     private static final List<String> ORDER_STATUSES = Arrays.asList("confirmed", "pending", "shipped", "delivered");
+    private static final List<String> USER_EMAIL_DOMAINS = Arrays.asList("gmail.com", "yahoo.com", "hotmail.com");
 
     private final Random random = new Random();
 
@@ -137,7 +138,9 @@ public class DatabaseSeeder implements CommandLineRunner {
 	// # Création des utilisateurs classiques
     private int createStandardUsers() {
         for (int userIndex = 0; userIndex < NUMBER_OF_USERS; userIndex++) {
-            String fullName = faker.name().fullName();
+            String firstName = faker.name().firstName();
+            String lastName = faker.name().lastName();
+            String fullName = firstName + " " + lastName;
             String generatedEmail = generateEmailFromFullName(fullName);
             String generatedPassword = faker.internet().password(10, 16, true, true);
             User standardUser = new User();
@@ -328,8 +331,29 @@ public class DatabaseSeeder implements CommandLineRunner {
 
 	// # Génère un email "slug" à partir du nom
 	private String generateEmailFromFullName(String fullName) {
-		String slugName = fullName.trim().toLowerCase().replaceAll("[^a-z ]", "").replaceAll("\\s+", ".");
-		return slugName + "@planteshop.com";
+		String[] parts = fullName.trim().split("\\s+");
+		String first = parts.length > 0 ? parts[0] : "user";
+		String last = parts.length > 1 ? parts[parts.length - 1] : first;
+		return buildEmailFromNames(first, last);
+	}
+
+	private String buildEmailFromNames(String firstName, String lastName) {
+		String slugFirst = slugify(firstName);
+		String slugLast = slugify(lastName);
+		if (slugLast.isEmpty()) {
+			slugLast = slugFirst;
+		}
+		int randomNumber = 20 + random.nextInt(80);
+		String domain = USER_EMAIL_DOMAINS.get(random.nextInt(USER_EMAIL_DOMAINS.size()));
+		return slugFirst + "_" + slugLast + randomNumber + "@" + domain;
+	}
+
+	private String slugify(String value) {
+		if (value == null || value.isBlank()) {
+			return "user";
+		}
+		String slug = value.toLowerCase().replaceAll("[^a-z]", "");
+		return slug.isEmpty() ? "user" : slug;
 	}
 
 	// # Classe interne Credential pour stocker les credentials
