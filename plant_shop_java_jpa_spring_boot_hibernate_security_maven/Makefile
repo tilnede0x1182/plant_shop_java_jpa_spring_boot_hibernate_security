@@ -6,7 +6,7 @@ run:
 	mvn spring-boot:run -Dspring-boot.run.profiles=dev
 
 prod:
-	if [ -f ./jar/plant-shop.jar ]; then \
+	@if [ -f ./jar/plant-shop.jar ]; then \
 		java -jar ./jar/plant-shop.jar; \
 	else \
 		$(MAKE) build-jar; \

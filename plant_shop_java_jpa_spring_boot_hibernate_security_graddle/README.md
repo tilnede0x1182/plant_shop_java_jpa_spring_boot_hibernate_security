@@ -22,7 +22,7 @@ Application complète de vente de plantes développée avec Spring Boot et Thyme
 - **Utilitaires**:
   - Lombok 1.18.30
   - DataFaker 2.0.2 (pour les données de test)
-- **Build**: Maven
+- **Build**: Gradle 8.10.2 (wrapper inclus)
 
 ### Frontend
 - **Templates**:
@@ -59,25 +59,25 @@ Application complète de vente de plantes développée avec Spring Boot et Thyme
 ### Prérequis
 - Java 21+
 - PostgreSQL
-- Maven
+- Gradle (non requis si vous utilisez le wrapper `./gradlew`)
 
 ### Configuration
-1. Créer une base de données PostgreSQL nommée `plant_shop_jpa`
+1. Créer une base de données PostgreSQL nommée `plant_shop_jpa_gradle`
 2. Modifier les identifiants dans `application.yml` si nécessaire
 
 ### Démarrage
 ```bash
-# Installation des dépendances
-mvn clean compile
+# Installation des dépendances / build complet
+./gradlew clean build
 
 # Lancement avec données de test
-mvn spring-boot:run -Dspring-boot.run.profiles=seed
+SPRING_PROFILES_ACTIVE=seed ./gradlew bootRun
 
 # Lancement en mode développement
-mvn spring-boot:run -Dspring-boot.run.profiles=dev
+SPRING_PROFILES_ACTIVE=dev ./gradlew bootRun
 
-# Lancement en production
-mvn spring-boot:run -Dspring-boot.run.profiles=prod
+# Lancement en production (copie du JAR dans ./jar)
+SPRING_PROFILES_ACTIVE=prod ./gradlew syncProdJar && java -jar jar/plant-shop.jar
 ```
 
 ## Structure du projet

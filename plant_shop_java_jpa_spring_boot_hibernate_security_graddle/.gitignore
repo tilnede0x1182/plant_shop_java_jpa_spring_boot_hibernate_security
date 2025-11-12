@@ -1,7 +1,9 @@
 *.class
 *.log
 *.sqlite
+/build/
 /target/
+/.gradle/
 /db/
 .idea/
 .vscode/
