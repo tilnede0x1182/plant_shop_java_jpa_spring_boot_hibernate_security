@@ -57,6 +57,10 @@ tasks.named<org.springframework.boot.gradle.tasks.bundling.BootJar>("bootJar") {
     archiveFileName.set("plant-shop.jar")
 }
 
+tasks.named<org.springframework.boot.gradle.tasks.run.BootRun>("bootRun") {
+    systemProperty("spring.devtools.restart.enabled", "false")
+}
+
 tasks.register<JavaExec>("seed") {
     group = "application"
     description = "Populate the database using SeedRunner"

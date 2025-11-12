@@ -3,7 +3,7 @@
 # ───────────────────────────────
 
 run:
-	SPRING_PROFILES_ACTIVE=dev ./gradlew bootRun
+	SPRING_PROFILES_ACTIVE=dev ./gradlew bootRun --console=plain
 
 prod:
 	@if [ -f ./jar/plant-shop.jar ]; then \
