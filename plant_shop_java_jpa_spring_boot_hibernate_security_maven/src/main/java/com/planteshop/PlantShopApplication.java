@@ -16,6 +16,12 @@ public class PlantShopApplication {
 
 	private static final int DEFAULT_PORT = 8080;
 
+	/**
+	 * Point d'entrée principal de l'application Plant Shop.
+	 * Configure le port dynamiquement et lance le serveur Spring Boot.
+	 *
+	 * @param args String[] les arguments de ligne de commande
+	 */
 	public static void main(String[] args) {
 		int port = resolvePort();
 
@@ -36,6 +42,12 @@ public class PlantShopApplication {
 		app.run(args);
 	}
 
+	/**
+	 * Résout le port du serveur en vérifiant les variables d'environnement.
+	 * Ordre de priorité : SERVER_ADDRESS, SERVER_ADRRESS, SERVER_PORT, server.port.
+	 *
+	 * @return int le port résolu ou le port par défaut 8080
+	 */
 	private static int resolvePort() {
 		Integer envAddress = parsePort(System.getenv("SERVER_ADDRESS"));
 		Integer envAdrressTypo = parsePort(System.getenv("SERVER_ADRRESS"));
@@ -49,6 +61,13 @@ public class PlantShopApplication {
 		return DEFAULT_PORT;
 	}
 
+	/**
+	 * Parse une chaîne pour en extraire un numéro de port valide.
+	 * Gère les formats avec ou sans préfixe d'adresse (ex: localhost:8080).
+	 *
+	 * @param rawValue String la valeur brute à parser
+	 * @return Integer le port extrait ou null si invalide
+	 */
 	private static Integer parsePort(String rawValue) {
 		if (rawValue == null || rawValue.isBlank()) {
 			return null;
@@ -67,6 +86,12 @@ public class PlantShopApplication {
 		return null;
 	}
 
+	/**
+	 * Vérifie si un port TCP est disponible pour une écoute.
+	 *
+	 * @param port int le numéro de port à vérifier
+	 * @return boolean true si le port est libre, false sinon
+	 */
 	private static boolean isPortAvailable(int port) {
 		try (ServerSocket socket = new ServerSocket(port)) {
 			socket.setReuseAddress(true);
@@ -76,6 +101,11 @@ public class PlantShopApplication {
 		}
 	}
 
+	/**
+	 * Configure le filtre HTTP pour supporter les méthodes PUT/DELETE via _method.
+	 *
+	 * @return HiddenHttpMethodFilter le filtre configuré
+	 */
 	@Bean
 	public HiddenHttpMethodFilter hiddenHttpMethodFilter() {
 		return new HiddenHttpMethodFilter();

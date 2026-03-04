@@ -18,10 +18,21 @@ public class AdminUserController {
 
 	private final UserRepository userRepository;
 
+	/**
+	 * Constructeur avec injection du repository.
+	 *
+	 * @param userRepository UserRepository le repository des utilisateurs
+	 */
 	public AdminUserController(UserRepository userRepository) {
 		this.userRepository = userRepository;
 	}
 
+	/**
+	 * Affiche la liste des utilisateurs triée par rôle puis par nom.
+	 *
+	 * @param model Model le modèle Thymeleaf
+	 * @return String le nom de la vue
+	 */
 	@GetMapping
 	public String index(Model model) {
 		model.addAttribute("users", userRepository.findAll()
@@ -32,6 +43,13 @@ public class AdminUserController {
 		return "admin/users/index";
 	}
 
+	/**
+	 * Affiche le formulaire d'édition d'un utilisateur.
+	 *
+	 * @param id Long l'identifiant de l'utilisateur
+	 * @param model Model le modèle Thymeleaf
+	 * @return String le nom de la vue ou redirection si non trouvé
+	 */
 	@GetMapping("/{id}/edit")
 	public String edit(@PathVariable Long id, Model model) {
 		Optional<User> userOpt = userRepository.findById(id);
@@ -41,6 +59,14 @@ public class AdminUserController {
 		return "admin/users/edit";
 	}
 
+	/**
+	 * Met à jour un utilisateur existant en base de données.
+	 * Invalide la session après modification.
+	 *
+	 * @param id Long l'identifiant de l'utilisateur
+	 * @param formUser User les nouvelles données de l'utilisateur
+	 * @return String redirection vers la liste
+	 */
 	@PatchMapping("/{id}")
 	public String update(@PathVariable Long id, @ModelAttribute User formUser) {
 		userRepository.findById(id).ifPresent(user -> {
@@ -64,6 +90,12 @@ public class AdminUserController {
 		return "redirect:/admin/users";
 	}
 
+	/**
+	 * Supprime un utilisateur de la base de données.
+	 *
+	 * @param id Long l'identifiant de l'utilisateur à supprimer
+	 * @return String redirection vers la liste
+	 */
 	@DeleteMapping("/{id}")
 	public String delete(@PathVariable Long id) {
 		userRepository.deleteById(id);

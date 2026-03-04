@@ -12,6 +12,14 @@ import org.springframework.security.web.SecurityFilterChain;
 @EnableWebSecurity
 public class SecurityConfig {
 
+	/**
+	 * Configure la chaîne de filtres de sécurité Spring Security.
+	 * Définit les règles d'accès aux URLs, le formulaire de login et le logout.
+	 *
+	 * @param http HttpSecurity l'objet de configuration HTTP
+	 * @return SecurityFilterChain la chaîne de filtres configurée
+	 * @throws Exception si la configuration échoue
+	 */
 	@Bean
 	public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
 		http
@@ -49,6 +57,11 @@ public class SecurityConfig {
 		return http.build();
 	}
 
+	/**
+	 * Fournit l'encodeur de mots de passe BCrypt pour l'application.
+	 *
+	 * @return PasswordEncoder l'encodeur BCrypt
+	 */
 	@Bean
 	public PasswordEncoder passwordEncoder() {
 		return new BCryptPasswordEncoder();

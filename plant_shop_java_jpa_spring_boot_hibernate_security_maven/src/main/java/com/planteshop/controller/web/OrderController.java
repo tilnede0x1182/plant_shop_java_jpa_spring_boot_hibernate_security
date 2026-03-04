@@ -22,11 +22,24 @@ public class OrderController {
 	private final OrderRepository orderRepository;
 	private final PlantRepository plantRepository;
 
+	/**
+	 * Constructeur avec injection des repositories.
+	 *
+	 * @param orderRepository OrderRepository le repository des commandes
+	 * @param plantRepository PlantRepository le repository des plantes
+	 */
 	public OrderController(OrderRepository orderRepository, PlantRepository plantRepository) {
 		this.orderRepository = orderRepository;
 		this.plantRepository = plantRepository;
 	}
 
+	/**
+	 * Affiche la liste des commandes de l'utilisateur connecté.
+	 *
+	 * @param user User l'utilisateur authentifié
+	 * @param model Model le modèle Thymeleaf
+	 * @return String le nom de la vue
+	 */
 	@GetMapping("/orders")
 	public String listOrders(@AuthenticationPrincipal User user, Model model) {
 		List<CustomerOrder> orders = orderRepository.findByUserOrderByIdDesc(user);
@@ -34,6 +47,14 @@ public class OrderController {
 		return "orders/index";
 	}
 
+	/**
+	 * Traite le paiement du panier et crée une commande.
+	 * Vérifie le stock et le décrémente pour chaque article.
+	 *
+	 * @param user User l'utilisateur authentifié
+	 * @param cartItems List les articles du panier
+	 * @return ResponseEntity le statut de la commande
+	 */
 	@PostMapping("/orders/checkout")
 	public ResponseEntity<String> checkout(@AuthenticationPrincipal User user,
 	                       @RequestBody List<CartItemDto> cartItems) {

@@ -9,6 +9,13 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 
 @ControllerAdvice
 public class GlobalUserTypeAdvice {
+	/**
+	 * Détermine le rôle de l'utilisateur pour les vues Thymeleaf.
+	 * Retourne visitor, user, ou admin selon l'authentification.
+	 *
+	 * @param authentication Authentication l'objet d'authentification Spring Security
+	 * @return String le rôle de l'utilisateur en minuscules
+	 */
 	@ModelAttribute("userRole")
 	public String userRole(Authentication authentication) {
 

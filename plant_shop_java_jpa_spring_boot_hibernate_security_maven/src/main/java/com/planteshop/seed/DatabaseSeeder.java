@@ -69,7 +69,14 @@ public class DatabaseSeeder implements CommandLineRunner {
 			"Hosta (Hosta plantaginea)", "Lierre (Hedera helix)", "Mimosa (Acacia dealbata)");
 	private static final List<String> PLANT_CATEGORY_LIST = Arrays.asList("intérieur", "extérieur");
 
-	// # Constructeur
+	/**
+	 * Constructeur avec injection des dépendances.
+	 *
+	 * @param plantRepository PlantRepository le repository des plantes
+	 * @param userRepository UserRepository le repository des utilisateurs
+	 * @param passwordEncoder PasswordEncoder l'encodeur de mots de passe
+	 * @param orderRepository OrderRepository le repository des commandes
+	 */
 	public DatabaseSeeder(
 			PlantRepository plantRepository,
 			UserRepository userRepository,
@@ -81,7 +88,13 @@ public class DatabaseSeeder implements CommandLineRunner {
 		this.orderRepository = orderRepository;
 	}
 
-	// # Point d'entrée principal de la seed
+	/**
+	 * Point d'entrée principal du seeder.
+	 * Réinitialise la base et crée les données de test.
+	 *
+	 * @param args String[] arguments de ligne de commande (non utilisés)
+	 * @throws Exception en cas d'erreur d'écriture du fichier
+	 */
 	@Override
     public void run(String... args) throws Exception {
         System.out.println("🔧 Lecture de la configuration .env...");

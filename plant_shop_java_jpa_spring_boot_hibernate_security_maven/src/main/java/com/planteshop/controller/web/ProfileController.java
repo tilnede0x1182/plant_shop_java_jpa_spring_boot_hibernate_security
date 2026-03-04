@@ -18,11 +18,24 @@ public class ProfileController {
 	private final UserRepository userRepository;
 	private final PasswordEncoder passwordEncoder;
 
+	/**
+	 * Constructeur avec injection des dépendances.
+	 *
+	 * @param userRepository UserRepository le repository des utilisateurs
+	 * @param passwordEncoder PasswordEncoder l'encodeur de mots de passe
+	 */
 	public ProfileController(UserRepository userRepository, PasswordEncoder passwordEncoder) {
     this.userRepository = userRepository;
     this.passwordEncoder = passwordEncoder;
 	}
 
+    /**
+     * Affiche le profil de l'utilisateur connecté.
+     *
+     * @param user User l'utilisateur authentifié
+     * @param model Model le modèle Thymeleaf
+     * @return String le nom de la vue
+     */
     @GetMapping("/my_profile")
     public String profile(@AuthenticationPrincipal User user, Model model) {
         model.addAttribute("user", user);

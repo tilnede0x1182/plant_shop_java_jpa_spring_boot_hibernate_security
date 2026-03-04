@@ -9,6 +9,12 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 
 @ControllerAdvice
 public class GlobalControllerAdvice {
+		/**
+		 * Fournit le nom de l'utilisateur connecté pour les vues Thymeleaf.
+		 *
+		 * @param user User l'utilisateur authentifié (peut être null)
+		 * @return String le nom formaté ou null si non connecté
+		 */
 		@ModelAttribute("loggedUserName")
 		public String loggedUserName(@AuthenticationPrincipal User user) {
 				return (user != null) ? StringUtils.toCapitalCase(user.getName()) : null;

@@ -17,17 +17,38 @@ public class RegistrationController {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
 
+    /**
+     * Constructeur avec injection des dépendances.
+     *
+     * @param userRepository UserRepository le repository des utilisateurs
+     * @param passwordEncoder PasswordEncoder l'encodeur de mots de passe
+     */
     public RegistrationController(UserRepository userRepository, PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
     }
 
+    /**
+     * Affiche le formulaire d'inscription.
+     *
+     * @param model Model le modèle Thymeleaf
+     * @return String le nom de la vue
+     */
     @GetMapping("/register")
     public String showRegistrationForm(Model model) {
         model.addAttribute("user", new User());
         return "authentification/register";
     }
 
+    /**
+     * Traite l'inscription d'un nouvel utilisateur.
+     * Vérifie l'unicité de l'email et encode le mot de passe.
+     *
+     * @param user User les données du formulaire
+     * @param result BindingResult les erreurs de validation
+     * @param model Model le modèle Thymeleaf
+     * @return String redirection vers login ou vue formulaire si erreurs
+     */
     @PostMapping("/register")
     public String registerUser(@Valid @ModelAttribute("user") User user, BindingResult result, Model model) {
         if (userRepository.findByEmail(user.getEmail()).isPresent()) {
