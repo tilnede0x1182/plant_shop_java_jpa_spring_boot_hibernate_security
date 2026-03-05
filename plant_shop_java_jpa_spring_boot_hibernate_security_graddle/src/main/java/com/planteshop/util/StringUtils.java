@@ -1,6 +1,12 @@
 package com.planteshop.util;
 
 public class StringUtils {
+    /**
+     * Convertit une chaine en Capital Case (premiere lettre de chaque mot en majuscule).
+     *
+     * @param text String le texte a convertir
+     * @return String le texte converti
+     */
     public static String toCapitalCase(String text) {
         if (text == null || text.isEmpty()) {
             return text;

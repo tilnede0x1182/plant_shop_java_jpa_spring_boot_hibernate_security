@@ -9,6 +9,13 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 
 @ControllerAdvice
 public class GlobalUserTypeAdvice {
+	/**
+	 * Determine le role de l'utilisateur courant pour les vues.
+	 * Retourne "visitor" si non authentifie, sinon le role en minuscules.
+	 *
+	 * @param authentication Authentication l'objet d'authentification Spring Security
+	 * @return String le role de l'utilisateur (visitor, user, admin)
+	 */
 	@ModelAttribute("userRole")
 	public String userRole(Authentication authentication) {
 

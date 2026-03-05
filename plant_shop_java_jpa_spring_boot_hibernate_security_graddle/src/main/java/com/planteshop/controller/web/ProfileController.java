@@ -18,11 +18,24 @@ public class ProfileController {
 	private final UserRepository userRepository;
 	private final PasswordEncoder passwordEncoder;
 
+	/**
+	 * Constructeur avec injection des dependances.
+	 *
+	 * @param userRepository UserRepository le repository des utilisateurs
+	 * @param passwordEncoder PasswordEncoder l'encodeur de mots de passe
+	 */
 	public ProfileController(UserRepository userRepository, PasswordEncoder passwordEncoder) {
     this.userRepository = userRepository;
     this.passwordEncoder = passwordEncoder;
 	}
 
+    /**
+     * Affiche le profil de l'utilisateur connecte.
+     *
+     * @param user User l'utilisateur authentifie
+     * @param model Model le modele pour la vue
+     * @return String le nom de la vue
+     */
     @GetMapping("/my_profile")
     public String profile(@AuthenticationPrincipal User user, Model model) {
         model.addAttribute("user", user);
@@ -30,14 +43,28 @@ public class ProfileController {
         return "users/show";
     }
 
-		/** Formulaire d’édition */
+		/**
+		 * Affiche le formulaire d'edition du profil.
+		 *
+		 * @param user User l'utilisateur authentifie
+		 * @param model Model le modele pour la vue
+		 * @return String le nom de la vue
+		 */
 		@GetMapping("/my_profile/edit")
     public String edit(@AuthenticationPrincipal User user, Model model) {
-        model.addAttribute("user", user);        // pré‑remplit le formulaire
+        model.addAttribute("user", user);
         return "users/edit";
     }
 
-    /** Traitement du formulaire */
+		/**
+		 * Traite la mise a jour du profil utilisateur.
+		 * Met a jour nom, email et optionnellement le mot de passe.
+		 *
+		 * @param formUser User les donnees du formulaire
+		 * @param result BindingResult les erreurs de validation
+		 * @param sessionUser User l'utilisateur en session
+		 * @return String redirection ou vue en cas d'erreur
+		 */
 		@PostMapping("/my_profile/edit")
 		public String update(@ModelAttribute("user") User formUser,
 												 BindingResult result,

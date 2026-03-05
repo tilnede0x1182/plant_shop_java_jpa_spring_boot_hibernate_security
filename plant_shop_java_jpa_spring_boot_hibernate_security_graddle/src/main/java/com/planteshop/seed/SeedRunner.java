@@ -8,9 +8,17 @@ import org.springframework.context.ConfigurableApplicationContext;
 
 public final class SeedRunner {
 
+	/**
+	 * Constructeur prive empechant l'instanciation.
+	 */
 	private SeedRunner() {
 	}
 
+	/**
+	 * Point d'entree pour executer la seed de la base de donnees.
+	 *
+	 * @param args String[] arguments de ligne de commande
+	 */
 	public static void main(String[] args) {
 		System.out.println("🌱 Initialisation de la base Plant Shop (profil seed)...");
 		SpringApplication app = new SpringApplication(PlantShopApplication.class);

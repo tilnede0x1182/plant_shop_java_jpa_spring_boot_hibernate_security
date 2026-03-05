@@ -90,8 +90,9 @@ class CartManager {
 
 /**
  * Affiche une alerte pour informer d'un stock insuffisant
- * @param {string} plantName Nom du produit
- * @param {number} stockLeft Quantité restante
+ *
+ * @param plantName string Nom du produit
+ * @param stockLeft number Quantite restante
  */
 function showStockAlert(plantName, stockLeft) {
 	const alertElement = document.createElement("div");

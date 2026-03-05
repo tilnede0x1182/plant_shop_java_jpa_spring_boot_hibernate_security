@@ -22,11 +22,24 @@ public class OrderController {
 	private final OrderRepository orderRepository;
 	private final PlantRepository plantRepository;
 
+	/**
+	 * Constructeur avec injection des repositories.
+	 *
+	 * @param orderRepository OrderRepository le repository des commandes
+	 * @param plantRepository PlantRepository le repository des plantes
+	 */
 	public OrderController(OrderRepository orderRepository, PlantRepository plantRepository) {
 		this.orderRepository = orderRepository;
 		this.plantRepository = plantRepository;
 	}
 
+	/**
+	 * Affiche la liste des commandes de l'utilisateur connecte.
+	 *
+	 * @param user User l'utilisateur authentifie
+	 * @param model Model le modele pour la vue
+	 * @return String le nom de la vue
+	 */
 	@GetMapping("/orders")
 	public String listOrders(@AuthenticationPrincipal User user, Model model) {
 		List<CustomerOrder> orders = orderRepository.findByUserOrderByIdDesc(user);
@@ -35,6 +48,14 @@ public class OrderController {
 		return "orders/index";
 	}
 
+	/**
+	 * Traite le passage de commande depuis le panier.
+	 * Verifie le stock, decremente et cree la commande.
+	 *
+	 * @param user User l'utilisateur authentifie
+	 * @param cartItems List<CartItemDto> les articles du panier
+	 * @return ResponseEntity<String> OK ou message d'erreur
+	 */
 	@PostMapping("/orders/checkout")
 	public ResponseEntity<String> checkout(@AuthenticationPrincipal User user,
 	                       @RequestBody List<CartItemDto> cartItems) {
@@ -77,18 +98,38 @@ public class OrderController {
 		private Long id;
 		private int qty;
 
+		/**
+		 * Retourne l'identifiant de la plante.
+		 *
+		 * @return Long l'identifiant
+		 */
 		public Long getId() {
 			return id;
 		}
 
+		/**
+		 * Definit l'identifiant de la plante.
+		 *
+		 * @param id Long l'identifiant
+		 */
 		public void setId(Long id) {
 			this.id = id;
 		}
 
+		/**
+		 * Retourne la quantite.
+		 *
+		 * @return int la quantite
+		 */
 		public int getQty() {
 			return qty;
 		}
 
+		/**
+		 * Definit la quantite.
+		 *
+		 * @param qty int la quantite
+		 */
 		public void setQty(int qty) {
 			this.qty = qty;
 		}

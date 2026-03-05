@@ -69,7 +69,14 @@ public class DatabaseSeeder implements CommandLineRunner {
 			"Hosta (Hosta plantaginea)", "Lierre (Hedera helix)", "Mimosa (Acacia dealbata)");
 	private static final List<String> PLANT_CATEGORY_LIST = Arrays.asList("intérieur", "extérieur");
 
-	// # Constructeur
+	/**
+	 * Constructeur avec injection des repositories et de l'encodeur.
+	 *
+	 * @param plantRepository PlantRepository le repository des plantes
+	 * @param userRepository UserRepository le repository des utilisateurs
+	 * @param passwordEncoder PasswordEncoder l'encodeur de mots de passe
+	 * @param orderRepository OrderRepository le repository des commandes
+	 */
 	public DatabaseSeeder(
 			PlantRepository plantRepository,
 			UserRepository userRepository,
@@ -81,7 +88,13 @@ public class DatabaseSeeder implements CommandLineRunner {
 		this.orderRepository = orderRepository;
 	}
 
-	// # Point d'entrée principal de la seed
+	/**
+	 * Point d'entree principal de la seed.
+	 * Execute le nettoyage et la creation des donnees.
+	 *
+	 * @param args String[] arguments de ligne de commande
+	 * @throws Exception si erreur durant la seed
+	 */
 	@Override
     public void run(String... args) throws Exception {
         System.out.println("🔧 Lecture de la configuration .env...");
@@ -111,15 +124,20 @@ public class DatabaseSeeder implements CommandLineRunner {
         System.out.println("🎉 Seed terminée !");
     }
 
-	// # Suppression des données existantes dans le bon ordre (respect contraintes
-	// FK)
+	/**
+	 * Supprime toutes les donnees existantes dans le bon ordre (respect FK).
+	 */
     private void resetDatabaseData() {
         orderRepository.deleteAll();
         plantRepository.deleteAll();
         userRepository.deleteAll();
     }
 
-	// # Création des administrateurs fixes (adminX@planteshop.com / password)
+	/**
+	 * Cree les administrateurs fixes avec email adminX@planteshop.com.
+	 *
+	 * @return int le nombre d'admins crees
+	 */
     private int createFixedAdminUsers() {
         for (int adminIndex = 1; adminIndex <= NUMBER_OF_ADMINS; adminIndex++) {
             String adminUsernameForEmail = "admin" + adminIndex;
@@ -135,7 +153,11 @@ public class DatabaseSeeder implements CommandLineRunner {
         return NUMBER_OF_ADMINS;
     }
 
-	// # Création des utilisateurs classiques
+	/**
+	 * Cree les utilisateurs standards avec donnees generees.
+	 *
+	 * @return int le nombre d'utilisateurs crees
+	 */
     private int createStandardUsers() {
         for (int userIndex = 0; userIndex < NUMBER_OF_USERS; userIndex++) {
             String firstName = faker.name().firstName();
@@ -154,7 +176,12 @@ public class DatabaseSeeder implements CommandLineRunner {
         return NUMBER_OF_USERS;
     }
 
-	// # Retourne un nom de plante (suffixe si > 60)
+	/**
+	 * Retourne un nom de plante avec suffixe numerique si index > 60.
+	 *
+	 * @param plantIndex int l'index de la plante
+	 * @return String le nom de la plante
+	 */
 	private String getPlantNameFromIndex(int plantIndex) {
 		int plantNamesCount = PLANT_NAMES_LIST.size();
 		if (NUMBER_OF_PLANTS > plantNamesCount) {
@@ -163,7 +190,11 @@ public class DatabaseSeeder implements CommandLineRunner {
 		return PLANT_NAMES_LIST.get(plantIndex % plantNamesCount);
 	}
 
-	// # Création des plantes
+	/**
+	 * Cree la liste des plantes en base.
+	 *
+	 * @return int le nombre de plantes creees
+	 */
     private int createPlantsList() {
         List<Plant> plantsToInsertList = new ArrayList<>();
         for (int plantIndex = 0; plantIndex < NUMBER_OF_PLANTS; plantIndex++) {
@@ -180,6 +211,11 @@ public class DatabaseSeeder implements CommandLineRunner {
         return plantsToInsertList.size();
     }
 
+    /**
+     * Cree les commandes clients avec articles et stocks.
+     *
+     * @return int le nombre de commandes creees
+     */
     private int createCustomerOrders() {
         List<User> users = userRepository.findAll();
         List<Plant> plants = plantRepository.findAll();
@@ -251,6 +287,12 @@ public class DatabaseSeeder implements CommandLineRunner {
         return totalOrders;
     }
 
+    /**
+     * Compte les plantes avec stock disponible.
+     *
+     * @param stocks List<PlantStock> la liste des stocks
+     * @return int le nombre de plantes avec stock
+     */
     private int availableStockCount(List<PlantStock> stocks) {
         int total = 0;
         for (PlantStock stock : stocks) {
@@ -261,6 +303,12 @@ public class DatabaseSeeder implements CommandLineRunner {
         return total;
     }
 
+    /**
+     * Selectionne aleatoirement une plante avec stock disponible.
+     *
+     * @param stocks List<PlantStock> la liste des stocks
+     * @return PlantStock la plante selectionnee ou null
+     */
     private PlantStock pickPlantWithStock(List<PlantStock> stocks) {
         List<PlantStock> withStock = new ArrayList<>();
         for (PlantStock stock : stocks) {
@@ -274,11 +322,21 @@ public class DatabaseSeeder implements CommandLineRunner {
         return withStock.get(random.nextInt(withStock.size()));
     }
 
+    /**
+     * Retourne un statut de commande aleatoire.
+     *
+     * @return String le statut
+     */
     private String randomStatus() {
         return ORDER_STATUSES.get(random.nextInt(ORDER_STATUSES.size()));
     }
 
-    // # Génération du fichier des credentials (users.txt)
+    /**
+     * Genere le fichier users.txt avec les credentials.
+     *
+     * @return int le nombre de lignes ecrites
+     * @throws IOException si erreur d'ecriture
+     */
     private int generateUserCredentialsFile() throws IOException {
         int linesWritten = 0;
         try (FileWriter fileWriter = new FileWriter("users.txt")) {
@@ -309,18 +367,33 @@ public class DatabaseSeeder implements CommandLineRunner {
         private final Plant plant;
         private int remainingStock;
 
+        /**
+         * Constructeur initialisant le stock depuis la plante.
+         *
+         * @param plant Plant la plante
+         */
         PlantStock(Plant plant) {
             this.plant = plant;
             this.remainingStock = plant.getStock() == null ? 0 : plant.getStock();
         }
 
+        /**
+         * Consomme une quantite du stock.
+         *
+         * @param quantity int la quantite a consommer
+         */
         void consume(int quantity) {
             remainingStock = Math.max(0, remainingStock - quantity);
             plant.setStock(remainingStock);
         }
     }
 
-	// # Écriture d'une ligne credentials
+	/**
+	 * Ecrit une ligne de credentials dans le fichier.
+	 *
+	 * @param fileWriter FileWriter le writer du fichier
+	 * @param credentialEntity Credential les credentials a ecrire
+	 */
 	private void writeCredential(FileWriter fileWriter, Credential credentialEntity) {
 		try {
 			fileWriter.write(credentialEntity.email + " " + credentialEntity.password + "\n");
@@ -329,7 +402,12 @@ public class DatabaseSeeder implements CommandLineRunner {
 		}
 	}
 
-	// # Génère un email "slug" à partir du nom
+	/**
+	 * Genere un email slug a partir du nom complet.
+	 *
+	 * @param fullName String le nom complet
+	 * @return String l'email genere
+	 */
 	private String generateEmailFromFullName(String fullName) {
 		String[] parts = fullName.trim().split("\\s+");
 		String first = parts.length > 0 ? parts[0] : "user";
@@ -337,6 +415,13 @@ public class DatabaseSeeder implements CommandLineRunner {
 		return buildEmailFromNames(first, last);
 	}
 
+	/**
+	 * Construit un email a partir du prenom et nom.
+	 *
+	 * @param firstName String le prenom
+	 * @param lastName String le nom
+	 * @return String l'email construit
+	 */
 	private String buildEmailFromNames(String firstName, String lastName) {
 		String slugFirst = slugify(firstName);
 		String slugLast = slugify(lastName);
@@ -348,6 +433,12 @@ public class DatabaseSeeder implements CommandLineRunner {
 		return slugFirst + "_" + slugLast + randomNumber + "@" + domain;
 	}
 
+	/**
+	 * Convertit une chaine en slug (minuscules, sans accents).
+	 *
+	 * @param value String la valeur a slugifier
+	 * @return String le slug
+	 */
 	private String slugify(String value) {
 		if (value == null || value.isBlank()) {
 			return "user";
@@ -356,18 +447,32 @@ public class DatabaseSeeder implements CommandLineRunner {
 		return slug.isEmpty() ? "user" : slug;
 	}
 
-	// # Classe interne Credential pour stocker les credentials
+	/**
+	 * Classe interne pour stocker les credentials utilisateur.
+	 */
 	private static class Credential {
 		String email;
 		String password;
 		boolean admin;
 
+		/**
+		 * Constructeur des credentials.
+		 *
+		 * @param email String l'email
+		 * @param password String le mot de passe
+		 * @param admin boolean true si admin
+		 */
 		public Credential(String email, String password, boolean admin) {
 			this.email = email;
 			this.password = password;
 			this.admin = admin;
 		}
 
+		/**
+		 * Indique si l'utilisateur est admin.
+		 *
+		 * @return boolean true si admin
+		 */
 		public boolean isAdmin() {
 			return admin;
 		}
