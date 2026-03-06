@@ -43,9 +43,14 @@ public class ProfileController {
         return "users/show";
     }
 
-		/** Formulaire d’édition */
-		@GetMapping("/my_profile/edit")
-    public String edit(@AuthenticationPrincipal User user, Model model) {
+	/**
+	 * Formulaire d'édition du profil utilisateur.
+	 * @param user User L'utilisateur connecté
+	 * @param model Model Le modèle pour la vue
+	 * @return String La vue du formulaire d'édition
+	 */
+	@GetMapping("/my_profile/edit")
+	public String edit(@AuthenticationPrincipal User user, Model model) {
         model.addAttribute("user", user);        // pré‑remplit le formulaire
         return "users/edit";
     }

@@ -124,15 +124,19 @@ public class DatabaseSeeder implements CommandLineRunner {
         System.out.println("🎉 Seed terminée !");
     }
 
-	// # Suppression des données existantes dans le bon ordre (respect contraintes
-	// FK)
+	/**
+	 * Supprime toutes les données existantes dans le bon ordre (respect des contraintes FK).
+	 */
     private void resetDatabaseData() {
         orderRepository.deleteAll();
         plantRepository.deleteAll();
         userRepository.deleteAll();
     }
 
-	// # Création des administrateurs fixes (adminX@planteshop.com / password)
+	/**
+	 * Crée les administrateurs fixes (adminX@planteshop.com / password).
+	 * @return int le nombre d'administrateurs créés
+	 */
     private int createFixedAdminUsers() {
         for (int adminIndex = 1; adminIndex <= NUMBER_OF_ADMINS; adminIndex++) {
             String adminUsernameForEmail = "admin" + adminIndex;
@@ -148,7 +152,10 @@ public class DatabaseSeeder implements CommandLineRunner {
         return NUMBER_OF_ADMINS;
     }
 
-	// # Création des utilisateurs classiques
+	/**
+	 * Crée les utilisateurs classiques avec des données aléatoires.
+	 * @return int le nombre d'utilisateurs créés
+	 */
     private int createStandardUsers() {
         for (int userIndex = 0; userIndex < NUMBER_OF_USERS; userIndex++) {
             String firstName = faker.name().firstName();
@@ -167,7 +174,11 @@ public class DatabaseSeeder implements CommandLineRunner {
         return NUMBER_OF_USERS;
     }
 
-	// # Retourne un nom de plante (suffixe si > 60)
+	/**
+	 * Retourne un nom de plante depuis l'index (suffixe si > 60 plantes).
+	 * @param plantIndex int l'index de la plante
+	 * @return String le nom de la plante
+	 */
 	private String getPlantNameFromIndex(int plantIndex) {
 		int plantNamesCount = PLANT_NAMES_LIST.size();
 		if (NUMBER_OF_PLANTS > plantNamesCount) {
@@ -176,7 +187,10 @@ public class DatabaseSeeder implements CommandLineRunner {
 		return PLANT_NAMES_LIST.get(plantIndex % plantNamesCount);
 	}
 
-	// # Création des plantes
+	/**
+	 * Crée la liste des plantes avec des données générées.
+	 * @return int le nombre de plantes créées
+	 */
     private int createPlantsList() {
         List<Plant> plantsToInsertList = new ArrayList<>();
         for (int plantIndex = 0; plantIndex < NUMBER_OF_PLANTS; plantIndex++) {
@@ -193,6 +207,10 @@ public class DatabaseSeeder implements CommandLineRunner {
         return plantsToInsertList.size();
     }
 
+	/**
+	 * Crée les commandes clients avec des articles aléatoires.
+	 * @return int le nombre de commandes créées
+	 */
     private int createCustomerOrders() {
         List<User> users = userRepository.findAll();
         List<Plant> plants = plantRepository.findAll();
@@ -264,6 +282,11 @@ public class DatabaseSeeder implements CommandLineRunner {
         return totalOrders;
     }
 
+	/**
+	 * Compte le nombre de plantes ayant du stock disponible.
+	 * @param stocks List<PlantStock> la liste des stocks de plantes
+	 * @return int le nombre de plantes avec stock > 0
+	 */
     private int availableStockCount(List<PlantStock> stocks) {
         int total = 0;
         for (PlantStock stock : stocks) {
@@ -274,6 +297,11 @@ public class DatabaseSeeder implements CommandLineRunner {
         return total;
     }
 
+	/**
+	 * Sélectionne aléatoirement une plante ayant du stock disponible.
+	 * @param stocks List<PlantStock> la liste des stocks de plantes
+	 * @return PlantStock une plante avec du stock, ou null si aucune
+	 */
     private PlantStock pickPlantWithStock(List<PlantStock> stocks) {
         List<PlantStock> withStock = new ArrayList<>();
         for (PlantStock stock : stocks) {
@@ -287,11 +315,19 @@ public class DatabaseSeeder implements CommandLineRunner {
         return withStock.get(random.nextInt(withStock.size()));
     }
 
+	/**
+	 * Retourne un statut de commande aléatoire.
+	 * @return String le statut (confirmed, pending, shipped, delivered)
+	 */
     private String randomStatus() {
         return ORDER_STATUSES.get(random.nextInt(ORDER_STATUSES.size()));
     }
 
-    // # Génération du fichier des credentials (users.txt)
+	/**
+	 * Génère le fichier users.txt contenant les credentials.
+	 * @return int le nombre de lignes écrites
+	 * @throws IOException en cas d'erreur d'écriture
+	 */
     private int generateUserCredentialsFile() throws IOException {
         int linesWritten = 0;
         try (FileWriter fileWriter = new FileWriter("users.txt")) {
@@ -318,22 +354,37 @@ public class DatabaseSeeder implements CommandLineRunner {
         return linesWritten;
     }
 
+	/**
+	 * Classe interne pour gérer le stock temporaire d'une plante.
+	 */
     private static class PlantStock {
         private final Plant plant;
         private int remainingStock;
 
+		/**
+		 * Constructeur avec initialisation du stock.
+		 * @param plant Plant la plante à encapsuler
+		 */
         PlantStock(Plant plant) {
             this.plant = plant;
             this.remainingStock = plant.getStock() == null ? 0 : plant.getStock();
         }
 
+		/**
+		 * Consomme une quantité du stock.
+		 * @param quantity int la quantité à consommer
+		 */
         void consume(int quantity) {
             remainingStock = Math.max(0, remainingStock - quantity);
             plant.setStock(remainingStock);
         }
     }
 
-	// # Écriture d'une ligne credentials
+	/**
+	 * Écrit une ligne de credential dans le fichier.
+	 * @param fileWriter FileWriter le writer du fichier
+	 * @param credentialEntity Credential le credential à écrire
+	 */
 	private void writeCredential(FileWriter fileWriter, Credential credentialEntity) {
 		try {
 			fileWriter.write(credentialEntity.email + " " + credentialEntity.password + "\n");
@@ -342,7 +393,11 @@ public class DatabaseSeeder implements CommandLineRunner {
 		}
 	}
 
-	// # Génère un email "slug" à partir du nom
+	/**
+	 * Génère un email slug à partir du nom complet.
+	 * @param fullName String le nom complet
+	 * @return String l'email généré
+	 */
 	private String generateEmailFromFullName(String fullName) {
 		String[] parts = fullName.trim().split("\\s+");
 		String first = parts.length > 0 ? parts[0] : "user";
@@ -350,6 +405,12 @@ public class DatabaseSeeder implements CommandLineRunner {
 		return buildEmailFromNames(first, last);
 	}
 
+	/**
+	 * Construit un email à partir du prénom et nom.
+	 * @param firstName String le prénom
+	 * @param lastName String le nom
+	 * @return String l'email construit
+	 */
 	private String buildEmailFromNames(String firstName, String lastName) {
 		String slugFirst = slugify(firstName);
 		String slugLast = slugify(lastName);
@@ -361,6 +422,11 @@ public class DatabaseSeeder implements CommandLineRunner {
 		return slugFirst + "_" + slugLast + randomNumber + "@" + domain;
 	}
 
+	/**
+	 * Convertit une chaîne en slug (minuscules, sans accents).
+	 * @param value String la valeur à convertir
+	 * @return String le slug
+	 */
 	private String slugify(String value) {
 		if (value == null || value.isBlank()) {
 			return "user";
@@ -369,18 +435,30 @@ public class DatabaseSeeder implements CommandLineRunner {
 		return slug.isEmpty() ? "user" : slug;
 	}
 
-	// # Classe interne Credential pour stocker les credentials
+	/**
+	 * Classe interne pour stocker les credentials générés.
+	 */
 	private static class Credential {
 		String email;
 		String password;
 		boolean admin;
 
+		/**
+		 * Constructeur avec tous les champs.
+		 * @param email String l'email
+		 * @param password String le mot de passe
+		 * @param admin boolean true si administrateur
+		 */
 		public Credential(String email, String password, boolean admin) {
 			this.email = email;
 			this.password = password;
 			this.admin = admin;
 		}
 
+		/**
+		 * Indique si le credential est un administrateur.
+		 * @return boolean true si admin
+		 */
 		public boolean isAdmin() {
 			return admin;
 		}
